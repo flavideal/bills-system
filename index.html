@@ -161,20 +161,43 @@
 
     // CASE 1: GCASH
     if (currentService === 'GCASH') {
-        if (mode === 'Cash In') {
-            html = `
-                <div class="field-group"><label>Customer Full Name</label><input type="text" id="custName" placeholder="Juan Dela Cruz" required></div>
-                <div class="field-group"><label>GCash Number (Saan ipapadala)</label><input type="number" id="accNo" placeholder="09123456789" required></div>
-                <div class="field-group"><label>GCash Name (Name sa App)</label><input type="text" id="accName" placeholder="Ju_an De_cz" required></div>
-                <div class="field-group">
-                    <label>Fee Option</label>
-                    <select id="feeOption" onchange="updateTotal()" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;">
-                        <option value="add">Add-on (Magbabayad ng Fee)</option>
-                        <option value="deduct">Deduct (Bawas sa Amount)</option>
-                    </select>
+    if (mode === 'Cash In') {
+        html = `
+            <div class="field-group">
+                <label>Customer Full Name</label>
+                <input type="text" id="custName" placeholder="Juan Dela Cruz" required>
+            </div>
+            <div class="field-group">
+                <label>GCash Number (Saan ipapadala)</label>
+                <input type="number" id="accNo" placeholder="09123456789" required>
+            </div>
+            <div class="field-group">
+                <label>GCash Name (Name sa App)</label>
+                <input type="text" id="accName" placeholder="Ju_an De_cz" required>
+            </div>
+            
+            <div class="field-group">
+                <label>Amount to Cash-in</label>
+                <input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required>
+            </div>
+
+            <div class="field-group">
+                <label>Fee Option</label>
+                <select id="feeOption" onchange="updateTotal()" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;">
+                    <option value="add">Add-on (Magbabayad ng Fee)</option>
+                    <option value="deduct">Deduct (Bawas sa Amount)</option>
+                </select>
+            </div>
+
+            <div class="field-group" style="background: #fdfdfd; padding: 10px; border-radius: 10px; border: 1px solid #eee;">
+                <label>Pera na Inabot (Para sa Sukli)</label>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <input type="checkbox" id="isExact" onchange="handleExactAmount()" style="width:18px; height:18px;">
+                    <span style="font-size: 13px; color: #666;">Exact Amount / Sakto ang Pera</span>
                 </div>
-                <div class="field-group"><label>Pera na Inabot (Para sa Sukli)</label><input type="number" id="cashReceived" placeholder="Magkano ang pera?" oninput="updateTotal()"></div>
-            `;
+                <input type="number" id="cashReceived" placeholder="Magkano ang inabot na pera?" oninput="updateTotal()">
+            </div>
+        `;
         } else { // Cash Out
             html = `
                 <div class="field-group"><label>Customer Full Name</label><input type="text" id="custName" required></div>
@@ -381,6 +404,29 @@ function submitFinalData() {
         btn.innerText = "SUBMIT & GET NUMBER";
         btn.disabled = false;
     });
+}
+
+function handleExactAmount() {
+    const isExact = document.getElementById('isExact').checked;
+    const cashInput = document.getElementById('cashReceived');
+    
+    if (isExact) {
+        // Kunin ang total computation (kasama ang fee kung add-on)
+        const amt = parseFloat(document.getElementById('amount').value) || 0;
+        const fee = amt * 0.01;
+        const option = document.getElementById('feeOption').value;
+        
+        const total = (option === 'add') ? (amt + fee) : amt;
+        
+        cashInput.value = total;
+        cashInput.readOnly = true; // Para hindi na nila ma-edit kung 'sakto'
+        cashInput.style.background = "#f0f0f0";
+    } else {
+        cashInput.value = "";
+        cashInput.readOnly = false;
+        cashInput.style.background = "#fff";
+    }
+    updateTotal();
 }
 </script>
 </body>
