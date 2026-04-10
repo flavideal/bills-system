@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flavideal | Queue Display</title>
+    
     <style>
         :root {
             --bg-color: #111;
@@ -22,20 +23,23 @@
             overflow: hidden;
         }
 
+        /* FLEXBOX: Automatic switch base sa orientation */
         .main-container {
-            display: grid;
-            grid-template-columns: 55% 45%; /* Mas malapad ang video area */
+            display: flex;
+            flex-direction: row; /* Default: Landscape (Tabi-tabi) */
             flex-grow: 1;
         }
 
-        /* Left: Number */
+        /* Number Area */
         .queue-panel {
+            flex: 1.2; /* Mas malapad nang konti sa landscape */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             background: radial-gradient(circle, #222 0%, #111 100%);
             border-right: 3px solid var(--accent-color);
+            text-align: center;
         }
 
         .label {
@@ -46,13 +50,14 @@
         }
 
         .number {
-            font-size: 30vw;
+            font-size: 25vw;
             font-weight: bold;
-            margin: -20px 0;
+            margin: 0;
         }
 
-        /* Right: YouTube Video */
+        /* Video Area */
         .video-panel {
+            flex: 1;
             background-color: #000;
             display: flex;
             flex-direction: column;
@@ -60,9 +65,9 @@
 
         .video-container {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            overflow: hidden;
+            width: 100%;
+            aspect-ratio: 16 / 9; /* Maintain TV shape */
+            background: #000;
         }
 
         .video-container iframe {
@@ -77,12 +82,32 @@
             padding: 20px;
             flex-grow: 1;
             background: var(--panel-bg);
+            border-top: 2px solid #333;
         }
 
         .info-panel h2 { color: var(--accent-color); font-size: 2vw; margin: 0; }
-        .info-panel p { font-size: 1.2vw; color: #aaa; }
+        .info-panel p { font-size: 1.2vw; color: #aaa; margin-top: 10px; }
 
-        /* Footer Ticker */
+        /* PORTRAIT MODE (Tablet/Phone) */
+        @media (orientation: portrait) {
+            .main-container {
+                flex-direction: column; /* Pagpapatungin */
+            }
+            .queue-panel {
+                border-right: none;
+                border-bottom: 3px solid var(--accent-color);
+                flex: 1;
+            }
+            .video-panel {
+                flex: 1;
+            }
+            .label { font-size: 8vw; }
+            .number { font-size: 40vw; }
+            .info-panel h2 { font-size: 5vw; }
+            .info-panel p { font-size: 3.5vw; }
+        }
+
+        /* Footer */
         .footer {
             height: 60px;
             background: #000;
@@ -90,17 +115,10 @@
             align-items: center;
             padding: 0 20px;
             justify-content: space-between;
-            border-top: 1px solid #333;
         }
 
         .brand { font-weight: bold; font-style: italic; color: #444; font-size: 1.5vw; }
         #status-msg { font-size: 1vw; color: #00ff00; }
-
-        @media (max-width: 1024px) {
-            .main-container { grid-template-columns: 100%; }
-            .video-panel { display: none; }
-            .number { font-size: 50vw; }
-        }
     </style>
 </head>
 <body>
@@ -111,18 +129,21 @@
             <div class="number" id="serving">--</div>
         </div>
 
-        <div class="video-container">
-    <iframe 
-        id="ytplayer"
-        src="https://www.youtube.com/embed/_gyultVTesk?autoplay=1&mute=1&loop=1&playlist=_gyultVTesk&controls=0&rel=0" 
-        frameborder="0" 
-        allow="autoplay; encrypted-media" 
-        allowfullscreen>
-    </iframe>
-</div>
+        <div class="video-panel">
+            <div class="video-container">
+                <iframe 
+                    id="ytplayer"
+                    src="https://www.youtube.com/embed/_gyultVTesk?autoplay=1&mute=1&loop=1&playlist=_gyultVTesk&controls=0&rel=0" 
+                    frameborder="0" 
+                    allow="autoplay; encrypted-media" 
+                    allowfullscreen>
+                </iframe>
+            </div>
             <div class="info-panel">
                 <h2>FLAVIDEAL UPDATES</h2>
-                <p>• Pay your bills conveniently.<br>• Smartphones & Home Appliances available.<br>• Visit flavideal.com for more info.</p>
+                <p>• Pay your bills conveniently.<br>
+                   • Smartphones & Home Appliances available.<br>
+                   • Visit flavideal.com for more info.</p>
             </div>
         </div>
     </div>
@@ -131,7 +152,6 @@
         <div class="brand">FLAVIDEAL BILLS PAYMENT</div>
         <div id="status-msg">SYSTEM LIVE</div>
     </div>
-
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec';
         let lastNumber = "--";
