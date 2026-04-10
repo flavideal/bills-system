@@ -3,72 +3,31 @@
 <head>
     <title>NOW SERVING</title>
     <style>
-        body { background-color: #1a1a1a; color: white; font-family: Arial; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
-        .label { font-size: 5vw; color: #ffcc00; text-transform: uppercase; }
-        .number { font-size: 35vw; font-weight: bold; line-height: 1; color: #ffffff; }
+        body { background-color: #1a1a1a; color: white; font-family: Arial; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; margin: 0; }
+        .label { font-size: 5vw; color: #ffcc00; }
+        .number { font-size: 30vw; font-weight: bold; line-height: 1; }
         .brand { font-size: 3vw; margin-top: 20px; color: #666; }
-        #status-bar { position: fixed; bottom: 0; width: 100%; background: #333; font-size: 1.2vw; padding: 5px; color: #aaa; }
     </style>
 </head>
 <body>
-    <div class="label">Now Serving</div>
+    <div class="label">NOW SERVING</div>
     <div class="number" id="serving">--</div>
     <div class="brand">FLAVIDEAL BILLS PAYMENT</div>
-    <div id="status-bar">Connecting to system...</div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec';
-        let lastNumber = "--";
-        let audioEnabled = false;
-
-        function speak(text) {
-            if (!audioEnabled) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.8;
-            window.speechSynthesis.speak(utterance);
-        }
-
-        function playChime() {
-            if (!audioEnabled) return;
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
-            osc.start(); osc.stop(audioCtx.currentTime + 1);
-        }
+        const scriptURL = 'YOUR_APPS_SCRIPT_URL'; // I-paste ang URL dito
 
         function updateTV() {
-    // Gumamit ng mode: 'cors' at i-set ang cache
-    fetch(scriptURL, {
-        method: 'GET',
-        mode: 'cors',
-        cache: 'no-cache'
-    })
-    .then(res => res.json())
-    .then(data => {
-        // ... (yung dating code para sa display)
-        document.getElementById('status-bar').innerText = "System Live";
-    })
-    .catch(err => {
-        // Kung ayaw pa rin, subukan nating i-refresh ang page kusa
-        console.log("Error:", err);
-        document.getElementById('status-bar').innerText = "Error. Retrying...";
-    });
-}
+            fetch(scriptURL)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('serving').innerText = data.nowServing;
+                })
+                .catch(err => console.log(err));
+        }
 
-        // Click kahit saan sa screen gamit ang Coocaa remote OK button
-        window.onclick = function() {
-            audioEnabled = true;
-            playChime();
-            speak("System activated");
-            document.getElementById('status-bar').innerText = "Audio Enabled";
-        };
-
-        setInterval(updateTV, 8000); // 8 seconds para hindi ma-block ng Google
+        // Mag-a-update ang TV bawat 5 segundo
+        setInterval(updateTV, 5000);
         updateTV();
     </script>
 </body>
