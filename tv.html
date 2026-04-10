@@ -48,32 +48,31 @@
             oscillator.stop(audioCtx.currentTime + 1);
         }
 
-        function updateTV() {
-            fetch(scriptURL)
-                .then(res => res.json())
-                .then(data => {
-                    let currentNum = data.nowServing.toString();
+        // Idagdag ito sa loob ng script para siguradong laging gising ang Audio
+function resumeAudio() {
+    if (typeof window.speechSynthesis !== 'undefined' && window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+    }
+}
 
-                    // I-check kung nagbago ang number
-                    if (currentNum !== lastNumber && currentNum !== "") {
-                        document.getElementById('serving').innerText = currentNum;
-                        
-                        // Action pag may bagong number
-                        playChime();
-                        
-                        // Hintayin sandali bago magsalita pagkatapos ng chime
-                        setTimeout(() => {
-                            speak("Now serving, number " + currentNum);
-                        }, 1000);
-
-                        lastNumber = currentNum;
-                    }
-                })
-                .catch(err => {
-                    console.log("Error fetching data:", err);
-                    document.getElementById('status').innerText = "Reconnecting...";
-                });
-        }
+// I-trigger ang resumeAudio tuwing may update
+function updateTV() {
+    resumeAudio(); // Siguraduhing gising ang boses
+    fetch(scriptURL)
+        .then(res => res.json())
+        .then(data => {
+            let currentNum = data.nowServing.toString();
+            if (currentNum !== lastNumber && currentNum !== "") {
+                document.getElementById('serving').innerText = currentNum;
+                playChime();
+                setTimeout(() => {
+                    speak("Now serving, number " + currentNum);
+                }, 1000);
+                lastNumber = currentNum;
+            }
+        })
+        .catch(err => console.log(err));
+}
 
         // Importante: Ang mga browser ay nangangailangan ng "User Interaction" bago tumunog.
         // Pag-load ng page sa TV, i-click mo kahit saan sa screen para ma-enable ang sound/speech.
