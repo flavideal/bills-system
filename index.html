@@ -9,7 +9,6 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
         .kiosk-container { width: 100%; max-width: 500px; }
         
-        /* Dashboard */
         .header { text-align: center; margin-bottom: 20px; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
         .menu-item { 
@@ -19,21 +18,23 @@
         .menu-item img { width: 45px; height: 45px; object-fit: contain; margin-bottom: 8px; }
         .menu-item span { display: block; font-size: 11px; font-weight: bold; color: var(--dark-green); }
 
-        /* Form Section */
         #formSection { 
             display: none; background: white; padding: 25px; border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--dark-green);
         }
         .back-btn { background: none; border: none; color: var(--dark-green); font-weight: bold; cursor: pointer; margin-bottom: 15px; }
         
-        /* Inputs */
         .field-group { margin-bottom: 15px; }
         label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-transform: uppercase; }
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
         
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .type-btn { padding: 12px; border: 2px solid #ddd; border-radius: 10px; text-align: center; font-weight: bold; cursor: pointer; }
-        .type-btn.active { background: var(--dark-green); color: white; border-color: var(--dark-green); }
+        /* Step Style Buttons */
+        .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+        .mode-btn { 
+            padding: 20px; border: 3px solid #eee; border-radius: 15px; text-align: center; 
+            font-weight: 900; cursor: pointer; background: #fff; transition: 0.3s; color: var(--dark-green);
+        }
+        .mode-btn.active { border-color: var(--orange-yellow); background: var(--dark-green); color: white; }
 
         #submitBtn { width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         
@@ -59,43 +60,48 @@
     </div>
 
     <div id="formSection">
-        <button class="back-btn" onclick="location.reload()">← BACK</button>
-        <h2 id="formTitle" style="color: var(--dark-green); margin: 0 0 20px 0;">SERVICE</h2>
+        <button class="back-btn" onclick="location.reload()">← BACK TO MENU</button>
+        <h2 id="formTitle" style="color: var(--dark-green); margin: 0;">SERVICE</h2>
         
-        <form id="kioskForm">
+        <div id="modeSelectionArea" class="mode-selector" style="display:none;">
+            <div class="mode-btn" id="mIn" onclick="selectMode('Cash In')">CASH IN</div>
+            <div class="mode-btn" id="mOut" onclick="selectMode('Cash Out')">CASH OUT</div>
+        </div>
+
+        <form id="kioskForm" style="display:none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
             <div id="dynamicInputs"></div>
 
-            <div id="commonFields">
-                <div class="field-group">
-                    <label>Amount</label>
-                    <input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required>
-                    <div id="feeText" style="font-size: 12px; color: var(--dark-green); font-weight: bold; margin-top: 5px;"></div>
-                </div>
+            <div class="field-group">
+                <label>Amount</label>
+                <input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required>
+                <div id="feeText" style="font-size: 13px; color: var(--dark-green); font-weight: bold; margin-top: 5px;"></div>
             </div>
 
             <div id="qrArea" style="display:none;" class="qr-box">
-                <p style="font-size: 11px; font-weight:bold;">SCAN QR TO PAY</p>
-                <img src="YOUR_QR_URL" style="width: 150px;">
-                <input type="text" id="refNo" placeholder="Reference Number" style="margin-top:10px;">
+                <p style="font-size: 12px; font-weight:bold; color: red;">SCAN TO PAY VIA QRPH</p>
+                <img id="qrImage" src="" style="width: 180px; border-radius: 10px;">
+                <input type="text" id="refNo" placeholder="Reference Number (Last 6 digits)" style="margin-top:10px;">
+                <label style="margin-top:10px;">Upload Receipt</label>
+                <input type="file" id="receipt" accept="image/*">
             </div>
 
-            <button type="submit" id="submitBtn">CONFIRM</button>
+            <button type="submit" id="submitBtn">CONFIRM TRANSACTION</button>
         </form>
     </div>
 
     <div id="result">
-        <h2 style="color: var(--dark-green);">SUCCESS!</h2>
-        <p>Priority Number:</p>
-        <div style="font-size: 70px; font-weight: 900; color: var(--dark-green);" id="qNum">---</div>
+        <h2 style="color: var(--dark-green);">THANK YOU!</h2>
+        <p>Your Priority Number is:</p>
+        <div style="font-size: 80px; font-weight: 900; color: var(--dark-green); margin: 10px 0;" id="qNum">---</div>
         <p style="background: var(--orange-yellow); padding: 15px; border-radius: 10px; font-weight: bold;">PLEASE WAIT FOR YOUR NUMBER TO BE CALLED</p>
-        <button onclick="location.reload()" style="margin-top:20px; background:none; border:1px solid #ccc; padding:10px; border-radius:8px;">New Transaction</button>
+        <button onclick="location.reload()" style="margin-top:20px; background:none; border:1px solid #ccc; padding:10px; border-radius:8px; cursor:pointer;">Done</button>
     </div>
 </div>
 
 <script>
     const scriptURL = 'YOUR_APPS_SCRIPT_URL';
     let currentService = "";
-    let currentType = "Cash In";
+    let currentType = "";
 
     function initForm(service) {
         currentService = service;
@@ -104,62 +110,62 @@
         document.getElementById('formSection').style.display = 'block';
         document.getElementById('formTitle').innerText = service;
         
-        renderFields(service);
+        // Kung GCash o Maya, pakitang muna ang Cash In/Out Buttons
+        if (service === 'GCASH' || service === 'MAYA') {
+            document.getElementById('modeSelectionArea').style.display = 'grid';
+            document.getElementById('kioskForm').style.display = 'none';
+        } else {
+            // Kung ibang bills, diretso form agad
+            document.getElementById('modeSelectionArea').style.display = 'none';
+            selectMode('Payment'); 
+        }
     }
 
-    function renderFields(service) {
-        const container = document.getElementById('dynamicInputs');
-        let html = `
-            <div class="field-group">
-                <label>Customer Full Name</label>
-                <input type="text" id="custName" placeholder="Enter Name" required>
-            </div>
-        `;
+    function selectMode(mode) {
+        currentType = mode;
+        
+        // Highlight active button
+        if(document.getElementById('mIn')) {
+            document.getElementById('mIn').classList.toggle('active', mode === 'Cash In');
+            document.getElementById('mOut').classList.toggle('active', mode === 'Cash Out');
+        }
 
-        if (service === 'GCASH' || service === 'MAYA') {
-            html += `
-                <label>Transaction Type</label>
-                <div class="btn-group">
-                    <div class="type-btn active" id="tIn" onclick="toggleType('Cash In')">Cash In</div>
-                    <div class="type-btn" id="tOut" onclick="toggleType('Cash Out')">Cash Out</div>
-                </div>
-                <div class="field-group">
-                    <label>Mobile Number</label>
-                    <input type="number" id="accNo" placeholder="09XXXXXXXXX" required>
-                </div>
-            `;
-        } else if (service === 'ANECO') {
+        document.getElementById('kioskForm').style.display = 'block';
+        renderInputs(mode);
+    }
+
+    function renderInputs(mode) {
+        const container = document.getElementById('dynamicInputs');
+        let html = `<div class="field-group"><label>Customer Name / Code</label><input type="text" id="custName" required></div>`;
+
+        if (currentService === 'GCASH' || currentService === 'MAYA') {
+            html += `<div class="field-group"><label>${currentService} Number</label><input type="number" id="accNo" required></div>`;
+            if(mode === 'Cash In') {
+                html += `<div class="field-group"><label>Change For? (Sukli)</label><input type="number" id="change" placeholder="Optional"></div>`;
+            }
+        } else if (currentService === 'ANECO') {
             html += `
                 <div class="field-group"><label>Account Number</label><input type="text" id="accNo" required></div>
-                <div class="field-group"><label>Meter Number</label><input type="text" id="meterNo" required></div>
+                <div class="field-group"><label>Meter Number</label><input type="text" id="extra" required></div>
             `;
-        } else if (service === 'PALAWAN') {
+        } else if (currentService === 'PALAWAN') {
             html += `
-                <div class="field-group"><label>Receiver Name</label><input type="text" id="receiver" required></div>
-                <div class="field-group"><label>CP Number</label><input type="number" id="accNo" required></div>
-            `;
-        } else if (service === 'WATER') {
-            html += `
-                <div class="field-group"><label>Account No.</label><input type="text" id="accNo" required></div>
-                <div class="field-group"><label>Address</label><input type="text" id="address"></div>
+                <div class="field-group"><label>Receiver Name</label><input type="text" id="extra" required></div>
+                <div class="field-group"><label>Mobile Number</label><input type="number" id="accNo" required></div>
             `;
         } else {
-            html += `<div class="field-group"><label>Mobile Number</label><input type="number" id="accNo" required></div>`;
+            html += `<div class="field-group"><label>Account/Mobile Number</label><input type="number" id="accNo" required></div>`;
         }
 
         container.innerHTML = html;
-        toggleType('Cash In'); // Reset type display
-    }
-
-    function toggleType(type) {
-        currentType = type;
-        if(document.getElementById('tIn')) {
-            document.getElementById('tIn').className = (type === 'Cash In') ? 'type-btn active' : 'type-btn';
-            document.getElementById('tOut').className = (type === 'Cash Out') ? 'type-btn active' : 'type-btn';
-            
-            // Show QR only for GCash/Maya Cash Out
-            const qr = document.getElementById('qrArea');
-            qr.style.display = (type === 'Cash Out' && (currentService === 'GCASH' || currentService === 'MAYA')) ? 'block' : 'none';
+        
+        // Show QR area only for Cash Out
+        const qr = document.getElementById('qrArea');
+        if (mode === 'Cash Out') {
+            qr.style.display = 'block';
+            document.getElementById('qrImage').src = (currentService === 'GCASH') ? 'YOUR_GCASH_QR_LINK' : 'YOUR_MAYA_QR_LINK';
+        } else {
+            qr.style.display = 'none';
         }
         updateTotal();
     }
@@ -167,7 +173,7 @@
     function updateTotal() {
         const amt = parseFloat(document.getElementById('amount').value) || 0;
         const fee = amt * 0.01;
-        document.getElementById('feeText').innerText = `Total with 1% Fee: P${(amt + fee).toLocaleString()}`;
+        document.getElementById('feeText').innerText = `Total + 1% Fee: P${(amt + fee).toLocaleString()}`;
     }
 
     document.getElementById('kioskForm').addEventListener('submit', function(e) {
@@ -180,9 +186,9 @@
             name: document.getElementById('custName').value,
             service: currentService,
             type: currentType,
-            account: document.getElementById('accNo') ? document.getElementById('accNo').value : "",
+            account: document.getElementById('accNo').value,
             amount: document.getElementById('amount').value,
-            extra: document.getElementById('meterNo') ? "Meter: " + document.getElementById('meterNo').value : ""
+            extra: document.getElementById('extra') ? document.getElementById('extra').value : ""
         };
 
         fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) })
