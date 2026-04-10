@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NOW SERVING</title>
+    <style>
+        body { background-color: #1a1a1a; color: white; font-family: Arial; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; margin: 0; }
+        .label { font-size: 5vw; color: #ffcc00; }
+        .number { font-size: 30vw; font-weight: bold; line-height: 1; }
+        .brand { font-size: 3vw; margin-top: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="label">NOW SERVING</div>
+    <div class="number" id="serving">--</div>
+    <div class="brand">FLAVIDEAL BILLS PAYMENT</div>
+
+    <script>
+        const scriptURL = 'YOUR_APPS_SCRIPT_URL'; // I-paste ang URL dito
+
+        function updateTV() {
+            fetch(scriptURL)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('serving').innerText = data.nowServing;
+                })
+                .catch(err => console.log(err));
+        }
+
+        // Mag-a-update ang TV bawat 5 segundo
+        setInterval(updateTV, 5000);
+        updateTV();
+    </script>
+</body>
+</html>
