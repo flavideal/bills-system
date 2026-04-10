@@ -158,14 +158,35 @@
         let audioEnabled = false;
 
         function speak(text) {
-            if (!audioEnabled) return;
-            const spelledOut = text.split('').join(', ');
-            const utterance = new SpeechSynthesisUtterance("Now serving... " + spelledOut);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.8;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
-        }
+    if (!audioEnabled) return;
+
+    // I-cancel ang boses kung may kasalukuyang nagsasalita para hindi mag-overlap
+    window.speechSynthesis.cancel();
+
+    let message = "";
+    
+    // Check kung ang text ay purong numero lang (iwas sa "thousand/million" bug)
+    // Kung number lang at less than 4 digits, babasahin niya as normal number
+    if (!isNaN(text) && text.length < 4) {
+        message = "Number " + text;
+    } else {
+        // Kung may letters (hal. A1), i-ispelling niya bawat character
+        let spelledOut = text.split('').join(', ');
+        message = spelledOut;
+    }
+
+    // Buong sentence na sasabihin ng system
+    const finalSentence = "Now serving, " + message + ". Please proceed to the counter.";
+    
+    const utterance = new SpeechSynthesisUtterance(finalSentence);
+    
+    // Settings para sa boses
+    utterance.lang = 'en-US';
+    utterance.rate = 0.8;  // Bilis ng pagsasalita (0.8 ay sakto lang, hindi masyadong mabilis)
+    utterance.pitch = 1;   // Tonality ng boses
+
+    window.speechSynthesis.speak(utterance);
+}
 
         function playChime() {
             if (!audioEnabled) return;
