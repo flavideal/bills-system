@@ -20,14 +20,21 @@
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec';
         let lastNumber = "--";
 
-        function speak(text) {
-            // Text-to-Speech Logic
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US'; // Pwedeng 'en-PH' kung supported ng TV mo
-            utterance.rate = 0.9;      // Bagalan nang konti para malinaw
-            utterance.pitch = 1; 
-            window.speechSynthesis.speak(utterance);
-        }
+       function speak(text) {
+    // I-cancel ang anumang boses na kasalukuyang nagsasalita para hindi mag-overlap
+    window.speechSynthesis.cancel(); 
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.8; // Mas mabagal para mas maintindihan sa speaker ng TV
+    
+    // Solusyon para sa Chrome/Android TV bug na tumitigil ang boses
+    utterance.onend = function() {
+        window.speechSynthesis.cancel();
+    };
+
+    window.speechSynthesis.speak(utterance);
+}
 
         function playChime() {
             // Audio context para sa "Ding-dong" sound
