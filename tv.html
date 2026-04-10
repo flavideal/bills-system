@@ -1,89 +1,186 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>NOW SERVING</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flavideal | Now Serving</title>
     <style>
-        body { background-color: #1a1a1a; color: white; font-family: Arial; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
-        .label { font-size: 5vw; color: #ffcc00; text-transform: uppercase; letter-spacing: 5px; }
-        .number { font-size: 35vw; font-weight: bold; line-height: 1; color: #ffffff; text-shadow: 0 0 50px rgba(255,204,0,0.3); }
-        .brand { font-size: 3vw; margin-top: 20px; color: #666; font-style: italic; }
-        #status { font-size: 1.5vw; color: #444; position: fixed; bottom: 10px; right: 10px; }
+        :root {
+            --bg-color: #1a1a1a;
+            --accent-color: #ffcc00;
+            --text-main: #ffffff;
+            --panel-bg: #252525;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Responsive Grid Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 70% 30%; /* 70% sa Number, 30% sa Ads */
+            flex-grow: 1;
+        }
+
+        /* Left Side: Number Display */
+        .queue-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-right: 2px solid #333;
+        }
+
+        .label {
+            font-size: 4vw;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            margin-bottom: -20px;
+        }
+
+        .number {
+            font-size: 30vw; /* Responsive size */
+            font-weight: bold;
+            text-shadow: 0 0 40px rgba(255, 204, 0, 0.2);
+        }
+
+        /* Right Side: Ads/Announcements */
+        .ads-panel {
+            background-color: var(--panel-bg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .ad-card {
+            background: #333;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: left;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .ad-card h3 { color: var(--accent-color); margin: 0 0 10px 0; font-size: 1.5vw; }
+        .ad-card p { margin: 0; font-size: 1.2vw; line-height: 1.4; color: #ccc; }
+
+        /* Footer / Ticker */
+        .footer {
+            height: 80px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            justify-content: space-between;
+        }
+
+        .brand-footer { font-size: 2vw; font-weight: bold; font-style: italic; color: #555; }
+        
+        /* Mobile/Tablet Adjustment */
+        @media (max-width: 1024px) {
+            .main-container { grid-template-columns: 100%; }
+            .ads-panel { display: none; } /* Tago muna ads sa maliit na screen para focus sa number */
+            .number { font-size: 50vw; }
+        }
+
+        #status-msg { font-size: 12px; color: #444; }
     </style>
 </head>
 <body>
-    <div class="label">Now Serving</div>
-    <div class="number" id="serving">--</div>
-    <div class="brand">FLAVIDEAL BILLS PAYMENT</div>
-    <div id="status">System Active</div>
+
+    <div class="main-container">
+        <div class="queue-panel">
+            <div class="label">Now Serving</div>
+            <div class="number" id="serving">--</div>
+        </div>
+
+        <div class="ads-panel">
+            <div class="ad-card">
+                <h3>Flavideal Promo</h3>
+                <p>Get 5% discount on your next bill payment via our digital portal!</p>
+            </div>
+            <div class="ad-card">
+                <h3>Announcement</h3>
+                <p>We now accept GCash, Maya, and ShopeePay for all transactions.</p>
+            </div>
+            <div class="ad-card">
+                <h3>Business Hours</h3>
+                <p>Monday - Saturday<br>8:00 AM - 5:00 PM</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="brand-footer">FLAVIDEAL BILLS PAYMENT</div>
+        <div id="status-msg">Click screen to enable audio</div>
+    </div>
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec';
         let lastNumber = "--";
+        let audioEnabled = false;
 
         function speak(text) {
-            // Text-to-Speech Logic
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US'; // Pwedeng 'en-PH' kung supported ng TV mo
-            utterance.rate = 0.9;      // Bagalan nang konti para malinaw
-            utterance.pitch = 1; 
+            if (!audioEnabled) return;
+            
+            // MAGIC LOGIC: Paghiwalayin ang bawat letter/digit
+            // Halimbawa: "A123" -> "A, 1, 2, 3"
+            const spelledOut = text.split('').join(', ');
+            
+            const utterance = new SpeechSynthesisUtterance("Now serving... " + spelledOut);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8;
+            window.speechSynthesis.cancel(); // I-stop ang kasalukuyang nagsasalita
             window.speechSynthesis.speak(utterance);
         }
 
         function playChime() {
-            // Audio context para sa "Ding-dong" sound
+            if (!audioEnabled) return;
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // Note A4
-            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.1);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
-
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 1);
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+            osc.start(); osc.stop(audioCtx.currentTime + 1);
         }
 
-        function updateTV() {
-            fetch(scriptURL)
+        function updateDisplay() {
+            fetch(scriptURL + "?t=" + new Date().getTime())
                 .then(res => res.json())
                 .then(data => {
                     let currentNum = data.nowServing.toString();
-
-                    // I-check kung nagbago ang number
                     if (currentNum !== lastNumber && currentNum !== "") {
                         document.getElementById('serving').innerText = currentNum;
                         
-                        // Action pag may bagong number
-                        playChime();
-                        
-                        // Hintayin sandali bago magsalita pagkatapos ng chime
-                        setTimeout(() => {
-                            speak("Now serving, number " + currentNum);
-                        }, 1000);
-
+                        if (lastNumber !== "--") {
+                            playChime();
+                            setTimeout(() => speak(currentNum), 1000);
+                        }
                         lastNumber = currentNum;
                     }
                 })
-                .catch(err => {
-                    console.log("Error fetching data:", err);
-                    document.getElementById('status').innerText = "Reconnecting...";
-                });
+                .catch(err => console.log("System delay..."));
         }
 
-        // Importante: Ang mga browser ay nangangailangan ng "User Interaction" bago tumunog.
-        // Pag-load ng page sa TV, i-click mo kahit saan sa screen para ma-enable ang sound/speech.
         window.onclick = function() {
-            speak("System Ready");
-            document.getElementById('status').innerText = "Audio Enabled";
+            audioEnabled = true;
+            document.getElementById('status-msg').innerText = "AUDIO ON";
+            document.getElementById('status-msg').style.color = "#00ff00";
+            playChime();
         };
 
-        setInterval(updateTV, 4000); // 4 seconds interval
-        updateTV();
+        setInterval(updateDisplay, 5000);
+        updateDisplay();
     </script>
 </body>
 </html>
