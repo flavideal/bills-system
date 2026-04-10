@@ -3,205 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FLAVIDEAL | Customer Kiosk</title>
+    <title>FLAVIDEAL | Kiosk</title>
     <style>
         :root { 
             --dark-green: #1b431c; 
             --orange-yellow: #ffc267; 
-            --bg-gray: #f4f4f4; 
+            --bg-gray: #f0f2f5; 
         }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-gray); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-gray); margin: 0; padding: 20px; display: flex; justify-content: center; }
         
-        .kiosk-card { 
-            background: white; border-top: 10px solid var(--dark-green); border-radius: 20px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 480px; padding: 30px; 
+        .kiosk-container { width: 100%; max-width: 500px; }
+
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { color: var(--dark-green); margin: 0; font-size: 28px; font-weight: 900; }
+        .header p { color: #666; font-size: 14px; margin-top: 5px; }
+
+        /* Icon Grid Menu */
+        .menu-grid { 
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; 
+            margin-top: 20px; 
         }
+        .menu-item { 
+            background: white; padding: 20px 10px; border-radius: 15px; text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s;
+            border: 2px solid transparent;
+        }
+        .menu-item:active { transform: scale(0.95); background: #f9f9f9; }
+        .menu-item img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 10px; }
+        .menu-item span { display: block; font-size: 12px; font-weight: bold; color: var(--dark-green); }
+
+        /* Form Styling (Hidden at first) */
+        #formSection { 
+            display: none; background: white; padding: 25px; border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--dark-green);
+        }
+        .back-btn { background: none; border: none; color: var(--dark-green); font-weight: bold; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; gap: 5px; }
+
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .type-btn { padding: 15px; border: 2px solid #ddd; border-radius: 10px; text-align: center; font-weight: bold; cursor: pointer; }
+        .type-btn.active { background: var(--dark-green); color: white; border-color: var(--dark-green); }
+
+        input, select { width: 100%; padding: 14px; margin-top: 5px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        label { font-size: 13px; font-weight: bold; color: #555; margin-top: 15px; display: block; }
+
+        .qr-box { background: #fff9e6; padding: 15px; border-radius: 10px; text-align: center; margin-top: 15px; border: 1px dashed var(--orange-yellow); }
         
-        .header img { width: 150px; margin-bottom: 10px; }
-        .header { text-align: center; margin-bottom: 25px; border-bottom: 2px dashed #eee; padding-bottom: 20px; }
-        .header h2 { color: var(--dark-green); margin: 0; font-size: 22px; }
+        #submitBtn { width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 25px; cursor: pointer; }
 
-        label { font-weight: bold; color: var(--dark-green); display: block; margin: 15px 0 5px 0; font-size: 14px; }
-        input, select { 
-            width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; 
-            font-size: 16px; box-sizing: border-box; 
-        }
-
-        /* Machine Style Buttons */
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
-        .type-btn { 
-            padding: 18px; border: 3px solid #eee; border-radius: 12px; background: #fff; 
-            cursor: pointer; font-weight: 800; text-align: center; transition: 0.2s; color: #555;
-        }
-        .type-btn.active { border-color: var(--orange-yellow); background: var(--dark-green); color: white; }
-
-        .fee-info { background: #fff9e6; border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 13px; color: #856404; border: 1px solid #ffeeba; }
-        
-        #qrSection { background: #f9f9f9; border: 2px solid var(--orange-yellow); border-radius: 15px; padding: 20px; margin-top: 20px; text-align: center; }
-        .qr-img { width: 200px; border: 5px solid white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-
-        .terms { font-size: 12px; color: #666; margin-top: 20px; display: flex; align-items: flex-start; gap: 10px; }
-        .terms input { width: auto; margin-top: 3px; }
-
-        #submitBtn { 
-            width: 100%; padding: 20px; border: none; border-radius: 12px; 
-            background: var(--dark-green); color: var(--orange-yellow); font-size: 20px; font-weight: 900; 
-            margin-top: 20px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
-        }
-        #submitBtn:disabled { background: #ccc; color: #888; cursor: not-allowed; }
-
-        #result { display: none; text-align: center; }
-        .ticket { border: 2px solid #ddd; padding: 20px; border-radius: 15px; background: #fff; position: relative; }
-        .q-number { font-size: 70px; font-weight: 900; color: var(--dark-green); margin: 10px 0; }
+        #result { display: none; text-align: center; background: white; padding: 40px 20px; border-radius: 20px; }
+        .q-number { font-size: 70px; font-weight: 900; color: var(--dark-green); margin: 20px 0; }
     </style>
 </head>
 <body>
 
-<div class="kiosk-card">
-    <div class="header">
-        <h2>Welcome to FLAVI DEAL</h2>
-        <p style="margin: 5px 0; font-size: 13px; color: #666;">Fast • Reliable • Secure Payments</p>
+<div class="kiosk-container">
+    <div class="header" id="mainHeader">
+        <h1>FLAVIDEAL</h1>
+        <p>Piliin ang iyong kailangang serbisyo</p>
     </div>
 
-    <form id="queueForm">
-        <label>FULL NAME / CUSTOMER CODE</label>
-        <input type="text" id="name" placeholder="Enter Name or Code" required>
-
-        <label>TRANSACTION TYPE</label>
-        <div class="btn-group">
-            <div class="type-btn" id="btnIn" onclick="setType('Cash In')">CASH IN</div>
-            <div class="type-btn" id="btnOut" onclick="setType('Cash Out')">CASH OUT</div>
+    <div class="menu-grid" id="menuGrid">
+        <div class="menu-item" onclick="openForm('GCASH')">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/GCash_logo.svg/1200px-GCash_logo.svg.png" alt="GCASH">
+            <span>GCASH</span>
         </div>
-        <input type="hidden" id="transType" required>
-
-        <div id="serviceSelection" style="display:none;">
-            <label>SELECT SERVICE</label>
-            <select id="service" onchange="handleServiceChange()" required>
-                <option value="" disabled selected>-- Choose Service --</option>
-                <option value="GCASH">GCASH</option>
-                <option value="MAYA">MAYA</option>
-                <option value="ANECO">ANECO (Bills)</option>
-                <option value="WATER">Water District</option>
-                <option value="LOAD">E-Load</option>
-                <option value="PALAWAN">Palawan Padala/Claim</option>
-            </select>
+        <div class="menu-item" onclick="openForm('MAYA')">
+            <img src="https://getlogovector.com/wp-content/uploads/2022/04/maya-philippines-logo-vector.png" alt="MAYA">
+            <span>MAYA</span>
         </div>
+        <div class="menu-item" onclick="openForm('PALAWAN')">
+            <img src="https://www.palawanpawnshop.com/assets/images/logo.png" alt="PALAWAN">
+            <span>PALAWAN</span>
+        </div>
+        <div class="menu-item" onclick="openForm('ANECO')">
+            <img src="https://via.placeholder.com/50?text=ANECO" alt="ANECO">
+            <span>ANECO</span>
+        </div>
+        <div class="menu-item" onclick="openForm('WATER')">
+            <img src="https://via.placeholder.com/50?text=WATER" alt="WATER">
+            <span>WATER DISTRICT</span>
+        </div>
+        <div class="menu-item" onclick="openForm('LOAD')">
+            <img src="https://via.placeholder.com/50?text=LOAD" alt="LOAD">
+            <span>E-LOAD</span>
+        </div>
+    </div>
 
-        <div id="dynamicFields" style="display:none;">
-            <div class="fee-info" id="feeNotice">
-                <strong>Note:</strong> 1% Service Fee applies to this transaction.
+    <div id="formSection">
+        <button class="back-btn" onclick="goBack()">← Balik sa Menu</button>
+        <h2 id="serviceTitle" style="color: var(--dark-green); margin: 0;">GCASH</h2>
+        
+        <form id="queueForm">
+            <label>PANGALAN / CODE</label>
+            <input type="text" id="name" placeholder="Juan Dela Cruz" required>
+
+            <label>TRANSACTION TYPE</label>
+            <div class="btn-group">
+                <div class="type-btn" id="btnIn" onclick="setMode('Cash In')">CASH IN</div>
+                <div class="type-btn" id="btnOut" onclick="setMode('Cash Out')">CASH OUT</div>
+            </div>
+            <input type="hidden" id="transType" required>
+
+            <div id="fields">
+                <label id="labelAccount">MOBILE NUMBER</label>
+                <input type="number" id="accountNo" placeholder="09XXXXXXXXX" required>
+
+                <label>MAGKANO (AMOUNT)</label>
+                <input type="number" id="amount" placeholder="0.00" oninput="calcFee()" required>
+                <div id="feeResult" style="font-size: 13px; margin-top: 5px; color: #1b431c; font-weight: bold;">
+                    Fee (1%): <span id="displayTotal">P0.00</span>
+                </div>
+
+                <div id="cashInFields" style="display:none;">
+                    <label>CHANGE FOR?</label>
+                    <input type="number" id="changeFor" placeholder="E.g. 500, 1000">
+                </div>
+
+                <div id="qrSection" style="display:none;">
+                    <div class="qr-box">
+                        <p style="font-size: 12px; margin: 0; font-weight: bold;">SCAN TO PAY VIA QRPH</p>
+                        <img src="YOUR_QR_IMAGE_HERE" style="width: 150px; margin: 10px 0;">
+                        <input type="text" id="refNo" placeholder="Reference Number (Last 6 digits)">
+                    </div>
+                </div>
             </div>
 
-            <label id="labelAccount">MOBILE NUMBER</label>
-            <input type="number" id="accountNo" placeholder="09XXXXXXXXX">
-
-            <label>AMOUNT</label>
-            <input type="number" id="amount" placeholder="0.00" oninput="calculateFee()">
-            
-            <div id="feeResult" style="margin-top:10px; font-size: 14px; font-weight: bold; color: var(--dark-green);">
-                Total to Pay: <span id="totalDisplay">P0.00</span>
+            <div style="font-size: 11px; color: #777; margin-top: 15px; display: flex; gap: 8px;">
+                <input type="checkbox" required>
+                <span>Sumasang-ayon ako sa Terms & Conditions ng Flavideal.</span>
             </div>
 
-            <div id="cashInFields" style="display:none;">
-                <label>CHANGE FOR?</label>
-                <input type="number" id="changeFor" placeholder="Enter bill amount (e.g. 1000)">
-            </div>
-        </div>
-
-        <div id="qrSection" style="display:none;">
-            <p style="font-weight:900; color:var(--dark-green); margin:0 0 10px 0;">PLEASE SEND PAYMENT HERE:</p>
-            <img src="https://errihoportal.page.gd/images/mayaqrph.png" class="qr-img" alt="GCash QR">
-            <label style="margin-top:20px;">REFERENCE NUMBER (Last 4-6 digits)</label>
-            <input type="text" id="refNo" placeholder="Enter Ref # from Receipt">
-            <label>UPLOAD PROOF OF RECEIPT</label>
-            <input type="file" id="receipt" accept="image/*">
-        </div>
-
-        <div class="terms">
-            <input type="checkbox" id="agree" onclick="toggleSubmit()">
-            <span>I agree to the <strong>Terms & Conditions</strong> and <strong>Privacy Policy</strong> of Flavi Deal.</span>
-        </div>
-
-        <button type="submit" id="submitBtn" disabled>GET PRIORITY NUMBER</button>
-    </form>
+            <button type="submit" id="submitBtn">KUMUHA NG NUMBER</button>
+        </form>
+    </div>
 
     <div id="result">
-        <div class="ticket">
-            <h2 style="color:var(--dark-green); margin:0;">THANK YOU!</h2>
-            <p>Your Priority Number is:</p>
-            <div class="q-number" id="qNum">---</div>
-            <p style="font-weight:bold; background:var(--orange-yellow); padding:10px; border-radius:8px;">
-                PLEASE WAIT TO BE CALLED ON THE MONITOR
-            </p>
-            <p style="font-size:12px; color:#777;">Thank you for using our service!</p>
-        </div>
-        <button onclick="location.reload()" style="margin-top:20px; background:none; border:1px solid #ccc; padding:10px; border-radius:8px; cursor:pointer;">Done / New Transaction</button>
+        <h2 style="color: var(--dark-green);">MARAMING SALAMAT!</h2>
+        <p>Ang iyong priority number ay:</p>
+        <div class="q-number" id="qNum">---</div>
+        <p style="background: var(--orange-yellow); padding: 15px; border-radius: 10px; font-weight: bold;">
+            MANGYARING HINTAYIN NA TAWAGIN SA MONITOR.
+        </p>
+        <button onclick="location.reload()" style="margin-top: 30px; background: none; border: 1px solid #ccc; padding: 10px 20px; border-radius: 8px;">Ulitin / Tapos na</button>
     </div>
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec';
-    let selectedType = "";
+    const scriptURL = 'YOUR_APPS_SCRIPT_URL_HERE';
+    let currentService = "";
+    let currentMode = "";
 
-    function setType(type) {
-        selectedType = type;
-        document.getElementById('transType').value = type;
-        document.getElementById('btnIn').classList.remove('active');
-        document.getElementById('btnOut').classList.remove('active');
-        document.getElementById(type === 'Cash In' ? 'btnIn' : 'btnOut').classList.add('active');
-        document.getElementById('serviceSelection').style.display = 'block';
-        handleServiceChange();
-    }
-
-    function calculateFee() {
-        const amt = parseFloat(document.getElementById('amount').value) || 0;
-        const fee = amt * 0.01;
-        const total = amt + fee;
-        document.getElementById('totalDisplay').innerText = "P" + total.toLocaleString();
-    }
-
-    function handleServiceChange() {
-        const service = document.getElementById('service').value;
-        const isCashIn = (selectedType === 'Cash In');
+    function openForm(service) {
+        currentService = service;
+        document.getElementById('menuGrid').style.display = 'none';
+        document.getElementById('mainHeader').style.display = 'none';
+        document.getElementById('formSection').style.display = 'block';
+        document.getElementById('serviceTitle').innerText = service;
         
-        document.getElementById('dynamicFields').style.display = 'block';
-        document.getElementById('cashInFields').style.display = isCashIn ? 'block' : 'none';
-        document.getElementById('qrSection').style.display = (!isCashIn && (service==='GCASH' || service==='MAYA')) ? 'block' : 'none';
+        // Reset inputs
+        document.getElementById('queueForm').reset();
+        setMode('Cash In'); // Default
 
-        // Custom label
+        // Custom label per service
         const lbl = document.getElementById('labelAccount');
-        if(service === 'PALAWAN') lbl.innerText = "TRANSACTION CODE / CP NUMBER";
-        else if(service === 'ANECO' || service === 'WATER') lbl.innerText = "ACCOUNT NUMBER";
+        if(service === 'ANECO' || service === 'WATER') lbl.innerText = "ACCOUNT NUMBER";
+        else if(service === 'PALAWAN') lbl.innerText = "REF CODE / CP NUMBER";
         else lbl.innerText = "MOBILE NUMBER";
     }
 
-    function toggleSubmit() {
-        document.getElementById('submitBtn').disabled = !document.getElementById('agree').checked;
+    function goBack() {
+        document.getElementById('menuGrid').style.display = 'grid';
+        document.getElementById('mainHeader').style.display = 'block';
+        document.getElementById('formSection').style.display = 'none';
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('transType').value = mode;
+        document.getElementById('btnIn').className = (mode === 'Cash In') ? 'type-btn active' : 'type-btn';
+        document.getElementById('btnOut').className = (mode === 'Cash Out') ? 'type-btn active' : 'type-btn';
+        
+        document.getElementById('cashInFields').style.display = (mode === 'Cash In') ? 'block' : 'none';
+        
+        // Show QR only for Cash Out on GCASH/MAYA
+        const qr = document.getElementById('qrSection');
+        if(mode === 'Cash Out' && (currentService === 'GCASH' || currentService === 'MAYA')) {
+            qr.style.display = 'block';
+        } else {
+            qr.style.display = 'none';
+        }
+    }
+
+    function calcFee() {
+        const amt = parseFloat(document.getElementById('amount').value) || 0;
+        const total = amt + (amt * 0.01);
+        document.getElementById('displayTotal').innerText = "P" + total.toLocaleString();
     }
 
     document.getElementById('queueForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const btn = document.getElementById('submitBtn');
-        btn.innerText = "PRINTING TICKET...";
-        btn.disabled = true;
+        document.getElementById('submitBtn').innerText = "Processing...";
+        document.getElementById('submitBtn').disabled = true;
 
-        const formData = {
+        const data = {
             name: document.getElementById('name').value,
-            type: selectedType,
-            service: document.getElementById('service').value,
+            type: currentMode,
+            service: currentService,
             account: document.getElementById('accountNo').value,
-            amount: document.getElementById('amount').value,
-            ref: document.getElementById('refNo') ? document.getElementById('refNo').value : "N/A"
+            amount: document.getElementById('amount').value
         };
 
-        fetch(scriptURL, { method: 'POST', body: JSON.stringify(formData) })
+        fetch(scriptURL, { method: 'POST', body: JSON.stringify(data) })
         .then(res => res.json())
-        .then(data => {
-            document.getElementById('queueForm').style.display = 'none';
+        .then(res => {
+            document.getElementById('formSection').style.display = 'none';
             document.getElementById('result').style.display = 'block';
-            document.getElementById('qNum').innerText = data.queueNumber;
+            document.getElementById('qNum').innerText = res.queueNumber;
         });
     });
 </script>
+
 </body>
 </html>
