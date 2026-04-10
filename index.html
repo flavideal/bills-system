@@ -3,83 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flavideal | Queuing System</title>
+    <title>FLAVIDEAL | Customer Portal</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
-        h2 { color: #333; margin-bottom: 1rem; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: #007bff; color: white; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        button:hover { background-color: #0056b3; }
-        #result { margin-top: 20px; padding: 15px; border-radius: 10px; display: none; }
-        .queue-number { font-size: 48px; font-weight: bold; color: #007bff; display: block; margin: 10px 0; }
-        .qr-section img { width: 150px; margin-top: 15px; border: 2px solid #eee; padding: 5px; }
+        :root { --primary: #007bff; --secondary: #6c757d; --bg: #f8f9fa; --dark: #333; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .container { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 450px; }
+        
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { color: var(--primary); margin: 0; font-size: 24px; letter-spacing: 1px; }
+        .header p { color: var(--secondary); font-size: 14px; }
+
+        .step-container { display: flex; flex-direction: column; gap: 15px; }
+        label { font-weight: 600; font-size: 14px; color: var(--dark); display: block; margin-bottom: 5px; }
+        
+        input, select { 
+            width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; 
+            font-size: 16px; box-sizing: border-box; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
+
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .type-btn { 
+            padding: 15px; border: 2px solid #eee; border-radius: 12px; background: white; 
+            cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .type-btn.active { border-color: var(--primary); background: rgba(0,123,255,0.05); color: var(--primary); }
+
+        #dynamicFields, #qrSection { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
+        
+        .qr-card { background: #f1f1f1; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; }
+        .qr-card img { width: 180px; border-radius: 8px; border: 4px solid white; }
+
+        #submitBtn { 
+            width: 100%; padding: 16px; border: none; border-radius: 12px; 
+            background: var(--primary); color: white; font-size: 18px; font-weight: bold; 
+            margin-top: 25px; cursor: pointer;
+        }
+
+        #result { display: none; text-align: center; padding: 20px; }
+        .q-number { font-size: 60px; font-weight: 900; color: var(--primary); margin: 15px 0; }
     </style>
 </head>
 <body>
 
-<div class="container" id="main-container">
-    <h2>Flavideal Queuing</h2>
-    <p>Mangyaring ilagay ang detalye para sa iyong Priority Number.</p>
-    
+<div class="container" id="mainBox">
+    <div class="header">
+        <h1>FLAVI DEAL</h1>
+        <p>BILLS PAYMENT & E-LOADING</p>
+    </div>
+
     <form id="queueForm">
-        <input type="text" id="name" placeholder="Pangalan" required>
-        <select id="billType" required>
-            <option value="" disabled selected>Anong babayaran?</option>
-            <option value="Electricity">Electricity (Meralco/etc)</option>
-            <option value="Water">Water Bill</option>
-            <option value="Internet">Internet/Phone</option>
-            <option value="Others">Others</option>
-        </select>
-        
-        <div class="qr-section">
-            <p style="font-size: 12px; color: #666;">Scan to Pay via GCash/Maya:</p>
-            <img src="https://via.placeholder.com/150?text=YOUR+QR+HERE" alt="Payment QR">
+        <div class="step-container">
+            <div>
+                <label>Pangalan</label>
+                <input type="text" id="name" placeholder="Full Name" required>
+            </div>
+
+            <label>Transaction Type</label>
+            <div class="btn-group">
+                <div class="type-btn" id="btnIn" onclick="setType('Cash In')">CASH IN</div>
+                <div class="type-btn" id="btnOut" onclick="setType('Cash Out')">CASH OUT</div>
+            </div>
+            <input type="hidden" id="transType" required>
+
+            <div id="serviceSelection" style="display:none;">
+                <label>Piliin ang Serbisyo</label>
+                <select id="service" onchange="handleServiceChange()">
+                    <option value="" selected disabled>-- Select Service --</option>
+                    <option value="GCASH">GCASH</option>
+                    <option value="MAYA">MAYA</option>
+                    <option value="ANECO">ANECO (Bills)</option>
+                    <option value="WATER">Water District</option>
+                    <option value="LOAD">E-Load</option>
+                    <option value="PALAWAN">Palawan Padala/Claim</option>
+                </select>
+            </div>
+
+            <div id="dynamicFields">
+                <div id="fieldAccount">
+                    <label id="labelAccount">Account/Mobile Number</label>
+                    <input type="number" id="accountNo" placeholder="09XX XXX XXXX">
+                </div>
+                <div style="margin-top:15px">
+                    <label>Magkano (Amount)</label>
+                    <input type="number" id="amount" placeholder="P0.00">
+                </div>
+            </div>
+
+            <div id="qrSection">
+                <div class="qr-card">
+                    <p style="font-weight:bold; color:red; margin-top:0;">SCAN TO PAY (QRPH)</p>
+                    <img src="https://via.placeholder.com/180?text=YOUR+QR+HERE" alt="QR Code">
+                    <p style="font-size:12px; margin-bottom:0;">Maaaring i-upload ang screenshot ng resibo sa ibaba.</p>
+                </div>
+                <label>Upload Receipt (Proof)</label>
+                <input type="file" id="receipt" accept="image/*">
+            </div>
         </div>
 
-        <button type="submit" id="submitBtn">Kumuha ng Number</button>
+        <button type="submit" id="submitBtn">CONFIRM & GET NUMBER</button>
     </form>
 
     <div id="result">
-        <h3>Ang iyong Number:</h3>
-        <span class="queue-number" id="qNum">--</span>
-        <p>Mangyaring hintayin na tawagin sa counter. Salamat!</p>
-        <button onclick="location.reload()" style="background-color: #6c757d;">Bagong Transaction</button>
+        <div style="font-size: 50px;">🎫</div>
+        <h3>Ang iyong Priority Number:</h3>
+        <div class="q-number" id="qNum">--</div>
+        <p style="font-weight:bold;">Maaari nang maghintay sa monitor.</p>
+        <p style="color:var(--secondary); font-size:13px;">Please wait for your number to be called.<br>Salamat sa pagtitiwala!</p>
+        <button onclick="location.reload()" style="background:#eee; border:none; padding:10px 20px; border-radius:8px; margin-top:20px;">Bagong Transaction</button>
     </div>
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec'; // <--- Palitan mo ito!
-    const form = document.getElementById('queueForm');
-    const resultDiv = document.getElementById('result');
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec';
+    let selectedType = "";
 
-    form.addEventListener('submit', e => {
+    function setType(type) {
+        selectedType = type;
+        document.getElementById('transType').value = type;
+        document.getElementById('btnIn').classList.remove('active');
+        document.getElementById('btnOut').classList.remove('active');
+        
+        if(type === 'Cash In') document.getElementById('btnIn').classList.add('active');
+        else document.getElementById('btnOut').classList.add('active');
+
+        document.getElementById('serviceSelection').style.display = 'block';
+        handleServiceChange(); 
+    }
+
+    function handleServiceChange() {
+        const service = document.getElementById('service').value;
+        const dynamicFields = document.getElementById('dynamicFields');
+        const qrSection = document.getElementById('qrSection');
+        
+        if(!service) return;
+
+        // Ipakita ang basic inputs para sa lahat
+        dynamicFields.style.display = 'block';
+
+        // Custom Labels
+        if(service === 'PALAWAN') document.getElementById('labelAccount').innerText = "Transaction Code / CP Number";
+        else if(service === 'ANECO' || service === 'WATER') document.getElementById('labelAccount').innerText = "Account Number";
+        else document.getElementById('labelAccount').innerText = "Mobile Number";
+
+        // Ipakita ang QR kung Cash Out (GCash/Maya)
+        if(selectedType === 'Cash Out' && (service === 'GCASH' || service === 'MAYA')) {
+            qrSection.style.display = 'block';
+        } else {
+            qrSection.style.display = 'none';
+        }
+    }
+
+    document.getElementById('queueForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        document.getElementById('submitBtn').innerText = "Generating...";
-        document.getElementById('submitBtn').disabled = true;
+        const btn = document.getElementById('submitBtn');
+        btn.innerText = "Processing...";
+        btn.disabled = true;
 
-        const data = {
+        const formData = {
             name: document.getElementById('name').value,
-            billType: document.getElementById('billType').value
+            type: selectedType,
+            service: document.getElementById('service').value,
+            account: document.getElementById('accountNo').value,
+            amount: document.getElementById('amount').value
         };
 
         fetch(scriptURL, {
             method: 'POST',
-            body: JSON.stringify(data)
+            body: JSON.stringify(formData)
         })
-        .then(response => response.json())
-        .then(res => {
-            if(res.result === 'success') {
-                form.style.display = 'none';
-                resultDiv.style.display = 'block';
-                document.getElementById('qNum').innerText = "#" + res.queueNumber;
-            }
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('queueForm').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('qNum').innerText = data.queueNumber;
         })
-        .catch(error => {
-            alert('Error! Pakisubukang muli.');
-            console.error('Error!', error.message);
-            document.getElementById('submitBtn').innerText = "Kumuha ng Number";
-            document.getElementById('submitBtn').disabled = false;
+        .catch(err => {
+            alert("May error. Pakisubukang muli.");
+            btn.innerText = "CONFIRM & GET NUMBER";
+            btn.disabled = false;
         });
     });
 </script>
