@@ -42,28 +42,23 @@
         }
 
         function updateTV() {
-            // Dinagdagan ng timestamp para iwas "Cache" (Minsan luma ang nakukuha ng TV)
-            fetch(scriptURL + "?t=" + new Date().getTime())
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('status-bar').innerText = "System Live | Audio: " + (audioEnabled ? "ON" : "OFF - Click Remote");
-                    document.getElementById('status-bar').style.color = "#0f0";
-                    
-                    let currentNum = data.nowServing.toString();
-                    if (currentNum !== lastNumber && currentNum !== "") {
-                        document.getElementById('serving').innerText = currentNum;
-                        if(lastNumber !== "--") { // Huwag magsalita sa unang load
-                            playChime();
-                            setTimeout(() => speak("Now serving, number " + currentNum), 8000);
-                        }
-                        lastNumber = currentNum;
-                    }
-                })
-                .catch(err => {
-                    document.getElementById('status-bar').innerText = "Connection Lost. Retrying...";
-                    document.getElementById('status-bar').style.color = "red";
-                });
-        }
+    // Gumamit ng mode: 'cors' at i-set ang cache
+    fetch(scriptURL, {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'no-cache'
+    })
+    .then(res => res.json())
+    .then(data => {
+        // ... (yung dating code para sa display)
+        document.getElementById('status-bar').innerText = "System Live";
+    })
+    .catch(err => {
+        // Kung ayaw pa rin, subukan nating i-refresh ang page kusa
+        console.log("Error:", err);
+        document.getElementById('status-bar').innerText = "Error. Retrying...";
+    });
+}
 
         // Click kahit saan sa screen gamit ang Coocaa remote OK button
         window.onclick = function() {
