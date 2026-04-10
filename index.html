@@ -60,35 +60,56 @@
     </div>
 
     <div id="formSection">
-        <button class="back-btn" onclick="location.reload()">← BACK TO MENU</button>
-        <h2 id="formTitle" style="color: var(--dark-green); margin: 0;">SERVICE</h2>
-        
-        <div id="modeSelectionArea" class="mode-selector" style="display:none;">
-            <div class="mode-btn" id="mIn" onclick="selectMode('Cash In')">CASH IN</div>
-            <div class="mode-btn" id="mOut" onclick="selectMode('Cash Out')">CASH OUT</div>
-        </div>
-
-        <form id="kioskForm" style="display:none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
-            <div id="dynamicInputs"></div>
-
-            <div class="field-group">
-                <label>Amount</label>
-                <input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required>
-                <div id="feeText" style="font-size: 13px; color: var(--dark-green); font-weight: bold; margin-top: 5px;"></div>
-            </div>
-
-            <div id="qrArea" style="display:none;" class="qr-box">
-                <p style="font-size: 12px; font-weight:bold; color: red;">SCAN TO PAY VIA QRPH</p>
-                <img id="qrImage" src="" style="width: 180px; border-radius: 10px;">
-                <input type="text" id="refNo" placeholder="Reference Number (Last 6 digits)" style="margin-top:10px;">
-                <label style="margin-top:10px;">Upload Receipt</label>
-                <input type="file" id="receipt" accept="image/*">
-            </div>
-
-            <button type="submit" id="submitBtn">CONFIRM TRANSACTION</button>
-        </form>
+    <button class="back-btn" onclick="location.reload()">← BACK</button>
+    <h2 id="formTitle" style="color: var(--dark-green); margin: 0;">SERVICE</h2>
+    
+    <div id="modeSelectionArea" class="mode-selector" style="display:none;">
+        <div class="mode-btn" id="mIn" onclick="selectMode('Cash In')">CASH IN</div>
+        <div class="mode-btn" id="mOut" onclick="selectMode('Cash Out')">CASH OUT</div>
     </div>
 
+    <form id="kioskForm" style="display:none; margin-top: 20px;">
+        <div id="dynamicInputs"></div>
+        <div class="field-group">
+            <label>Amount</label>
+            <input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required>
+            <div id="feeText" style="font-size: 13px; color: var(--dark-green); font-weight: bold; margin-top: 5px;"></div>
+        </div>
+
+        <div id="qrArea" style="display:none;" class="qr-box">
+            <p style="font-size: 12px; font-weight:bold; color: red;">SCAN TO PAY VIA QRPH</p>
+            <img id="qrImage" src="" style="width: 180px; border-radius: 10px;">
+            <input type="text" id="refNo" placeholder="Reference Number (Last 6 digits)" style="margin-top:10px;">
+        </div>
+
+        <button type="button" onclick="showReview()" id="reviewBtn" style="width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer;">REVIEW DETAILS</button>
+    </form>
+</div>
+
+<div id="agreementSection" style="display:none; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--orange-yellow);">
+    <h2 style="color: var(--dark-green); margin-top: 0;">Review Your Details</h2>
+    <div id="summaryContent" style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+        </div>
+
+    <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; height: 150px; overflow-y: scroll; font-size: 11px; color: #555; background: #fff;">
+        <h4 style="margin-top: 0;">Terms and Conditions & Privacy Policy</h4>
+        <p>1. Ang bawat transaction ay may kaakibat na 1% service fee.</p>
+        <p>2. Siguraduhin na tama ang Account Number/Mobile Number na ibinigay. Hindi pananagutan ng <strong>Flavi Deal</strong> ang maling input ng customer.</p>
+        <p>3. Para sa Cash Out, kailangang mag-upload ng valid proof of transaction.</p>
+        <p>4. Privacy Policy: Ang iyong impormasyon ay gagamitin lamang para sa pag-proseso ng iyong transaction at hindi ibabahagi sa iba.</p>
+    </div>
+
+    <div style="margin-top: 20px; display: flex; align-items: flex-start; gap: 10px;">
+        <input type="checkbox" id="agreeCheckbox" style="width: 20px; height: 20px;" onchange="toggleFinalSubmit()">
+        <label for="agreeCheckbox" style="font-size: 13px; cursor: pointer; text-transform: none;">I have reviewed my details and I agree to the <strong>Terms & Conditions</strong> and <strong>Privacy Policy</strong>.</label>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 20px;">
+        <button onclick="backToForm()" style="padding: 15px; border: 1px solid #ccc; border-radius: 10px; background: white; cursor: pointer;">EDIT</button>
+        <button id="finalSubmitBtn" onclick="submitFinalData()" disabled style="padding: 15px; border: none; border-radius: 10px; background: var(--dark-green); color: var(--orange-yellow); font-weight: bold; cursor: pointer; opacity: 0.5;">SUBMIT & GET NUMBER</button>
+    </div>
+</div>
+    
     <div id="result">
         <h2 style="color: var(--dark-green);">THANK YOU!</h2>
         <p>Your Priority Number is:</p>
@@ -199,6 +220,77 @@
             document.getElementById('qNum').innerText = data.queueNumber;
         });
     });
+
+    // Function para ipakita ang Review Page
+function showReview() {
+    // Validation: Siguraduhing may laman ang required fields
+    if(!document.getElementById('custName').value || !document.getElementById('amount').value) {
+        alert("Pakisagutan ang lahat ng required fields.");
+        return;
+    }
+
+    const name = document.getElementById('custName').value;
+    const amount = document.getElementById('amount').value;
+    const fee = amount * 0.01;
+    const total = parseFloat(amount) + fee;
+    const acc = document.getElementById('accNo') ? document.getElementById('accNo').value : "N/A";
+
+    let summaryHtml = `
+        <strong>Service:</strong> ${currentService}<br>
+        <strong>Type:</strong> ${currentType}<br>
+        <strong>Customer:</strong> ${name}<br>
+        <strong>Account:</strong> ${acc}<br>
+        <hr style="border: 0; border-top: 1px dashed #ccc;">
+        <strong>Amount:</strong> P${parseFloat(amount).toLocaleString()}<br>
+        <strong>Service Fee (1%):</strong> P${fee.toLocaleString()}<br>
+        <strong style="color: var(--dark-green); font-size: 16px;">Total to Pay: P${total.toLocaleString()}</strong>
+    `;
+
+    document.getElementById('summaryContent').innerHTML = summaryHtml;
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('agreementSection').style.display = 'block';
+}
+
+function backToForm() {
+    document.getElementById('agreementSection').style.display = 'none';
+    document.getElementById('formSection').style.display = 'block';
+}
+
+function toggleFinalSubmit() {
+    const isChecked = document.getElementById('agreeCheckbox').checked;
+    const btn = document.getElementById('finalSubmitBtn');
+    btn.disabled = !isChecked;
+    btn.style.opacity = isChecked ? "1" : "0.5";
+}
+
+// Ang final submission function
+function submitFinalData() {
+    const btn = document.getElementById('finalSubmitBtn');
+    btn.innerText = "PROCESSING...";
+    btn.disabled = true;
+
+    const payload = {
+        name: document.getElementById('custName').value,
+        service: currentService,
+        type: currentType,
+        account: document.getElementById('accNo').value,
+        amount: document.getElementById('amount').value,
+        extra: document.getElementById('extra') ? document.getElementById('extra').value : ""
+    };
+
+    fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('agreementSection').style.display = 'none';
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('qNum').innerText = data.queueNumber;
+    })
+    .catch(err => {
+        alert("Error sending data. Please try again.");
+        btn.innerText = "SUBMIT & GET NUMBER";
+        btn.disabled = false;
+    });
+}
 </script>
 </body>
 </html>
