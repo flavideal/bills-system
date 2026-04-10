@@ -156,70 +156,97 @@
     }
 
     function renderInputs(mode) {
-        const container = document.getElementById('dynamicInputs');
-        let html = `<div class="field-group"><label>Customer Name / Code</label><input type="text" id="custName" required></div>`;
+    const container = document.getElementById('dynamicInputs');
+    let html = "";
 
-        if (currentService === 'GCASH' || currentService === 'MAYA') {
-    if (mode === 'Cash In') {
-        html += `
-            <div class="field-group">
-                <label>Customer Full Name (Ikaw)</label>
-                <input type="text" id="custName" placeholder="Juan Dela Cruz" required>
-            </div>
-            <div class="field-group">
-                <label>${currentService} Number (Saan ipapadala)</label>
-                <input type="number" id="accNo" placeholder="09123456789" required>
-            </div>
-            <div class="field-group">
-                <label>${currentService} Name (Name sa App)</label>
-                <input type="text" id="accName" placeholder="Ju_an De_cz" required>
-            </div>
-            <div class="field-group">
-                <label>Fee Option</label>
-                <select id="feeOption" onchange="updateTotal()" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;">
-                    <option value="add">Add-on (Magbabayad ng Fee)</option>
-                    <option value="deduct">Deduct (Bawas sa Amount)</option>
-                </select>
-            </div>
-            <div class="field-group">
-                <label>Pera ng Customer (Para sa Sukli)</label>
-                <input type="number" id="cashReceived" placeholder="Magkano inabot na pera?" oninput="updateTotal()">
-            </div>
+    // CASE 1: GCASH
+    if (currentService === 'GCASH') {
+        if (mode === 'Cash In') {
+            html = `
+                <div class="field-group"><label>Customer Full Name</label><input type="text" id="custName" placeholder="Juan Dela Cruz" required></div>
+                <div class="field-group"><label>GCash Number (Saan ipapadala)</label><input type="number" id="accNo" placeholder="09123456789" required></div>
+                <div class="field-group"><label>GCash Name (Name sa App)</label><input type="text" id="accName" placeholder="Ju_an De_cz" required></div>
+                <div class="field-group">
+                    <label>Fee Option</label>
+                    <select id="feeOption" onchange="updateTotal()" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;">
+                        <option value="add">Add-on (Magbabayad ng Fee)</option>
+                        <option value="deduct">Deduct (Bawas sa Amount)</option>
+                    </select>
+                </div>
+                <div class="field-group"><label>Pera na Inabot (Para sa Sukli)</label><input type="number" id="cashReceived" placeholder="Magkano ang pera?" oninput="updateTotal()"></div>
+            `;
+        } else { // Cash Out
+            html = `
+                <div class="field-group"><label>Customer Full Name</label><input type="text" id="custName" required></div>
+                <div class="field-group"><label>GCash Number (Saan galing)</label><input type="number" id="accNo" required></div>
+                <div class="field-group"><label>Reference Number (Last 6 digits)</label><input type="text" id="refNoInput" required></div>
+            `;
+        }
+    }
+
+    // CASE 2: MAYA
+    else if (currentService === 'MAYA') {
+        if (mode === 'Cash In') {
+            html = `
+                <div class="field-group"><label>Customer Full Name</label><input type="text" id="custName" required></div>
+                <div class="field-group"><label>Maya Mobile Number</label><input type="number" id="accNo" required></div>
+                <div class="field-group"><label>Maya Account Name</label><input type="text" id="accName" required></div>
+                <div class="field-group">
+                    <label>Fee Option</label>
+                    <select id="feeOption" onchange="updateTotal()" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;">
+                        <option value="add">Add-on</option>
+                        <option value="deduct">Deduct</option>
+                    </select>
+                </div>
+            `;
+        } else { // Cash Out
+            html = `
+                <div class="field-group"><label>Customer Full Name</label><input type="text" id="custName" required></div>
+                <div class="field-group"><label>Maya Number</label><input type="number" id="accNo" required></div>
+                <div class="field-group"><label>Maya Reference No.</label><input type="text" id="refNoInput" required></div>
+            `;
+        }
+    }
+
+    // CASE 3: ANECO
+    else if (currentService === 'ANECO') {
+        html = `
+            <div class="field-group"><label>Account Name</label><input type="text" id="custName" required></div>
+            <div class="field-group"><label>Account Number</label><input type="text" id="accNo" required></div>
+            <div class="field-group"><label>Meter Number</label><input type="text" id="extra" required></div>
         `;
-    } else {
-        // Ito naman ang para sa Cash Out
-        html += `
+    }
+
+    // CASE 4: PALAWAN
+    else if (currentService === 'PALAWAN') {
+        html = `
+            <div class="field-group"><label>Sender/Receiver Name</label><input type="text" id="custName" required></div>
+            <div class="field-group"><label>Mobile Number</label><input type="number" id="accNo" required></div>
+            <div class="field-group"><label>Palawan Details (Code or Receiver)</label><input type="text" id="extra" required></div>
+        `;
+    }
+
+    // DEFAULT
+    else {
+        html = `
             <div class="field-group"><label>Customer Name</label><input type="text" id="custName" required></div>
-            <div class="field-group"><label>${currentService} Number</label><input type="number" id="accNo" required></div>
+            <div class="field-group"><label>Account/Mobile Number</label><input type="number" id="accNo" required></div>
         `;
     }
-}
-        } else if (currentService === 'ANECO') {
-            html += `
-                <div class="field-group"><label>Account Number</label><input type="text" id="accNo" required></div>
-                <div class="field-group"><label>Meter Number</label><input type="text" id="extra" required></div>
-            `;
-        } else if (currentService === 'PALAWAN') {
-            html += `
-                <div class="field-group"><label>Receiver Name</label><input type="text" id="extra" required></div>
-                <div class="field-group"><label>Mobile Number</label><input type="number" id="accNo" required></div>
-            `;
-        } else {
-            html += `<div class="field-group"><label>Account/Mobile Number</label><input type="number" id="accNo" required></div>`;
-        }
 
-        container.innerHTML = html;
-        
-        // Show QR area only for Cash Out
-        const qr = document.getElementById('qrArea');
-        if (mode === 'Cash Out') {
-            qr.style.display = 'block';
-            document.getElementById('qrImage').src = (currentService === 'GCASH') ? 'YOUR_GCASH_QR_LINK' : 'YOUR_MAYA_QR_LINK';
-        } else {
-            qr.style.display = 'none';
-        }
-        updateTotal();
+    container.innerHTML = html;
+
+    // QR Logic (Para sa Cash Out lang)
+    const qr = document.getElementById('qrArea');
+    if (mode === 'Cash Out' && (currentService === 'GCASH' || currentService === 'MAYA')) {
+        qr.style.display = 'block';
+        document.getElementById('qrImage').src = (currentService === 'GCASH') ? 'YOUR_GCASH_QR_LINK' : 'YOUR_MAYA_QR_LINK';
+    } else {
+        qr.style.display = 'none';
     }
+    
+    updateTotal();
+}
 
     function updateTotal() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
@@ -267,13 +294,16 @@
         btn.disabled = true;
 
         const payload = {
-            name: document.getElementById('custName').value,
-            service: currentService,
-            type: currentType,
-            account: document.getElementById('accNo').value,
-            amount: document.getElementById('amount').value,
-            extra: document.getElementById('extra') ? document.getElementById('extra').value : ""
-        };
+    name: document.getElementById('custName').value,
+    service: currentService,
+    type: currentType,
+    account: document.getElementById('accNo').value,
+    amount: document.getElementById('amount').value,
+    // Kunin ang extra name o meter number kung meron
+    accName: document.getElementById('accName') ? document.getElementById('accName').value : "",
+    extra: document.getElementById('extra') ? document.getElementById('extra').value : "",
+    refNo: document.getElementById('refNoInput') ? document.getElementById('refNoInput').value : ""
+};
 
         fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) })
         .then(res => res.json())
