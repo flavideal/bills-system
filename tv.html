@@ -3,31 +3,86 @@
 <head>
     <title>NOW SERVING</title>
     <style>
-        body { background-color: #1a1a1a; color: white; font-family: Arial; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; margin: 0; }
-        .label { font-size: 5vw; color: #ffcc00; }
-        .number { font-size: 30vw; font-weight: bold; line-height: 1; }
-        .brand { font-size: 3vw; margin-top: 20px; color: #666; }
+        body { background-color: #1a1a1a; color: white; font-family: Arial; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        .label { font-size: 5vw; color: #ffcc00; text-transform: uppercase; letter-spacing: 5px; }
+        .number { font-size: 35vw; font-weight: bold; line-height: 1; color: #ffffff; text-shadow: 0 0 50px rgba(255,204,0,0.3); }
+        .brand { font-size: 3vw; margin-top: 20px; color: #666; font-style: italic; }
+        #status { font-size: 1.5vw; color: #444; position: fixed; bottom: 10px; right: 10px; }
     </style>
 </head>
 <body>
-    <div class="label">NOW SERVING</div>
+    <div class="label">Now Serving</div>
     <div class="number" id="serving">--</div>
     <div class="brand">FLAVIDEAL BILLS PAYMENT</div>
+    <div id="status">System Active</div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec'; // I-paste ang URL dito
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec';
+        let lastNumber = "--";
+
+        function speak(text) {
+            // Text-to-Speech Logic
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // Pwedeng 'en-PH' kung supported ng TV mo
+            utterance.rate = 0.9;      // Bagalan nang konti para malinaw
+            utterance.pitch = 1; 
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function playChime() {
+            // Audio context para sa "Ding-dong" sound
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // Note A4
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.1);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 1);
+        }
 
         function updateTV() {
             fetch(scriptURL)
                 .then(res => res.json())
                 .then(data => {
-                    document.getElementById('serving').innerText = data.nowServing;
+                    let currentNum = data.nowServing.toString();
+
+                    // I-check kung nagbago ang number
+                    if (currentNum !== lastNumber && currentNum !== "") {
+                        document.getElementById('serving').innerText = currentNum;
+                        
+                        // Action pag may bagong number
+                        playChime();
+                        
+                        // Hintayin sandali bago magsalita pagkatapos ng chime
+                        setTimeout(() => {
+                            speak("Now serving, number " + currentNum);
+                        }, 1000);
+
+                        lastNumber = currentNum;
+                    }
                 })
-                .catch(err => console.log(err));
+                .catch(err => {
+                    console.log("Error fetching data:", err);
+                    document.getElementById('status').innerText = "Reconnecting...";
+                });
         }
 
-        // Mag-a-update ang TV bawat 5 segundo
-        setInterval(updateTV, 5000);
+        // Importante: Ang mga browser ay nangangailangan ng "User Interaction" bago tumunog.
+        // Pag-load ng page sa TV, i-click mo kahit saan sa screen para ma-enable ang sound/speech.
+        window.onclick = function() {
+            speak("System Ready");
+            document.getElementById('status').innerText = "Audio Enabled";
+        };
+
+        setInterval(updateTV, 4000); // 4 seconds interval
         updateTV();
     </script>
 </body>
