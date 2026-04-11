@@ -261,14 +261,22 @@
     finalBreakdown.innerHTML = breakdownHTML;
 
     // 3. QR Update para sa Cash Out
-    if(currentMode === 'Cash Out') {
-        document.getElementById('qrReviewArea').style.display = 'block';
-        document.getElementById('qrInstructionReview').innerText = (feeOption === 'add') 
-            ? `Paki-send ang P${total.toFixed(2)}` 
-            : `Paki-send ang P${amt.toFixed(2)}`;
+if(currentMode === 'Cash Out') {
+    document.getElementById('qrReviewArea').style.display = 'block';
+    
+    if(feeOption === 'add') {
+        // Customer sends Amount + Fee
+        document.getElementById('qrInstructionReview').innerHTML = 
+            `Paki-send ang <b>P${total.toFixed(2)}</b> para makuha ang buong P${amt.toFixed(2)}`;
     } else {
-        document.getElementById('qrReviewArea').style.display = 'none';
+        // Deduct: Customer sends Amount, but receives Amount - Fee
+        const amountToReceive = amt - fee;
+        document.getElementById('qrInstructionReview').innerHTML = 
+            `Paki-send ang <b>P${amt.toFixed(2)}</b><br><span style="color:blue;">Amount to Receive: P${amountToReceive.toFixed(2)}</span>`;
     }
+} else {
+    document.getElementById('qrReviewArea').style.display = 'none';
+}
 }
 </script>
 
