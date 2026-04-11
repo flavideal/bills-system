@@ -15,13 +15,12 @@
         .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .mode-btn { padding: 15px; border: 2px solid #eee; border-radius: 10px; text-align: center; cursor: pointer; font-weight: bold; }
         .mode-btn.active { background: var(--dark-green); color: white; border-color: var(--dark-green); }
-        .qr-box { background: #fff9e6; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 15px; border: 1px dashed var(--orange-yellow); }
+        .qr-box { background: #fff9e6; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 15px; border: 2px solid var(--dark-green); }
         .back-btn { background: none; border: none; color: var(--dark-green); font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-        
-        /* Sukli Section Style */
         .cash-logic-box { background: #fdfdfd; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-top: 10px; }
         .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 10px; font-weight: bold; color: var(--dark-green); }
         .sukli-display { font-size: 18px; font-weight: 900; color: #d32f2f; margin-top: 5px; }
+        .note { font-size: 12px; color: #d32f2f; font-weight: bold; margin-bottom: 10px; text-align: center; }
     </style>
 </head>
 <body>
@@ -37,14 +36,18 @@
             <div id="btnOut" class="mode-btn" onclick="setMode('Cash Out')">CASH OUT</div>
         </div>
 
-        <div id="qrArea" class="qr-box" style="display: none;">
-            <p style="font-weight: bold; color: red; margin: 0;">SCAN TO PAY VIA QRPH</p>
-            <img src="YOUR_GCASH_QR_URL" style="width: 180px; margin-top: 10px; border-radius: 10px;">
+        <div id="outNote" class="note" style="display: none;">
+            PAUNAWA: I-scan ang QR Code at i-send ang tamang halaga bago i-submit.
         </div>
 
         <div class="field-group">
-            <label id="nameLabel">Customer Full Name</label>
-            <input type="text" id="custName" placeholder="Juan Dela Cruz o J***N D. C**Z">
+            <label id="nameLabel">Sender Name (Personally Transacting)</label>
+            <input type="text" id="custName" placeholder="Pangalan ng nag-abot ng pera">
+        </div>
+
+        <div class="field-group">
+            <label id="accLabel">GCash Account Name</label>
+            <input type="text" id="accName" placeholder="Juan Dela Cruz o J***N D. C**Z">
         </div>
 
         <div class="field-group">
@@ -53,31 +56,41 @@
         </div>
 
         <div class="field-group">
-            <label>Fee Option</label>
+            <label>Amount</label>
+            <input type="number" id="amount" placeholder="0.00" oninput="calculateFee()">
+        </div>
+
+        <div class="field-group">
+            <label id="feeOptLabel">Fee Option</label>
             <select id="feeOption" onchange="calculateFee()">
                 <option value="add">ADD-ON (Bayad ang Fee sa labas)</option>
                 <option value="deduct">DEDUCT (Bawas sa papasok na amount)</option>
             </select>
         </div>
 
-        <div class="field-group">
-            <label>Amount</label>
-            <input type="number" id="amount" placeholder="0.00" oninput="calculateFee()">
-            
-            <div id="feeBreakdown" style="font-size: 14px; margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 10px; display: none;">
-                </div>
-        </div>
+        <div id="feeBreakdown" style="font-size: 14px; margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 10px; display: none;"></div>
 
         <div id="cashLogicArea" class="cash-logic-box" style="display: none;">
             <label class="checkbox-row">
                 <input type="checkbox" id="isExact" onchange="toggleExact()" style="width: 18px; height: 18px;"> 
                 Sakto ang ibabayad ko (Exact Amount)
             </label>
-            
             <div id="cashInputGroup">
                 <label>Magkano ang cash na iaabot mo?</label>
                 <input type="number" id="cashReceived" placeholder="Amount ng cash" oninput="calculateFee()">
                 <div id="sukliDisplay" class="sukli-display"></div>
+            </div>
+        </div>
+
+        <div id="qrUploadArea" style="display: none; margin-top: 20px;">
+            <div class="qr-box">
+                <p style="font-weight: bold; color: var(--dark-green); margin: 0;">STEP 1: SCAN TO PAY VIA QRPH</p>
+                <img src="YOUR_GCASH_QR_URL" style="width: 180px; margin-top: 10px; border-radius: 10px;">
+                <p id="qrInstruction" style="font-size: 11px; margin-top: 5px; color: #555;"></p>
+            </div>
+            <div class="field-group">
+                <label>Step 2: Upload Proof of Receipt</label>
+                <input type="file" id="proofUpload" accept="image/*" style="padding: 5px; font-size: 12px;">
             </div>
         </div>
 
@@ -93,55 +106,59 @@
         document.getElementById('btnIn').classList.toggle('active', mode === 'Cash In');
         document.getElementById('btnOut').classList.toggle('active', mode === 'Cash Out');
         
-        // Show/Hide QR and change label
-        document.getElementById('qrArea').style.display = (mode === 'Cash Out') ? 'block' : 'none';
-        document.getElementById('nameLabel').innerText = (mode === 'Cash Out') ? "Sender Name" : "Customer Full Name";
-        
-        // Hide cash logic for cash out
-        document.getElementById('cashLogicArea').style.display = (mode === 'Cash In') ? 'block' : 'none';
+        // UI Changes
+        document.getElementById('outNote').style.display = (mode === 'Cash Out') ? 'block' : 'none';
+        document.getElementById('nameLabel').innerText = (mode === 'Cash Out') ? "Sender Name (Sino ang nag-send)" : "Sender Name (Nag-transact personally)";
+        document.getElementById('accLabel').innerText = (mode === 'Cash Out') ? "Receiver GCash Name (Sino ang pinadalhan)" : "Receiver GCash Name";
+        document.getElementById('feeOptLabel').innerText = (mode === 'Cash Out') ? "Kasama na ba ang Fee sa sinend?" : "Fee Option";
         
         calculateFee();
     }
 
     function toggleExact() {
         const isExact = document.getElementById('isExact').checked;
-        const inputGroup = document.getElementById('cashInputGroup');
-        if (isExact) {
-            inputGroup.style.display = 'none';
-            document.getElementById('cashReceived').value = "";
-        } else {
-            inputGroup.style.display = 'block';
-        }
+        document.getElementById('cashInputGroup').style.display = isExact ? 'none' : 'block';
+        if (isExact) document.getElementById('cashReceived').value = "";
         calculateFee();
     }
 
     function calculateFee() {
         const amt = parseFloat(document.getElementById('amount').value) || 0;
         const feeOption = document.getElementById('feeOption').value;
-        const fee = amt * 0.01; // 1%
+        const fee = amt * 0.01;
         const breakdown = document.getElementById('feeBreakdown');
+        const qrArea = document.getElementById('qrUploadArea');
         
         if(amt <= 0) {
             breakdown.style.display = 'none';
             document.getElementById('cashLogicArea').style.display = 'none';
+            qrArea.style.display = 'none';
             return;
         }
 
         breakdown.style.display = 'block';
-        if(currentMode === 'Cash In') document.getElementById('cashLogicArea').style.display = 'block';
-
+        
         let totalToPay = (feeOption === 'add') ? amt + fee : amt;
         let receiveAmt = (feeOption === 'add') ? amt : amt - fee;
+
+        // Cash Out QR Logic
+        if(currentMode === 'Cash Out') {
+            qrArea.style.display = 'block';
+            document.getElementById('cashLogicArea').style.display = 'none';
+            document.getElementById('qrInstruction').innerHTML = (feeOption === 'add') 
+                ? `Paki-send ang <b>P${totalToPay.toFixed(2)}</b> (Kasama na ang Fee)` 
+                : `Paki-send ang <b>P${amt.toFixed(2)}</b> (Ibabawas ang fee sa matatanggap)`;
+        } else {
+            qrArea.style.display = 'none';
+            document.getElementById('cashLogicArea').style.display = 'block';
+        }
 
         breakdown.innerHTML = `
             <div style="display:flex; justify-content: space-between;"><span>Amount:</span> <span>P${amt.toFixed(2)}</span></div>
             <div style="display:flex; justify-content: space-between; color: #d32f2f;"><span>Service Fee (1%):</span> <span>P${fee.toFixed(2)}</span></div>
             <hr style="border: 0; border-top: 1px solid #ddd; margin: 8px 0;">
             <div style="display:flex; justify-content: space-between; font-weight: bold; color: var(--dark-green); font-size: 16px;">
-                <span>TOTAL TO PAY:</span> <span>P${totalToPay.toFixed(2)}</span>
-            </div>
-            <div style="font-size: 11px; color: #666; margin-top: 5px; font-style: italic;">
-                *Ang papasok sa account: P${receiveAmt.toFixed(2)}
+                <span>TOTAL:</span> <span>P${totalToPay.toFixed(2)}</span>
             </div>
         `;
 
@@ -149,27 +166,21 @@
         const cashIn = parseFloat(document.getElementById('cashReceived').value) || 0;
         const isExact = document.getElementById('isExact').checked;
         const sukliDiv = document.getElementById('sukliDisplay');
-
         if (!isExact && cashIn > totalToPay) {
-            let change = cashIn - totalToPay;
-            sukliDiv.innerHTML = "SUKLI: P" + change.toFixed(2);
+            sukliDiv.innerHTML = "SUKLI: P" + (cashIn - totalToPay).toFixed(2);
         } else {
             sukliDiv.innerHTML = "";
         }
     }
 
     function submitForm() {
-        // Validation check
-        const name = document.getElementById('custName').value;
-        const acc = document.getElementById('accNo').value;
-        if(!name || !acc || parseFloat(document.getElementById('amount').value) <= 0) {
+        if(!document.getElementById('custName').value || !document.getElementById('accNo').value) {
             alert("Pakikumpleto ang detalye.");
             return;
         }
-        alert("Transaction for " + currentMode + " submitted! Please wait for your number.");
+        alert("Transaction submitted! Please wait for your priority number.");
     }
 
-    // Default init
     setMode('Cash In');
 </script>
 
