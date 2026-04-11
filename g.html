@@ -43,8 +43,8 @@
             </div>
 
             <div class="field-group">
-                <label id="nameLabel">Sender Name (Personally Transacting)</label>
-                <input type="text" id="custName" placeholder="Pangalan ng nag-abot ng pera">
+                <label id="nameLabel">Customer Name (Personally Transacting)</label>
+                <input type="text" id="custName" placeholder="Pangalan ng Name Nag-transact personally">
             </div>
 
             <div class="field-group">
@@ -144,7 +144,7 @@
         currentMode = mode;
         document.getElementById('btnIn').classList.toggle('active', mode === 'Cash In');
         document.getElementById('btnOut').classList.toggle('active', mode === 'Cash Out');
-        document.getElementById('nameLabel').innerText = (mode === 'Cash Out') ? "Customer Name (Nag-transact personally)" : "Sender Name (Personally Transacting)";
+        document.getElementById('nameLabel').innerText = (mode === 'Cash Out') ? "Customer Name (Personally Transacting)" : "Customer Name (Personally Transacting)";
         document.getElementById('cashLogicArea').style.display = (mode === 'Cash In') ? 'block' : 'none';
         calculateFee();
     }
