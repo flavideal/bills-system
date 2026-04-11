@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GCASH SERVICE | FLAVIDEAL</title>
+    <title>GCASH Service | FLAVIDEAL</title>
     <style>
         :root { --dark-green: #1b431c; --orange-yellow: #ffc267; --bg: #f0f2f5; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 15px; display: flex; justify-content: center; }
@@ -11,89 +11,77 @@
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--dark-green); }
         .field-group { margin-bottom: 15px; }
         label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-transform: uppercase; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; width: 100%; }
-        
-        /* Cash Breakdown Box */
-        .breakdown-box { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-top: 10px; border: 1px solid #eee; }
-        .fee-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
-        .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; color: var(--dark-green); border-top: 1px solid #ddd; padding-top: 8px; margin-top: 8px; }
-        
-        .sukli-box { background: #e6fffa; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: center; border: 1px solid #38a169; }
-        
-        .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .mode-btn { padding: 15px; border: 2px solid #eee; border-radius: 10px; text-align: center; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .mode-btn { padding: 15px; border: 2px solid #eee; border-radius: 10px; text-align: center; cursor: pointer; font-weight: bold; }
         .mode-btn.active { background: var(--dark-green); color: white; border-color: var(--dark-green); }
-        
-        .checkbox-group { display: flex; align-items: center; gap: 10px; background: #fff9e6; padding: 10px; border-radius: 10px; margin-top: 10px; cursor: pointer; }
+        .qr-box { background: #fff9e6; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 15px; border: 1px dashed var(--orange-yellow); }
         .back-btn { background: none; border: none; color: var(--dark-green); font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        
+        /* Sukli Section Style */
+        .cash-logic-box { background: #fdfdfd; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-top: 10px; }
+        .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 10px; font-weight: bold; color: var(--dark-green); }
+        .sukli-display { font-size: 18px; font-weight: 900; color: #d32f2f; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="kiosk-container">
-    <button class="back-btn" onclick="window.location.href='index.html'">← BUMALIK SA MENU</button>
+    <button class="back-btn" onclick="window.location.href='index.html'">← BACK TO MENU</button>
     
-    <div class="card">
-        <h2 style="color: var(--dark-green); margin-top: 0; text-align: center;">GCASH TRANSACTION</h2>
+    <div class="card" id="formCard">
+        <h2 style="color: var(--dark-green); margin-top: 0; text-align: center;">GCASH SERVICE</h2>
         
         <div class="mode-selector">
             <div id="btnIn" class="mode-btn active" onclick="setMode('Cash In')">CASH IN</div>
             <div id="btnOut" class="mode-btn" onclick="setMode('Cash Out')">CASH OUT</div>
         </div>
 
-        <div class="field-group">
-            <label id="nameLabel">Pangalan ng Customer</label>
-            <input type="text" id="custName" placeholder="Ilagay ang Buong Pangalan">
+        <div id="qrArea" class="qr-box" style="display: none;">
+            <p style="font-weight: bold; color: red; margin: 0;">SCAN TO PAY VIA QRPH</p>
+            <img src="YOUR_GCASH_QR_URL" style="width: 180px; margin-top: 10px; border-radius: 10px;">
         </div>
 
         <div class="field-group">
-            <label>GCash Number (11-Digits)</label>
-            <input type="number" id="accNo" placeholder="09xxxxxxxxx" oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11);">
+            <label id="nameLabel">Customer Full Name</label>
+            <input type="text" id="custName" placeholder="Juan Dela Cruz o J***N D. C**Z">
         </div>
 
         <div class="field-group">
-            <label>GCash Account Name (Verified Name)</label>
-            <input type="text" id="accName" placeholder="Kahit may asterisk (ex: J***N D. C**Z)">
+            <label>GCash Number</label>
+            <input type="number" id="accNo" placeholder="09123456789" oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11);">
         </div>
 
         <div class="field-group">
-            <label>Paano ibabawas ang Fee?</label>
-            <select id="feeOption" onchange="calculate()">
-                <option value="add">ADD-ON (Pay fee on top of amount)</option>
-                <option value="deduct">DEDUCT (Bawas sa amount na papasok)</option>
+            <label>Fee Option</label>
+            <select id="feeOption" onchange="calculateFee()">
+                <option value="add">ADD-ON (Bayad ang Fee sa labas)</option>
+                <option value="deduct">DEDUCT (Bawas sa papasok na amount)</option>
             </select>
         </div>
 
         <div class="field-group">
-            <label>Magkano ang Amount?</label>
-            <input type="number" id="amount" placeholder="0.00" oninput="calculate()">
+            <label>Amount</label>
+            <input type="number" id="amount" placeholder="0.00" oninput="calculateFee()">
+            
+            <div id="feeBreakdown" style="font-size: 14px; margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 10px; display: none;">
+                </div>
         </div>
 
-        <div id="breakdownArea" class="breakdown-box" style="display: none;">
-            <div class="fee-row"><span>Principal Amount:</span> <span id="displayAmt">P0.00</span></div>
-            <div class="fee-row" style="color: #d32f2f;"><span>Service Fee (1%):</span> <span id="displayFee">P0.00</span></div>
-            <div class="total-row"><span>TOTAL NA BABAYARAN:</span> <span id="displayTotal">P0.00</span></div>
+        <div id="cashLogicArea" class="cash-logic-box" style="display: none;">
+            <label class="checkbox-row">
+                <input type="checkbox" id="isExact" onchange="toggleExact()" style="width: 18px; height: 18px;"> 
+                Sakto ang ibabayad ko (Exact Amount)
+            </label>
             
-            <div id="papasokText" style="font-size: 11px; color: #666; font-style: italic; margin-top: 5px;"></div>
-
-            <div id="cashInFields">
-                <label class="checkbox-group">
-                    <input type="checkbox" id="isExact" onchange="toggleExact()" style="width: 20px; height: 20px;">
-                    <span>Sakto ang pera ko (Exact Amount)</span>
-                </label>
-
-                <div id="cashInputGroup" style="margin-top: 15px;">
-                    <label>Magkano ang iaabot mong Cash?</label>
-                    <input type="number" id="cashReceived" placeholder="Halimbawa: 1000" oninput="calculate()">
-                    
-                    <div id="sukliDisplay" class="sukli-box" style="display: none;">
-                        <strong id="sukliText" style="color: #1b431c; font-size: 16px;">SUKLI: P0.00</strong>
-                    </div>
-                </div>
+            <div id="cashInputGroup">
+                <label>Magkano ang cash na iaabot mo?</label>
+                <input type="number" id="cashReceived" placeholder="Amount ng cash" oninput="calculateFee()">
+                <div id="sukliDisplay" class="sukli-display"></div>
             </div>
         </div>
 
-        <button onclick="submitForm()" style="width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px;">I-SUBMIT TRANSACTION</button>
+        <button onclick="submitForm()" style="width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px;">SUBMIT TRANSACTION</button>
     </div>
 </div>
 
@@ -105,68 +93,84 @@
         document.getElementById('btnIn').classList.toggle('active', mode === 'Cash In');
         document.getElementById('btnOut').classList.toggle('active', mode === 'Cash Out');
         
-        // Hide cash-in specific fields if Cash Out
-        document.getElementById('cashInFields').style.display = (mode === 'Cash In') ? 'block' : 'none';
-        document.getElementById('nameLabel').innerText = (mode === 'Cash Out') ? "Sender Name (Sino ang nag-send)" : "Pangalan ng Customer";
+        // Show/Hide QR and change label
+        document.getElementById('qrArea').style.display = (mode === 'Cash Out') ? 'block' : 'none';
+        document.getElementById('nameLabel').innerText = (mode === 'Cash Out') ? "Sender Name" : "Customer Full Name";
         
-        calculate();
+        // Hide cash logic for cash out
+        document.getElementById('cashLogicArea').style.display = (mode === 'Cash In') ? 'block' : 'none';
+        
+        calculateFee();
     }
 
     function toggleExact() {
         const isExact = document.getElementById('isExact').checked;
         const inputGroup = document.getElementById('cashInputGroup');
-        const cashInput = document.getElementById('cashReceived');
-        
         if (isExact) {
-            inputGroup.style.opacity = "0.5";
-            cashInput.disabled = true;
-            cashInput.value = ""; 
+            inputGroup.style.display = 'none';
+            document.getElementById('cashReceived').value = "";
         } else {
-            inputGroup.style.opacity = "1";
-            cashInput.disabled = false;
+            inputGroup.style.display = 'block';
         }
-        calculate();
+        calculateFee();
     }
 
-    function calculate() {
+    function calculateFee() {
         const amt = parseFloat(document.getElementById('amount').value) || 0;
         const feeOption = document.getElementById('feeOption').value;
-        const fee = amt * 0.01;
+        const fee = amt * 0.01; // 1%
+        const breakdown = document.getElementById('feeBreakdown');
         
-        if (amt <= 0) {
-            document.getElementById('breakdownArea').style.display = 'none';
+        if(amt <= 0) {
+            breakdown.style.display = 'none';
+            document.getElementById('cashLogicArea').style.display = 'none';
             return;
         }
 
-        document.getElementById('breakdownArea').style.display = 'block';
-        
-        let totalToPay = (feeOption === 'add') ? amt + fee : amt;
-        let papasok = (feeOption === 'add') ? amt : amt - fee;
+        breakdown.style.display = 'block';
+        if(currentMode === 'Cash In') document.getElementById('cashLogicArea').style.display = 'block';
 
-        // Display labels
-        document.getElementById('displayAmt').innerText = "P" + amt.toFixed(2);
-        document.getElementById('displayFee').innerText = "+ P" + fee.toFixed(2);
-        document.getElementById('displayTotal').innerText = "P" + totalToPay.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('papasokText').innerText = `*Ang papasok sa account: P${papasok.toFixed(2)}`;
+        let totalToPay = (feeOption === 'add') ? amt + fee : amt;
+        let receiveAmt = (feeOption === 'add') ? amt : amt - fee;
+
+        breakdown.innerHTML = `
+            <div style="display:flex; justify-content: space-between;"><span>Amount:</span> <span>P${amt.toFixed(2)}</span></div>
+            <div style="display:flex; justify-content: space-between; color: #d32f2f;"><span>Service Fee (1%):</span> <span>P${fee.toFixed(2)}</span></div>
+            <hr style="border: 0; border-top: 1px solid #ddd; margin: 8px 0;">
+            <div style="display:flex; justify-content: space-between; font-weight: bold; color: var(--dark-green); font-size: 16px;">
+                <span>TOTAL TO PAY:</span> <span>P${totalToPay.toFixed(2)}</span>
+            </div>
+            <div style="font-size: 11px; color: #666; margin-top: 5px; font-style: italic;">
+                *Ang papasok sa account: P${receiveAmt.toFixed(2)}
+            </div>
+        `;
 
         // Sukli Logic
+        const cashIn = parseFloat(document.getElementById('cashReceived').value) || 0;
         const isExact = document.getElementById('isExact').checked;
-        const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
         const sukliDiv = document.getElementById('sukliDisplay');
 
-        if (!isExact && cashReceived > totalToPay) {
-            let sukli = cashReceived - totalToPay;
-            sukliDiv.style.display = 'block';
-            document.getElementById('sukliText').innerText = "SUKLI: P" + sukli.toFixed(2);
+        if (!isExact && cashIn > totalToPay) {
+            let change = cashIn - totalToPay;
+            sukliDiv.innerHTML = "SUKLI: P" + change.toFixed(2);
         } else {
-            sukliDiv.style.display = 'none';
+            sukliDiv.innerHTML = "";
         }
     }
 
     function submitForm() {
-        // I-add dito ang validation at fetch
-        alert("Salamat! Maaring kunin ang iyong priority number.");
+        // Validation check
+        const name = document.getElementById('custName').value;
+        const acc = document.getElementById('accNo').value;
+        if(!name || !acc || parseFloat(document.getElementById('amount').value) <= 0) {
+            alert("Pakikumpleto ang detalye.");
+            return;
+        }
+        alert("Transaction for " + currentMode + " submitted! Please wait for your number.");
     }
+
+    // Default init
+    setMode('Cash In');
 </script>
 
 </body>
