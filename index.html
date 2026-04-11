@@ -97,39 +97,62 @@
     let currentType = "";
 
     // DITO MO I-EEDIT ANG LAMAN NG BAWAT SERVICE PARA HINDI MAHABANG CODE
-    const serviceConfig = {
+   const serviceConfig = {
     'GCASH': {
         mInLabel: "CASH IN",
         mOutLabel: "CASH OUT",
+        feeType: 'percent', // 1% calculation
+        rate: 0.01,
+        feeLabel: "Service Fee",
         fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
-        terms: "1. 1% fee applies. 2. Verify number carefully.",
+        terms: "1. 1% service fee applies. 2. Verify number carefully.",
         accLabel: "GCash Number",
         nameLabel: "GCash Name"
     },
     'MAYA': {
         mInLabel: "CASH IN",
         mOutLabel: "CASH OUT",
+        feeType: 'percent', // 1% calculation
+        rate: 0.01,
+        feeLabel: "Service Fee",
         fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
-        terms: "1. 1% fee applies. 2. Maya processing rules apply.",
+        terms: "1. 1% service fee applies. 2. Maya processing rules apply.",
         accLabel: "Maya Number",
         nameLabel: "Maya Name"
     },
     'PALAWAN': {
         mInLabel: "PADALA",
         mOutLabel: "CLAIM",
+        feeType: 'percent', // 1% calculation
+        rate: 0.01,
+        feeLabel: "Service Charge",
         fields: ['custName', 'accNo', 'extra', 'amount'],
-        terms: "1. Standard Palawan rates apply. 2. Present valid ID for claims.",
+        terms: "1. 1% Service Charge applies. 2. Present valid ID for claims.",
         accLabel: "Mobile Number",
         extraLabel: "Receiver Name / Code"
     },
     'ANECO': {
+        feeType: 'min-percent', // P10 minimum or 1% logic
+        rate: 0.01,
+        min: 10,
+        feeLabel: "Convenience Fee",
         fields: ['custName', 'accNo', 'extra', 'amount'],
-        terms: "1. P15 Convenience Fee.",
+        terms: "1. P10 Minimum Convenience Fee or 1% for higher amounts.",
+        accLabel: "Account Number",
+        extraLabel: "Meter Number"
+    },
+    'WATER': { // Idinagdag ko na rin ito dahil nabanggit mo
+        feeType: 'min-percent',
+        rate: 0.01,
+        min: 10,
+        feeLabel: "Convenience Fee",
+        fields: ['custName', 'accNo', 'extra', 'amount'],
+        terms: "1. P10 Minimum Convenience Fee applies.",
         accLabel: "Account Number",
         extraLabel: "Meter Number"
     }
 };
-
+    
     function initForm(service) {
     currentService = service;
     const config = serviceConfig[service];
@@ -234,23 +257,38 @@
 }
 
     function updateTotal() {
-        const amt = parseFloat(document.getElementById('amount')?.value) || 0;
-        const fee = amt * 0.01; 
-        const option = document.getElementById('feeOption')?.value || 'add';
-        const cashReceived = parseFloat(document.getElementById('cashReceived')?.value) || 0;
-        
-        let totalToPay = (option === 'add') ? amt + fee : amt;
-        let feeDisplay = `Total to Give: P${totalToPay.toLocaleString()}`;
-        
-        if (cashReceived > 0) {
-            let change = cashReceived - totalToPay;
-            feeDisplay += (change >= 0) ? ` | Sukli: P${change.toLocaleString()}` : ` | Kulang: P${Math.abs(change).toLocaleString()}`;
-        }
+    const amt = parseFloat(document.getElementById('amount')?.value) || 0;
+    const config = serviceConfig[currentService];
+    let fee = 0;
 
-        const feeDiv = document.getElementById('feeText');
-        if (feeDiv) feeDiv.innerText = feeDisplay;
+    if (config.feeType === 'percent') {
+        // GCash, Maya, Palawan (Straight 1%)
+        fee = amt * config.rate;
+    } 
+    else if (config.feeType === 'min-percent') {
+        // Aneco, Water (P10 Minimum or 1%)
+        let computedFee = amt * config.rate;
+        fee = Math.max(config.min, computedFee); 
+        // Math.max ang kukuha kung alin ang mas mataas sa P10 o sa 1%
     }
 
+    const option = document.getElementById('feeOption')?.value || 'add';
+    const cashReceived = parseFloat(document.getElementById('cashReceived')?.value) || 0;
+    
+    let totalToPay = (option === 'add') ? amt + fee : amt;
+    
+    // UI Display
+    let feeDisplay = `${config.label}: P${fee.toFixed(2)} | Total: P${totalToPay.toLocaleString()}`;
+    
+    if (cashReceived > 0) {
+        let change = cashReceived - totalToPay;
+        feeDisplay += (change >= 0) ? ` | Sukli: P${change.toFixed(2)}` : ` | Kulang: P${Math.abs(change).toFixed(2)}`;
+    }
+
+    const feeDiv = document.getElementById('feeText');
+    if (feeDiv) feeDiv.innerText = feeDisplay;
+}
+    
     function handleExactAmount() {
         const isExact = document.getElementById('isExact').checked;
         if (isExact) {
