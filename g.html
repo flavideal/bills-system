@@ -23,12 +23,12 @@
         
         /* Review & Success Screens */
         .overlay-screen { 
-    display: none; 
+    display: none; /* Walang !important dapat dito */
     position: absolute; 
     top: 0; 
     left: 0; 
     width: 100%; 
-    min-height: 100%; /* Ginawang min-height para sumakop sa buong card */
+    min-height: 100%;
     background: white; 
     border-radius: 20px; 
     padding: 25px; 
@@ -64,8 +64,6 @@
     border-radius: 8px;
     display: none;
 }
-
-#stepReview, #stepSuccess { display: none !important; }
     </style>
 </head>
 <body>
@@ -319,7 +317,6 @@ setMode('Cash In');
     const acc = document.getElementById('accNo').value;
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     
-    // Kunin ang fee at total para sa validation
     const fee = amt * 0.01;
     const totalWithFee = amt + fee;
 
@@ -328,7 +325,6 @@ setMode('Cash In');
         return; 
     }
 
-    // VALIDATION: Strict Amount Check para sa Cash In
     if (currentMode === 'Cash In' && !document.getElementById('isExact').checked) {
         const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
         if (cashReceived < totalWithFee) {
@@ -337,7 +333,6 @@ setMode('Cash In');
         }
     }
 
-    // ... (itutuloy ang rest ng showReview logic mo dito)
     let reviewHTML = `
         <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
         <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
@@ -351,18 +346,22 @@ setMode('Cash In');
                 <option value="deduct">DEDUCT (Bawas sa amount)</option>
             </select>
         </div>
-
-        <div id="finalBreakdown" style="margin-top:10px; border-top: 1px dashed #ccc; padding-top:10px;">
-        </div>
+        <div id="finalBreakdown" style="margin-top:10px; border-top: 1px dashed #ccc; padding-top:10px;"></div>
     `;
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
-    document.getElementById('stepReview').style.display = 'block';
+    
+    // ITO ANG MAHALAGA: Force display using style.setProperty
+    const reviewScreen = document.getElementById('stepReview');
+    reviewScreen.style.setProperty('display', 'block', 'important'); 
+    
     updateReviewTotal();
 }
 
     
-    function hideReview() { document.getElementById('stepReview').style.display = 'none'; }
+    function hideReview() { 
+    document.getElementById('stepReview').style.setProperty('display', 'none', 'important'); 
+}
 
     
     
