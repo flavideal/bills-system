@@ -405,34 +405,31 @@ setMode('Cash In');
 
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPv2LNrdz1NojYc7lbFfiHZNM0tkoP0bBIG0mar6cGrNg6wP_QcVMJSq7_zxVmX8rj/exec";
 
-    fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "no-cors", 
-        cache: "no-cache",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-    })
-    .then(() => {
-        // SUCCESS UI UPDATE
-        myQueueNumber = generatedNum; 
-        localStorage.setItem('savedQueueNumber', myQueueNumber);
-        localStorage.setItem('isWaiting', 'true');
+    // PALITAN MO ITONG FETCH BLOCK NA ITO:
+fetch(WEB_APP_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" }, // Gamitin ang text/plain para iwas CORS error sa Apps Script
+    body: JSON.stringify(formData)
+})
+.then(response => {
+    // Ngayon makakakuha na tayo ng totoong feedback
+    myQueueNumber = generatedNum; 
+    localStorage.setItem('savedQueueNumber', myQueueNumber);
+    localStorage.setItem('isWaiting', 'true');
 
-        document.getElementById('numberDisplay').innerText = myQueueNumber;
-        
-        // Gamitin ang style.display para sigurado
-        document.getElementById('stepReview').style.display = 'none';
-        document.getElementById('stepForm').style.display = 'none';
-        document.getElementById('stepSuccess').style.display = 'block';
-        
-        statusInterval = setInterval(checkMyStatus, 5000);
-    })
-    .catch(err => {
-        console.error("Fetch error:", err);
-        alert("Connection error. Pero i-check ang GSheet kung pumasok ang data.");
-        btn.innerText = "GET A NUMBER";
-        btn.disabled = false;
-    });
+    document.getElementById('numberDisplay').innerText = myQueueNumber;
+    document.getElementById('stepReview').style.display = 'none';
+    document.getElementById('stepForm').style.display = 'none';
+    document.getElementById('stepSuccess').style.display = 'block';
+    
+    statusInterval = setInterval(checkMyStatus, 5000);
+})
+.catch(err => {
+    console.error("Fetch error:", err);
+    alert("May error sa pag-send. Pakicheck ang internet connection.");
+    btn.innerText = "GET A NUMBER";
+    btn.disabled = false;
+});
 }
     
     function finishTransaction() {
