@@ -345,6 +345,7 @@ setMode('Cash In');
     
     function hideReview() { document.getElementById('stepReview').style.display = 'none'; }
 
+    
     async function generateNumber() {
     if(!document.getElementById('termsAgree').checked) { 
         alert("Please agree to the terms."); 
@@ -354,7 +355,6 @@ setMode('Cash In');
     const fileInput = document.getElementById('proofUpload');
     let fileData = null;
 
-    // Basahin ang file kung meron
     if (fileInput.files.length > 0) {
         const file = fileInput.files[0];
         fileData = await new Promise((resolve) => {
@@ -380,10 +380,9 @@ setMode('Cash In');
         feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
         feeOption: document.getElementById('reviewFeeOption').value,
         cashAmount: parseFloat(document.getElementById('cashReceived').value) || 0,
-        change: 0, // Idagdag ang calculation logic mo dito
+        change: 0,
         consent: "YES",
         status: "NEW",
-        // File data para sa Drive upload
         receiptFile: fileData ? fileData.base64 : null,
         receiptFileName: fileData ? fileData.name : null,
         receiptFileType: fileData ? fileData.type : null
@@ -391,14 +390,14 @@ setMode('Cash In');
 
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec";
 
-    / DITO MO IPAPASTE YUNG UPDATED FETCH LOGIC:
+    // FETCH LOGIC START
     fetch(WEB_APP_URL, {
         method: "POST",
         mode: "no-cors",
         body: JSON.stringify(formData)
     })
     .then(() => {
-        myQueueNumber = formData.queueNo; // Gamitin ang generated number
+        myQueueNumber = formData.queueNo; 
         
         // I-save sa phone memory para iwas "Back" issue
         localStorage.setItem('savedQueueNumber', myQueueNumber);
