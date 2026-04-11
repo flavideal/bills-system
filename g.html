@@ -8,19 +8,25 @@
         :root { --dark-green: #1b431c; --orange-yellow: #ffc267; --bg: #f0f2f5; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 15px; display: flex; justify-content: center; }
         .kiosk-container { width: 100%; max-width: 500px; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--dark-green); }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--dark-green); position: relative; }
         .field-group { margin-bottom: 15px; }
         label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-transform: uppercase; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
         .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .mode-btn { padding: 15px; border: 2px solid #eee; border-radius: 10px; text-align: center; cursor: pointer; font-weight: bold; }
         .mode-btn.active { background: var(--dark-green); color: white; border-color: var(--dark-green); }
-        .qr-box { background: #fff9e6; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 15px; border: 2px solid var(--dark-green); }
+        .qr-box { background: #fff9e6; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; border: 2px solid var(--dark-green); }
         .back-btn { background: none; border: none; color: var(--dark-green); font-weight: bold; cursor: pointer; margin-bottom: 10px; }
         .cash-logic-box { background: #fdfdfd; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-top: 10px; }
         .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 10px; font-weight: bold; color: var(--dark-green); }
         .sukli-display { font-size: 18px; font-weight: 900; color: #d32f2f; margin-top: 5px; }
-        .note { font-size: 12px; color: #d32f2f; font-weight: bold; margin-bottom: 10px; text-align: center; }
+        
+        /* Review & Success Screens */
+        .overlay-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; border-radius: 20px; padding: 25px; box-sizing: border-box; z-index: 10; overflow-y: auto; }
+        .review-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .review-item strong { color: var(--dark-green); }
+        .que-number { font-size: 48px; font-weight: 900; color: var(--dark-green); margin: 20px 0; }
+        .btn-main { width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -29,72 +35,92 @@
     <button class="back-btn" onclick="window.location.href='index.html'">← BACK TO MENU</button>
     
     <div class="card" id="formCard">
-        <h2 style="color: var(--dark-green); margin-top: 0; text-align: center;">GCASH SERVICE</h2>
-        
-        <div class="mode-selector">
-            <div id="btnIn" class="mode-btn active" onclick="setMode('Cash In')">CASH IN</div>
-            <div id="btnOut" class="mode-btn" onclick="setMode('Cash Out')">CASH OUT</div>
-        </div>
-
-        <div id="outNote" class="note" style="display: none;">
-            PAUNAWA: I-scan ang QR Code at i-send ang tamang halaga bago i-submit.
-        </div>
-
-        <div class="field-group">
-            <label id="nameLabel">Sender Name (Personally Transacting)</label>
-            <input type="text" id="custName" placeholder="Pangalan ng nag-abot ng pera">
-        </div>
-
-        <div class="field-group">
-            <label id="accLabel">GCash Account Name</label>
-            <input type="text" id="accName" placeholder="Juan Dela Cruz o J***N D. C**Z">
-        </div>
-
-        <div class="field-group">
-            <label>GCash Number</label>
-            <input type="number" id="accNo" placeholder="09123456789" oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11);">
-        </div>
-
-        <div class="field-group">
-            <label>Amount</label>
-            <input type="number" id="amount" placeholder="0.00" oninput="calculateFee()">
-        </div>
-
-        <div class="field-group">
-            <label id="feeOptLabel">Fee Option</label>
-            <select id="feeOption" onchange="calculateFee()">
-                <option value="add">ADD-ON (Bayad ang Fee sa labas)</option>
-                <option value="deduct">DEDUCT (Bawas sa papasok na amount)</option>
-            </select>
-        </div>
-
-        <div id="feeBreakdown" style="font-size: 14px; margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 10px; display: none;"></div>
-
-        <div id="cashLogicArea" class="cash-logic-box" style="display: none;">
-            <label class="checkbox-row">
-                <input type="checkbox" id="isExact" onchange="toggleExact()" style="width: 18px; height: 18px;"> 
-                Sakto ang ibabayad ko (Exact Amount)
-            </label>
-            <div id="cashInputGroup">
-                <label>Magkano ang cash na iaabot mo?</label>
-                <input type="number" id="cashReceived" placeholder="Amount ng cash" oninput="calculateFee()">
-                <div id="sukliDisplay" class="sukli-display"></div>
+        <div id="stepForm">
+            <h2 style="color: var(--dark-green); margin-top: 0; text-align: center;">GCASH SERVICE</h2>
+            <div class="mode-selector">
+                <div id="btnIn" class="mode-btn active" onclick="setMode('Cash In')">CASH IN</div>
+                <div id="btnOut" class="mode-btn" onclick="setMode('Cash Out')">CASH OUT</div>
             </div>
-        </div>
 
-        <div id="qrUploadArea" style="display: none; margin-top: 20px;">
-            <div class="qr-box">
-                <p style="font-weight: bold; color: var(--dark-green); margin: 0;">STEP 1: SCAN TO PAY VIA QRPH</p>
-                <img src="YOUR_GCASH_QR_URL" style="width: 180px; margin-top: 10px; border-radius: 10px;">
-                <p id="qrInstruction" style="font-size: 11px; margin-top: 5px; color: #555;"></p>
-            </div>
             <div class="field-group">
-                <label>Step 2: Upload Proof of Receipt</label>
-                <input type="file" id="proofUpload" accept="image/*" style="padding: 5px; font-size: 12px;">
+                <label id="nameLabel">Sender Name (Personally Transacting)</label>
+                <input type="text" id="custName" placeholder="Pangalan ng nag-abot ng pera">
             </div>
+
+            <div class="field-group">
+                <label id="accLabel">GCash Account Name</label>
+                <input type="text" id="accName" placeholder="Juan Dela Cruz o J***N D. C**Z">
+            </div>
+
+            <div class="field-group">
+                <label>GCash Number</label>
+                <input type="number" id="accNo" placeholder="09123456789" oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11);">
+            </div>
+
+            <div class="field-group">
+                <label>Amount</label>
+                <input type="number" id="amount" placeholder="0.00" oninput="calculateFee()">
+            </div>
+
+            <div class="field-group">
+                <label id="feeOptLabel">Fee Option</label>
+                <select id="feeOption" onchange="calculateFee()">
+                    <option value="add">ADD-ON (Bayad ang Fee sa labas)</option>
+                    <option value="deduct">DEDUCT (Bawas sa papasok na amount)</option>
+                </select>
+            </div>
+
+            <div id="cashLogicArea" class="cash-logic-box" style="display: none;">
+                <label class="checkbox-row">
+                    <input type="checkbox" id="isExact" onchange="toggleExact()" style="width: 18px; height: 18px;"> 
+                    Sakto ang ibabayad ko (Exact Amount)
+                </label>
+                <div id="cashInputGroup">
+                    <label>Magkano ang cash na iaabot mo?</label>
+                    <input type="number" id="cashReceived" placeholder="Amount ng cash" oninput="calculateFee()">
+                    <div id="sukliDisplay" class="sukli-display"></div>
+                </div>
+            </div>
+
+            <button onclick="showReview()" class="btn-main">REVIEW DETAILS</button>
         </div>
 
-        <button onclick="submitForm()" style="width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px;">SUBMIT TRANSACTION</button>
+        <div id="stepReview" class="overlay-screen">
+            <h3 style="color: var(--dark-green); text-align: center;">REVIEW YOUR DETAILS</h3>
+            <div id="reviewContent"></div>
+
+            <div id="qrReviewArea" style="display:none;">
+                <div class="qr-box">
+                    <p style="font-weight: bold; color: var(--dark-green); margin: 0;">STEP 1: SCAN TO PAY VIA QRPH</p>
+                    <img src="YOUR_GCASH_QR_URL" style="width: 180px; margin-top: 10px; border-radius: 10px;">
+                    <p id="qrInstructionReview" style="font-size: 11px; margin-top: 5px; color: #d32f2f; font-weight: bold;"></p>
+                </div>
+                <div class="field-group">
+                    <label>Step 2: Upload Proof of Receipt</label>
+                    <input type="file" id="proofUpload" accept="image/*" style="padding: 5px; font-size: 12px;">
+                </div>
+            </div>
+
+            <div class="checkbox-row" style="margin-top: 20px;">
+                <input type="checkbox" id="termsAgree" style="width: 18px; height: 18px;">
+                <label for="termsAgree" style="text-transform: none; font-size: 13px; cursor: pointer;">
+                    I agree to the Terms and Conditions and verify that all details are correct.
+                </label>
+            </div>
+
+            <button onclick="generateNumber()" class="btn-main">GET A NUMBER</button>
+            <button onclick="hideReview()" style="background: none; border: none; color: #888; width: 100%; margin-top: 10px; cursor: pointer;">Edit Details</button>
+        </div>
+
+        <div id="stepSuccess" class="overlay-screen" style="text-align: center;">
+            <div style="font-size: 50px;">✅</div>
+            <h2 style="color: var(--dark-green);">SUCCESS!</h2>
+            <p style="font-size: 14px; color: #666;">Your transaction has been submitted.</p>
+            <p style="margin-bottom: 0;">YOUR QUEUE NUMBER:</p>
+            <div id="numberDisplay" class="que-number">G-001</div>
+            <p style="font-weight: bold; color: #d32f2f;">Please wait for your number to be called.</p>
+            <button onclick="window.location.reload()" class="btn-main">DONE</button>
+        </div>
     </div>
 </div>
 
@@ -105,83 +131,71 @@
         currentMode = mode;
         document.getElementById('btnIn').classList.toggle('active', mode === 'Cash In');
         document.getElementById('btnOut').classList.toggle('active', mode === 'Cash Out');
-        
-        // UI Changes
-        document.getElementById('outNote').style.display = (mode === 'Cash Out') ? 'block' : 'none';
-        document.getElementById('nameLabel').innerText = (mode === 'Cash Out') ? "Sender Name (Sino ang nag-send)" : "Sender Name (Nag-transact personally)";
-        document.getElementById('accLabel').innerText = (mode === 'Cash Out') ? "Receiver GCash Name (Sino ang pinadalhan)" : "Receiver GCash Name";
-        document.getElementById('feeOptLabel').innerText = (mode === 'Cash Out') ? "Kasama na ba ang Fee sa sinend?" : "Fee Option";
-        
+        document.getElementById('nameLabel').innerText = (mode === 'Cash Out') ? "Customer Name (Nag-transact personally)" : "Sender Name (Personally Transacting)";
+        document.getElementById('cashLogicArea').style.display = (mode === 'Cash In') ? 'block' : 'none';
         calculateFee();
     }
 
     function toggleExact() {
         const isExact = document.getElementById('isExact').checked;
         document.getElementById('cashInputGroup').style.display = isExact ? 'none' : 'block';
-        if (isExact) document.getElementById('cashReceived').value = "";
         calculateFee();
     }
 
     function calculateFee() {
         const amt = parseFloat(document.getElementById('amount').value) || 0;
-        const feeOption = document.getElementById('feeOption').value;
+        const totalToPay = (document.getElementById('feeOption').value === 'add') ? amt + (amt * 0.01) : amt;
+        const cashIn = parseFloat(document.getElementById('cashReceived').value) || 0;
+        const sukliDiv = document.getElementById('sukliDisplay');
+        if (!document.getElementById('isExact').checked && cashIn > totalToPay) {
+            sukliDiv.innerHTML = "SUKLI: P" + (cashIn - totalToPay).toFixed(2);
+        } else { sukliDiv.innerHTML = ""; }
+    }
+
+    function showReview() {
+        const name = document.getElementById('custName').value;
+        const acc = document.getElementById('accNo').value;
+        const amt = parseFloat(document.getElementById('amount').value) || 0;
+
+        if(!name || !acc || amt <= 0) { alert("Pakikumpleto ang detalye."); return; }
+
         const fee = amt * 0.01;
-        const breakdown = document.getElementById('feeBreakdown');
-        const qrArea = document.getElementById('qrUploadArea');
-        
-        if(amt <= 0) {
-            breakdown.style.display = 'none';
-            document.getElementById('cashLogicArea').style.display = 'none';
-            qrArea.style.display = 'none';
-            return;
-        }
+        const feeOption = document.getElementById('feeOption').value;
+        const total = (feeOption === 'add') ? amt + fee : amt;
 
-        breakdown.style.display = 'block';
-        
-        let totalToPay = (feeOption === 'add') ? amt + fee : amt;
-        let receiveAmt = (feeOption === 'add') ? amt : amt - fee;
-
-        // Cash Out QR Logic
-        if(currentMode === 'Cash Out') {
-            qrArea.style.display = 'block';
-            document.getElementById('cashLogicArea').style.display = 'none';
-            document.getElementById('qrInstruction').innerHTML = (feeOption === 'add') 
-                ? `Paki-send ang <b>P${totalToPay.toFixed(2)}</b> (Kasama na ang Fee)` 
-                : `Paki-send ang <b>P${amt.toFixed(2)}</b> (Ibabawas ang fee sa matatanggap)`;
-        } else {
-            qrArea.style.display = 'none';
-            document.getElementById('cashLogicArea').style.display = 'block';
-        }
-
-        breakdown.innerHTML = `
-            <div style="display:flex; justify-content: space-between;"><span>Amount:</span> <span>P${amt.toFixed(2)}</span></div>
-            <div style="display:flex; justify-content: space-between; color: #d32f2f;"><span>Service Fee (1%):</span> <span>P${fee.toFixed(2)}</span></div>
-            <hr style="border: 0; border-top: 1px solid #ddd; margin: 8px 0;">
-            <div style="display:flex; justify-content: space-between; font-weight: bold; color: var(--dark-green); font-size: 16px;">
-                <span>TOTAL:</span> <span>P${totalToPay.toFixed(2)}</span>
-            </div>
+        let reviewHTML = `
+            <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
+            <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
+            <div class="review-item"><span>GCash Number:</span><strong>${acc}</strong></div>
+            <div class="review-item"><span>Amount:</span><strong>P${amt.toFixed(2)}</strong></div>
+            <div class="review-item"><span>Service Fee:</span><strong>P${fee.toFixed(2)}</strong></div>
+            <div class="review-item" style="border:none; font-size:18px; margin-top:10px;"><span>Total:</span><strong>P${total.toFixed(2)}</strong></div>
         `;
 
-        // Sukli Logic
-        const cashIn = parseFloat(document.getElementById('cashReceived').value) || 0;
-        const isExact = document.getElementById('isExact').checked;
-        const sukliDiv = document.getElementById('sukliDisplay');
-        if (!isExact && cashIn > totalToPay) {
-            sukliDiv.innerHTML = "SUKLI: P" + (cashIn - totalToPay).toFixed(2);
+        document.getElementById('reviewContent').innerHTML = reviewHTML;
+        
+        // QR Logic in Review
+        if(currentMode === 'Cash Out') {
+            document.getElementById('qrReviewArea').style.display = 'block';
+            document.getElementById('qrInstructionReview').innerText = (feeOption === 'add') 
+                ? `Paki-send ang P${total.toFixed(2)}` : `Paki-send ang P${amt.toFixed(2)}`;
         } else {
-            sukliDiv.innerHTML = "";
+            document.getElementById('qrReviewArea').style.display = 'none';
         }
+
+        document.getElementById('stepReview').style.display = 'block';
     }
 
-    function submitForm() {
-        if(!document.getElementById('custName').value || !document.getElementById('accNo').value) {
-            alert("Pakikumpleto ang detalye.");
-            return;
-        }
-        alert("Transaction submitted! Please wait for your priority number.");
-    }
+    function hideReview() { document.getElementById('stepReview').style.display = 'none'; }
 
-    setMode('Cash In');
+    function generateNumber() {
+        if(!document.getElementById('termsAgree').checked) { alert("Please agree to the terms."); return; }
+        
+        // Simulating queue number generation
+        const randomNum = Math.floor(Math.random() * 900) + 100;
+        document.getElementById('numberDisplay').innerText = "G-" + randomNum;
+        document.getElementById('stepSuccess').style.display = 'block';
+    }
 </script>
 
 </body>
