@@ -64,14 +64,6 @@
     </div>
 </div>
 
-            <div class="field-group">
-                <label id="feeOptLabel">Fee Option</label>
-                <select id="feeOption" onchange="calculateFee()">
-                    <option value="add">ADD-ON (Bayad ang Fee sa labas)</option>
-                    <option value="deduct">DEDUCT (Bawas sa papasok na amount)</option>
-                </select>
-            </div>
-
             <div id="cashLogicArea" class="cash-logic-box" style="display: none;">
                 <label class="checkbox-row">
                     <input type="checkbox" id="isExact" onchange="toggleExact()" style="width: 18px; height: 18px;"> 
@@ -147,22 +139,21 @@
     function calculateFee() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     const fee = amt * 0.01;
-    const feeOption = document.getElementById('feeOption').value;
-    const totalToPay = (feeOption === 'add') ? amt + fee : amt;
+    // Gawin nating default na 'add' muna ang logic dito para sa preview
+    const totalToPay = amt + fee; 
     const liveBreakdown = document.getElementById('liveBreakdown');
 
-    // Live Breakdown Logic
     if (amt > 0) {
         liveBreakdown.style.display = 'block';
         liveBreakdown.innerHTML = `
-            Fee (1%): <b>P${fee.toFixed(2)}</b><br>
-            Total to Pay: <b>P${totalToPay.toFixed(2)}</b>
+            Estimated Fee (1%): <b>P${fee.toFixed(2)}</b><br>
+            Estimated Total: <b>P${totalToPay.toFixed(2)}</b>
         `;
     } else {
         liveBreakdown.style.display = 'none';
     }
 
-    // Sukli Logic
+    // Sukli Logic (Gagamit ng totalToPay para sa computation ng sukli)
     const cashIn = parseFloat(document.getElementById('cashReceived').value) || 0;
     const sukliDiv = document.getElementById('sukliDisplay');
     if (!document.getElementById('isExact').checked && cashIn > totalToPay) {
