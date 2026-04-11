@@ -95,12 +95,23 @@
                 </div>
             </div>
 
-            <div class="checkbox-row" style="margin-top: 20px;">
-                <input type="checkbox" id="termsAgree" style="width: 18px; height: 18px;">
-                <label for="termsAgree" style="text-transform: none; font-size: 13px; cursor: pointer;">
-                    I agree to the Terms and Conditions and verify that all details are correct.
-                </label>
-            </div>
+            <div id="termsContainer" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
+    <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY POLICY</h4>
+    <ul style="font-size: 11px; color: #555; padding-left: 18px; line-height: 1.4;">
+        <li>This is a <b>Personal Service</b> only. </li>
+        <li>A <b>1% Service Fee</b> is applied based on your chosen option.</li>
+        <li><b>Privacy:</b> Your details (Name & GCash No.) are collected solely to process this specific transaction.</li>
+        <li>Data is used <b>once</b> and will not be shared or used for marketing.</li>
+        <li>Please verify the GCash number. Flavi Deal is not liable for wrong account inputs.</li>
+    </ul>
+    
+    <div class="checkbox-row">
+        <input type="checkbox" id="termsAgree" style="width: 20px; height: 20px; cursor: pointer;">
+        <label for="termsAgree" style="text-transform: none; font-size: 13px; cursor: pointer; font-weight: bold;">
+            I have read and agree to the terms above.
+        </label>
+    </div>
+</div>
 
             <button onclick="generateNumber()" class="btn-main">GET A NUMBER</button>
             <button onclick="hideReview()" style="background: none; border: none; color: #888; width: 100%; margin-top: 10px; cursor: pointer;">Edit Details</button>
