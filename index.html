@@ -8,38 +8,20 @@
         :root { --dark-green: #1b431c; --orange-yellow: #ffc267; --bg: #f0f2f5; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
         .kiosk-container { width: 100%; max-width: 500px; }
-        
         .header { text-align: center; margin-bottom: 20px; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-        .menu-item { 
-            background: white; padding: 15px 5px; border-radius: 15px; text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; border: 2px solid transparent;
-        }
+        .menu-item { background: white; padding: 15px 5px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; border: 2px solid transparent; }
         .menu-item img { width: 45px; height: 45px; object-fit: contain; margin-bottom: 8px; }
         .menu-item span { display: block; font-size: 11px; font-weight: bold; color: var(--dark-green); }
-
-        #formSection { 
-            display: none; background: white; padding: 25px; border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--dark-green);
-        }
+        #formSection, #agreementSection, #result { display: none; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--dark-green); }
         .back-btn { background: none; border: none; color: var(--dark-green); font-weight: bold; cursor: pointer; margin-bottom: 15px; }
-        
         .field-group { margin-bottom: 15px; }
         label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-transform: uppercase; }
-        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        
-        /* Step Style Buttons */
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
         .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
-        .mode-btn { 
-            padding: 20px; border: 3px solid #eee; border-radius: 15px; text-align: center; 
-            font-weight: 900; cursor: pointer; background: #fff; transition: 0.3s; color: var(--dark-green);
-        }
+        .mode-btn { padding: 20px; border: 3px solid #eee; border-radius: 15px; text-align: center; font-weight: 900; cursor: pointer; background: #fff; color: var(--dark-green); transition: 0.3s; }
         .mode-btn.active { border-color: var(--orange-yellow); background: var(--dark-green); color: white; }
-
-        #submitBtn { width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        
         .qr-box { background: #fff9e6; padding: 15px; border-radius: 10px; text-align: center; margin-top: 10px; border: 1px dashed var(--orange-yellow); }
-        #result { display: none; text-align: center; background: white; padding: 40px 20px; border-radius: 20px; }
     </style>
 </head>
 <body>
@@ -55,67 +37,58 @@
         <div class="menu-item" onclick="initForm('MAYA')"><img src="https://getlogovector.com/wp-content/uploads/2022/04/maya-philippines-logo-vector.png"><span>MAYA</span></div>
         <div class="menu-item" onclick="initForm('PALAWAN')"><img src="https://www.palawanpawnshop.com/assets/images/logo.png"><span>PALAWAN</span></div>
         <div class="menu-item" onclick="initForm('ANECO')"><img src="https://via.placeholder.com/50?text=ANECO"><span>ANECO</span></div>
-        <div class="menu-item" onclick="initForm('WATER')"><img src="https://via.placeholder.com/50?text=WATER"><span>WATER DIST.</span></div>
+        <div class="menu-item" onclick="initForm('WATER')"><img src="https://via.placeholder.com/50?text=WATER"><span>WATER</span></div>
         <div class="menu-item" onclick="initForm('LOAD')"><img src="https://via.placeholder.com/50?text=LOAD"><span>E-LOAD</span></div>
     </div>
 
     <div id="formSection">
-    <button class="back-btn" onclick="location.reload()">← BACK</button>
-    <h2 id="formTitle" style="color: var(--dark-green); margin: 0;">SERVICE</h2>
-    
-    <div id="modeSelectionArea" class="mode-selector" style="display:none;">
-        <div class="mode-btn" id="mIn" onclick="selectMode('Cash In')">CASH IN</div>
-        <div class="mode-btn" id="mOut" onclick="selectMode('Cash Out')">CASH OUT</div>
-    </div>
-
-    <form id="kioskForm" style="display:none; margin-top: 20px;">
-        <div id="dynamicInputs"></div>
-        <div class="field-group">
-            <label>Amount</label>
-            <input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required>
-            <div id="feeText" style="font-size: 13px; color: var(--dark-green); font-weight: bold; margin-top: 5px;"></div>
+        <button class="back-btn" onclick="location.reload()">← BACK</button>
+        <h2 id="formTitle" style="color: var(--dark-green); margin: 0;">SERVICE</h2>
+        
+        <div id="modeSelectionArea" class="mode-selector">
+            <div class="mode-btn" id="mIn" onclick="selectMode('Cash In')">CASH IN</div>
+            <div class="mode-btn" id="mOut" onclick="selectMode('Cash Out')">CASH OUT</div>
         </div>
 
-        <div id="qrArea" style="display:none;" class="qr-box">
-            <p style="font-size: 12px; font-weight:bold; color: red;">SCAN TO PAY VIA QRPH</p>
-            <img id="qrImage" src="" style="width: 180px; border-radius: 10px;">
-            <input type="text" id="refNo" placeholder="Reference Number (Last 6 digits)" style="margin-top:10px;">
+        <form id="kioskForm" style="display:none; margin-top: 20px;">
+            <div id="dynamicInputs"></div>
+            
+            <div id="qrArea" style="display:none;" class="qr-box">
+                <p style="font-size: 12px; font-weight:bold; color: red;">SCAN TO PAY VIA QRPH</p>
+                <img id="qrImage" src="" style="width: 180px; border-radius: 10px;">
+                <input type="text" id="refNoInput" placeholder="Reference Number (Last 6 digits)" style="margin-top:10px;">
+            </div>
+
+            <button type="button" onclick="showReview()" style="width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px;">REVIEW DETAILS</button>
+        </form>
+    </div>
+
+    <div id="agreementSection">
+        <h2 style="color: var(--dark-green); margin-top: 0;">Review Your Details</h2>
+        <div id="summaryContent" style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; line-height: 1.6;"></div>
+
+        <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; height: 120px; overflow-y: scroll; font-size: 11px; color: #555; background: #fff;">
+            <h4 style="margin-top: 0;">Terms & Conditions</h4>
+            <div id="dynamicTerms"></div>
         </div>
 
-        <button type="button" onclick="showReview()" id="reviewBtn" style="width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer;">REVIEW DETAILS</button>
-    </form>
-</div>
-
-<div id="agreementSection" style="display:none; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--orange-yellow);">
-    <h2 style="color: var(--dark-green); margin-top: 0;">Review Your Details</h2>
-    <div id="summaryContent" style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+        <div style="margin-top: 20px; display: flex; align-items: flex-start; gap: 10px;">
+            <input type="checkbox" id="agreeCheckbox" style="width: 20px; height: 20px;" onchange="toggleFinalSubmit()">
+            <label for="agreeCheckbox" style="font-size: 13px; cursor: pointer;">I agree to the Terms & Conditions and Privacy Policy.</label>
         </div>
 
-    <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; height: 150px; overflow-y: scroll; font-size: 11px; color: #555; background: #fff;">
-        <h4 style="margin-top: 0;">Terms and Conditions & Privacy Policy</h4>
-        <p>1. Ang bawat transaction ay may kaakibat na 1% service fee.</p>
-        <p>2. Siguraduhin na tama ang Account Number/Mobile Number na ibinigay. Hindi pananagutan ng <strong>Flavi Deal</strong> ang maling input ng customer.</p>
-        <p>3. Para sa Cash Out, kailangang mag-upload ng valid proof of transaction.</p>
-        <p>4. Privacy Policy: Ang iyong impormasyon ay gagamitin lamang para sa pag-proseso ng iyong transaction at hindi ibabahagi sa iba.</p>
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 20px;">
+            <button onclick="backToForm()" style="padding: 15px; border-radius: 10px; background: white; cursor: pointer;">EDIT</button>
+            <button id="finalSubmitBtn" onclick="submitFinalData()" disabled style="padding: 15px; border: none; border-radius: 10px; background: var(--dark-green); color: var(--orange-yellow); font-weight: bold; cursor: pointer; opacity: 0.5;">SUBMIT</button>
+        </div>
     </div>
 
-    <div style="margin-top: 20px; display: flex; align-items: flex-start; gap: 10px;">
-        <input type="checkbox" id="agreeCheckbox" style="width: 20px; height: 20px;" onchange="toggleFinalSubmit()">
-        <label for="agreeCheckbox" style="font-size: 13px; cursor: pointer; text-transform: none;">I have reviewed my details and I agree to the <strong>Terms & Conditions</strong> and <strong>Privacy Policy</strong>.</label>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 20px;">
-        <button onclick="backToForm()" style="padding: 15px; border: 1px solid #ccc; border-radius: 10px; background: white; cursor: pointer;">EDIT</button>
-        <button id="finalSubmitBtn" onclick="submitFinalData()" disabled style="padding: 15px; border: none; border-radius: 10px; background: var(--dark-green); color: var(--orange-yellow); font-weight: bold; cursor: pointer; opacity: 0.5;">SUBMIT & GET NUMBER</button>
-    </div>
-</div>
-    
-    <div id="result">
+    <div id="result" style="text-align: center;">
         <h2 style="color: var(--dark-green);">THANK YOU!</h2>
         <p>Your Priority Number is:</p>
-        <div style="font-size: 80px; font-weight: 900; color: var(--dark-green); margin: 10px 0;" id="qNum">---</div>
+        <div style="font-size: 80px; font-weight: 900; color: var(--dark-green);" id="qNum">---</div>
         <p style="background: var(--orange-yellow); padding: 15px; border-radius: 10px; font-weight: bold;">PLEASE WAIT FOR YOUR NUMBER TO BE CALLED</p>
-        <button onclick="location.reload()" style="margin-top:20px; background:none; border:1px solid #ccc; padding:10px; border-radius:8px; cursor:pointer;">Done</button>
+        <button onclick="location.reload()" style="margin-top:20px; padding:10px;">Done</button>
     </div>
 </div>
 
@@ -124,6 +97,34 @@
     let currentService = "";
     let currentType = "";
 
+    // DITO MO I-EEDIT ANG LAMAN NG BAWAT SERVICE PARA HINDI MAHABANG CODE
+    const serviceConfig = {
+        'GCASH': {
+            fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
+            terms: "1. 1% service fee applies. 2. Verify GCash Number carefully. 3. No refunds for incorrect details.",
+            accLabel: "GCash Number",
+            nameLabel: "GCash Name (sa App)"
+        },
+        'MAYA': {
+            fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
+            terms: "1. 1% service fee applies. 2. Real-time processing for Maya Cash-In.",
+            accLabel: "Maya Number",
+            nameLabel: "Maya Name"
+        },
+        'ANECO': {
+            fields: ['custName', 'accNo', 'extra', 'amount'],
+            terms: "1. P15 Convenience Fee. 2. Make sure Meter Number is correct. 3. 48-hour posting.",
+            accLabel: "Account Number",
+            extraLabel: "Meter Number"
+        },
+        'PALAWAN': {
+            fields: ['custName', 'accNo', 'extra', 'amount'],
+            terms: "1. Standard Palawan rates apply. 2. Receiver must present valid ID.",
+            accLabel: "Sender Mobile No.",
+            extraLabel: "Receiver Name / Code"
+        }
+    };
+
     function initForm(service) {
         currentService = service;
         document.getElementById('menuGrid').style.display = 'none';
@@ -131,12 +132,10 @@
         document.getElementById('formSection').style.display = 'block';
         document.getElementById('formTitle').innerText = service;
         
-        // Kung GCash o Maya, pakitang muna ang Cash In/Out Buttons
         if (service === 'GCASH' || service === 'MAYA') {
             document.getElementById('modeSelectionArea').style.display = 'grid';
             document.getElementById('kioskForm').style.display = 'none';
         } else {
-            // Kung ibang bills, diretso form agad
             document.getElementById('modeSelectionArea').style.display = 'none';
             selectMode('Payment'); 
         }
@@ -144,290 +143,139 @@
 
     function selectMode(mode) {
         currentType = mode;
-        
-        // Highlight active button
-        if(document.getElementById('mIn')) {
-            document.getElementById('mIn').classList.toggle('active', mode === 'Cash In');
-            document.getElementById('mOut').classList.toggle('active', mode === 'Cash Out');
-        }
-
+        document.getElementById('mIn')?.classList.toggle('active', mode === 'Cash In');
+        document.getElementById('mOut')?.classList.toggle('active', mode === 'Cash Out');
         document.getElementById('kioskForm').style.display = 'block';
         renderInputs(mode);
     }
 
     function renderInputs(mode) {
-    const container = document.getElementById('dynamicInputs');
-    let html = "";
+        const container = document.getElementById('dynamicInputs');
+        const config = serviceConfig[currentService] || { fields: ['custName', 'accNo', 'amount'], accLabel: "Account Number" };
+        let html = "";
 
-    // CASE 1: GCASH
-    if (currentService === 'GCASH') {
-    if (mode === 'Cash In') {
-        html = `
-            <div class="field-group">
-                <label>Customer Full Name</label>
-                <input type="text" id="custName" placeholder="Juan Dela Cruz" required>
-            </div>
-            <div class="field-group">
-                <label>GCash Number (Saan ipapadala)</label>
-                <input type="number" id="accNo" placeholder="09123456789" required>
-            </div>
-            <div class="field-group">
-                <label>GCash Name (Name sa App)</label>
-                <input type="text" id="accName" placeholder="Ju_an De_cz" required>
-            </div>
-            
-            <div class="field-group">
-                <label>Amount to Cash-in</label>
-                <input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required>
-            </div>
-
-            <div class="field-group">
-                <label>Fee Option</label>
-                <select id="feeOption" onchange="updateTotal()" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;">
-                    <option value="add">Add-on (Magbabayad ng Fee)</option>
-                    <option value="deduct">Deduct (Bawas sa Amount)</option>
-                </select>
-            </div>
-
-            <div class="field-group" style="background: #fdfdfd; padding: 10px; border-radius: 10px; border: 1px solid #eee;">
-                <label>Pera na Inabot (Para sa Sukli)</label>
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                    <input type="checkbox" id="isExact" onchange="handleExactAmount()" style="width:18px; height:18px;">
-                    <span style="font-size: 13px; color: #666;">Exact Amount / Sakto ang Pera</span>
-                </div>
-                <input type="number" id="cashReceived" placeholder="Magkano ang inabot na pera?" oninput="updateTotal()">
-            </div>
-        `;
-        } else { // Cash Out
-            html = `
-                <div class="field-group"><label>Customer Full Name</label><input type="text" id="custName" required></div>
-                <div class="field-group"><label>GCash Number (Saan galing)</label><input type="number" id="accNo" required></div>
-                <div class="field-group"><label>Reference Number (Last 6 digits)</label><input type="text" id="refNoInput" required></div>
-            `;
-        }
-    }
-
-    // CASE 2: MAYA
-    else if (currentService === 'MAYA') {
-        if (mode === 'Cash In') {
-            html = `
-                <div class="field-group"><label>Customer Full Name</label><input type="text" id="custName" required></div>
-                <div class="field-group"><label>Maya Mobile Number</label><input type="number" id="accNo" required></div>
-                <div class="field-group"><label>Maya Account Name</label><input type="text" id="accName" required></div>
+        config.fields.forEach(field => {
+            if (field === 'custName') html += `<div class="field-group"><label>Customer Full Name</label><input type="text" id="custName" required></div>`;
+            if (field === 'accNo') html += `<div class="field-group"><label>${config.accLabel}</label><input type="number" id="accNo" required></div>`;
+            if (field === 'accName') html += `<div class="field-group"><label>${config.nameLabel}</label><input type="text" id="accName" required></div>`;
+            if (field === 'extra') html += `<div class="field-group"><label>${config.extraLabel}</label><input type="text" id="extra" required></div>`;
+            if (field === 'amount') html += `
+                <div class="field-group">
+                    <label>Amount</label>
+                    <input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required>
+                    <div id="feeText" style="font-size: 13px; color: var(--dark-green); font-weight: bold; margin-top: 5px;"></div>
+                </div>`;
+            if (field === 'feeOption' && mode === 'Cash In') html += `
                 <div class="field-group">
                     <label>Fee Option</label>
-                    <select id="feeOption" onchange="updateTotal()" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;">
-                        <option value="add">Add-on</option>
-                        <option value="deduct">Deduct</option>
+                    <select id="feeOption" onchange="updateTotal()">
+                        <option value="add">Add-on (Pay Fee)</option>
+                        <option value="deduct">Deduct (Bawas sa Amount)</option>
                     </select>
-                </div>
-            `;
-        } else { // Cash Out
-            html = `
-                <div class="field-group"><label>Customer Full Name</label><input type="text" id="custName" required></div>
-                <div class="field-group"><label>Maya Number</label><input type="number" id="accNo" required></div>
-                <div class="field-group"><label>Maya Reference No.</label><input type="text" id="refNoInput" required></div>
-            `;
+                </div>`;
+            if (field === 'cashInExtra' && mode === 'Cash In') html += `
+                <div class="field-group" style="background: #fdfdfd; padding: 10px; border-radius: 10px; border: 1px solid #eee;">
+                    <label>Pera na Inabot (Sukli Calc)</label>
+                    <input type="checkbox" id="isExact" onchange="handleExactAmount()"> Sakto ang Pera
+                    <input type="number" id="cashReceived" placeholder="Magkano inabot?" oninput="updateTotal()">
+                </div>`;
+        });
+
+        if (mode === 'Cash Out') {
+            html += `<div class="field-group"><label>Reference No. (Last 6 digits)</label><input type="text" id="refNoInput" required></div>`;
         }
-    }
 
-    // CASE 3: ANECO
-    else if (currentService === 'ANECO') {
-        html = `
-            <div class="field-group"><label>Account Name</label><input type="text" id="custName" required></div>
-            <div class="field-group"><label>Account Number</label><input type="text" id="accNo" required></div>
-            <div class="field-group"><label>Meter Number</label><input type="text" id="extra" required></div>
-        `;
+        container.innerHTML = html;
+        document.getElementById('qrArea').style.display = (mode === 'Cash Out') ? 'block' : 'none';
+        if(mode === 'Cash Out') document.getElementById('qrImage').src = (currentService === 'GCASH') ? 'GCASH_QR_LINK' : 'MAYA_QR_LINK';
+        
+        updateTotal();
     }
-
-    // CASE 4: PALAWAN
-    else if (currentService === 'PALAWAN') {
-        html = `
-            <div class="field-group"><label>Sender/Receiver Name</label><input type="text" id="custName" required></div>
-            <div class="field-group"><label>Mobile Number</label><input type="number" id="accNo" required></div>
-            <div class="field-group"><label>Palawan Details (Code or Receiver)</label><input type="text" id="extra" required></div>
-        `;
-    }
-
-    // DEFAULT
-    else {
-        html = `
-            <div class="field-group"><label>Customer Name</label><input type="text" id="custName" required></div>
-            <div class="field-group"><label>Account/Mobile Number</label><input type="number" id="accNo" required></div>
-        `;
-    }
-
-    container.innerHTML = html;
-
-    // QR Logic (Para sa Cash Out lang)
-    const qr = document.getElementById('qrArea');
-    if (mode === 'Cash Out' && (currentService === 'GCASH' || currentService === 'MAYA')) {
-        qr.style.display = 'block';
-        document.getElementById('qrImage').src = (currentService === 'GCASH') ? 'YOUR_GCASH_QR_LINK' : 'YOUR_MAYA_QR_LINK';
-    } else {
-        qr.style.display = 'none';
-    }
-    
-    updateTotal();
-}
 
     function updateTotal() {
-    const amt = parseFloat(document.getElementById('amount').value) || 0;
-    const fee = amt * 0.01; // 1% Fee
-    const feeOption = document.getElementById('feeOption') ? document.getElementById('feeOption').value : 'add';
-    const cashReceived = parseFloat(document.getElementById('cashReceived')?.value) || 0;
-    
-    let totalToPay = 0;
-    let amountToReceive = 0;
-    let feeDisplay = "";
-
-    if (feeOption === 'add') {
-        // Add-on: Amount + Fee
-        totalToPay = amt + fee;
-        amountToReceive = amt;
-        feeDisplay = `Total to Pay: P${totalToPay.toLocaleString()} (P${amt} + P${fee} fee)`;
-    } else {
-        // Deduct: Amount lang ang ibabayad, pero bawas ang matatanggap
-        totalToPay = amt;
-        amountToReceive = amt - fee;
-        feeDisplay = `Customer pays P${amt}. Matatanggap sa GCash: P${amountToReceive.toLocaleString()} (Bawas ang P${fee} fee)`;
-    }
-
-    // Sukli Calculation
-    let sukliText = "";
-    if (cashReceived > 0) {
-        const change = cashReceived - totalToPay;
-        if (change >= 0) {
-            sukliText = `<br><span style="color:blue;">Sukli: P${change.toLocaleString()}</span>`;
-        } else {
-            sukliText = `<br><span style="color:red;">Kulang: P${Math.abs(change).toLocaleString()}</span>`;
+        const amt = parseFloat(document.getElementById('amount')?.value) || 0;
+        const fee = amt * 0.01; 
+        const option = document.getElementById('feeOption')?.value || 'add';
+        const cashReceived = parseFloat(document.getElementById('cashReceived')?.value) || 0;
+        
+        let totalToPay = (option === 'add') ? amt + fee : amt;
+        let feeDisplay = `Total to Give: P${totalToPay.toLocaleString()}`;
+        
+        if (cashReceived > 0) {
+            let change = cashReceived - totalToPay;
+            feeDisplay += (change >= 0) ? ` | Sukli: P${change.toLocaleString()}` : ` | Kulang: P${Math.abs(change).toLocaleString()}`;
         }
+
+        const feeDiv = document.getElementById('feeText');
+        if (feeDiv) feeDiv.innerText = feeDisplay;
     }
 
-    const feeTextDiv = document.getElementById('feeText');
-    if (feeTextDiv) {
-        feeTextDiv.innerHTML = feeDisplay + sukliText;
+    function handleExactAmount() {
+        const isExact = document.getElementById('isExact').checked;
+        if (isExact) {
+            const amt = parseFloat(document.getElementById('amount').value) || 0;
+            const fee = amt * 0.01;
+            const option = document.getElementById('feeOption').value;
+            document.getElementById('cashReceived').value = (option === 'add') ? amt + fee : amt;
+        } else {
+            document.getElementById('cashReceived').value = "";
+        }
+        updateTotal();
     }
-}
 
-    document.getElementById('kioskForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('submitBtn');
+    function showReview() {
+        const config = serviceConfig[currentService];
+        const amt = parseFloat(document.getElementById('amount').value) || 0;
+        const option = document.getElementById('feeOption')?.value || 'add';
+        const total = (option === 'add') ? amt + (amt*0.01) : amt;
+
+        document.getElementById('summaryContent').innerHTML = `
+            <strong>SERVICE:</strong> ${currentService} (${currentType})<br>
+            <strong>CUSTOMER:</strong> ${document.getElementById('custName').value}<br>
+            <strong>ACCOUNT:</strong> ${document.getElementById('accNo').value}<br>
+            <hr>
+            <strong style="font-size:16px;">TOTAL TO PAY: P${total.toLocaleString()}</strong>
+        `;
+        document.getElementById('dynamicTerms').innerText = config.terms;
+        document.getElementById('formSection').style.display = 'none';
+        document.getElementById('agreementSection').style.display = 'block';
+    }
+
+    function backToForm() {
+        document.getElementById('agreementSection').style.display = 'none';
+        document.getElementById('formSection').style.display = 'block';
+    }
+
+    function toggleFinalSubmit() {
+        const isChecked = document.getElementById('agreeCheckbox').checked;
+        const btn = document.getElementById('finalSubmitBtn');
+        btn.disabled = !isChecked;
+        btn.style.opacity = isChecked ? "1" : "0.5";
+    }
+
+    function submitFinalData() {
+        const btn = document.getElementById('finalSubmitBtn');
         btn.innerText = "PRINTER BUSY...";
         btn.disabled = true;
 
         const payload = {
-    name: document.getElementById('custName').value,
-    service: currentService,
-    type: currentType,
-    account: document.getElementById('accNo').value,
-    amount: document.getElementById('amount').value,
-    // Kunin ang extra name o meter number kung meron
-    accName: document.getElementById('accName') ? document.getElementById('accName').value : "",
-    extra: document.getElementById('extra') ? document.getElementById('extra').value : "",
-    refNo: document.getElementById('refNoInput') ? document.getElementById('refNoInput').value : ""
-};
+            name: document.getElementById('custName').value,
+            service: currentService,
+            type: currentType,
+            account: document.getElementById('accNo').value,
+            amount: document.getElementById('amount').value,
+            extra: document.getElementById('extra')?.value || "",
+            refNo: document.getElementById('refNoInput')?.value || ""
+        };
 
         fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) })
         .then(res => res.json())
         .then(data => {
-            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('agreementSection').style.display = 'none';
             document.getElementById('result').style.display = 'block';
             document.getElementById('qNum').innerText = data.queueNumber;
         });
-    });
-
-    // Function para ipakita ang Review Page
-function showReview() {
-    const name = document.getElementById('custName').value;
-    const amount = document.getElementById('amount').value;
-    const accNo = document.getElementById('accNo').value;
-    const accName = document.getElementById('accName') ? document.getElementById('accName').value : "";
-    const option = document.getElementById('feeOption') ? document.getElementById('feeOption').value : "add";
-    
-    const fee = amount * 0.01;
-    const totalPayable = (option === 'add') ? parseFloat(amount) + fee : amount;
-    const matatanggap = (option === 'add') ? amount : amount - fee;
-
-    let summaryHtml = `
-        <strong>SERVICE:</strong> ${currentService} (${currentType})<br>
-        <strong>SENDER:</strong> ${name}<br>
-        <strong>SEND TO:</strong> ${accNo} (${accName})<br>
-        <hr>
-        <strong>AMOUNT:</strong> P${parseFloat(amount).toLocaleString()}<br>
-        <strong>FEE OPTION:</strong> ${option.toUpperCase()}<br>
-        <strong>RECEIVE IN APP:</strong> P${parseFloat(matatanggap).toLocaleString()}<br>
-        <strong style="font-size: 18px; color: var(--dark-green);">TOTAL CASH TO GIVE: P${parseFloat(totalPayable).toLocaleString()}</strong>
-    `;
-
-    document.getElementById('summaryContent').innerHTML = summaryHtml;
-    document.getElementById('formSection').style.display = 'none';
-    document.getElementById('agreementSection').style.display = 'block';
-}
-    
-function backToForm() {
-    document.getElementById('agreementSection').style.display = 'none';
-    document.getElementById('formSection').style.display = 'block';
-}
-
-function toggleFinalSubmit() {
-    const isChecked = document.getElementById('agreeCheckbox').checked;
-    const btn = document.getElementById('finalSubmitBtn');
-    btn.disabled = !isChecked;
-    btn.style.opacity = isChecked ? "1" : "0.5";
-}
-
-// Ang final submission function
-function submitFinalData() {
-    const btn = document.getElementById('finalSubmitBtn');
-    btn.innerText = "PROCESSING...";
-    btn.disabled = true;
-
-    const payload = {
-        name: document.getElementById('custName').value,
-        service: currentService,
-        type: currentType,
-        account: document.getElementById('accNo').value,
-        amount: document.getElementById('amount').value,
-        extra: document.getElementById('extra') ? document.getElementById('extra').value : ""
-    };
-
-    fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) })
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById('agreementSection').style.display = 'none';
-        document.getElementById('result').style.display = 'block';
-        document.getElementById('qNum').innerText = data.queueNumber;
-    })
-    .catch(err => {
-        alert("Error sending data. Please try again.");
-        btn.innerText = "SUBMIT & GET NUMBER";
-        btn.disabled = false;
-    });
-}
-
-function handleExactAmount() {
-    const isExact = document.getElementById('isExact').checked;
-    const cashInput = document.getElementById('cashReceived');
-    
-    if (isExact) {
-        // Kunin ang total computation (kasama ang fee kung add-on)
-        const amt = parseFloat(document.getElementById('amount').value) || 0;
-        const fee = amt * 0.01;
-        const option = document.getElementById('feeOption').value;
-        
-        const total = (option === 'add') ? (amt + fee) : amt;
-        
-        cashInput.value = total;
-        cashInput.readOnly = true; // Para hindi na nila ma-edit kung 'sakto'
-        cashInput.style.background = "#f0f0f0";
-    } else {
-        cashInput.value = "";
-        cashInput.readOnly = false;
-        cashInput.style.background = "#fff";
     }
-    updateTotal();
-}
 </script>
 </body>
 </html>
