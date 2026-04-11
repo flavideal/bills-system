@@ -96,263 +96,197 @@
     let currentService = "";
     let currentType = "";
 
-    // DITO MO I-EEDIT ANG LAMAN NG BAWAT SERVICE PARA HINDI MAHABANG CODE
-   const serviceConfig = {
-    'GCASH': {
-        feeType: 'fixed-percent',
-        rate: 0.01,
-        feeLabel: "Service Fee",
-        mInLabel: "CASH IN",
-        mOutLabel: "CASH OUT",
-        fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
-        accLabel: "GCash Number"
-    },
-    'MAYA': {
-        feeType: 'fixed-percent',
-        rate: 0.01,
-        feeLabel: "Service Fee",
-        mInLabel: "CASH IN",
-        mOutLabel: "CASH OUT",
-        fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
-        accLabel: "Maya Number"
-    },
-    'PALAWAN': {
-        feeType: 'double-percent',
-        rate: 0.01,
-        feeLabel: "Service Charge",
-        mInLabel: "PADALA",
-        mOutLabel: "CLAIM",
-        fields: ['custName', 'accNo', 'extra', 'amount'],
-        accLabel: "Mobile Number",
-        terms: "1. 1% Provider Fee + 1% Service Charge applies. 2. Valid ID is required for claims."
-    },
-    'ANECO': {
-        feeType: 'bills-special',
-        providerFixedFee: 10,
-        ownerMin: 10,
-        ownerRate: 0.01,
-        feeLabel: "Convenience Fee",
-        fields: ['custName', 'accNo', 'extra', 'amount'],
-        accLabel: "Account Number",
-        terms: "1. P10 Fixed Provider Fee + Convenience Fee applies. 2. Verify Account Number carefully."
-    },
-    'WATER': {
-        feeType: 'bills-special',
-        providerFixedFee: 10,
-        ownerMin: 10,
-        ownerRate: 0.01,
-        feeLabel: "Convenience Fee",
-        fields: ['custName', 'accNo', 'extra', 'amount'],
-        accLabel: "Account Number"
-    },
-    'LOAD': {
-        feeType: 'fixed-percent',
-        rate: 0, // O kung magkano ang patong mo (ex: 2 pesos fixed)
-        feeLabel: "Service Fee",
-        fields: ['accNo', 'amount'],
-        accLabel: "Mobile Number",
-        terms: "1. Load will be sent to the number provided. 2. No refund for wrong numbers."
-    }
-};
-    
+    const serviceConfig = {
+        'GCASH': {
+            feeType: 'fixed-percent',
+            rate: 0.01,
+            feeLabel: "Service Fee",
+            mInLabel: "CASH IN",
+            mOutLabel: "CASH OUT",
+            fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
+            accLabel: "GCash Number",
+            terms: "1. 1% Service Fee applies. 2. Ensure the GCash number is correct."
+        },
+        'MAYA': {
+            feeType: 'fixed-percent',
+            rate: 0.01,
+            feeLabel: "Service Fee",
+            mInLabel: "CASH IN",
+            mOutLabel: "CASH OUT",
+            fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
+            accLabel: "Maya Number",
+            terms: "1. 1% Service Fee applies. 2. Ensure the Maya number is correct."
+        },
+        'PALAWAN': {
+            feeType: 'double-percent',
+            rate: 0.01,
+            feeLabel: "Service Charge",
+            mInLabel: "PADALA",
+            mOutLabel: "CLAIM",
+            fields: ['custName', 'accNo', 'extra', 'amount'],
+            accLabel: "Mobile Number",
+            terms: "1. 1% Provider Fee + 1% Service Charge applies. 2. Valid ID is required for claims."
+        },
+        'ANECO': {
+            feeType: 'bills-special',
+            providerFixedFee: 10,
+            ownerMin: 10,
+            ownerRate: 0.01,
+            feeLabel: "Convenience Fee",
+            fields: ['custName', 'accNo', 'extra', 'amount'],
+            accLabel: "Account Number",
+            terms: "1. P10 Fixed Provider Fee + Convenience Fee applies. 2. Verify Account Number carefully."
+        },
+        'WATER': {
+            feeType: 'bills-special',
+            providerFixedFee: 10,
+            ownerMin: 10,
+            ownerRate: 0.01,
+            feeLabel: "Convenience Fee",
+            fields: ['custName', 'accNo', 'extra', 'amount'],
+            accLabel: "Account Number",
+            terms: "1. P10 Fixed Provider Fee + Convenience Fee applies."
+        },
+        'LOAD': {
+            feeType: 'fixed-percent',
+            rate: 0,
+            feeLabel: "Service Fee",
+            fields: ['accNo', 'amount'],
+            accLabel: "Mobile Number",
+            terms: "1. Load will be sent to the number provided."
+        }
+    };
+
     function initForm(service) {
-    currentService = service;
-    const config = serviceConfig[service];
-    
-    document.getElementById('menuGrid').style.display = 'none';
-    document.getElementById('mainHeader').style.display = 'none';
-    document.getElementById('formSection').style.display = 'block';
-    document.getElementById('formTitle').innerText = service;
-    
-    // Check kung may sub-options (In/Out o Padala/Claim)
-    if (config && config.mInLabel) {
-        document.getElementById('modeSelectionArea').style.display = 'grid';
-        document.getElementById('kioskForm').style.display = 'none';
-        
-        // Palitan ang text ng buttons
-        document.getElementById('mIn').innerText = config.mInLabel;
-        document.getElementById('mOut').innerText = config.mOutLabel;
-    } else {
-        document.getElementById('modeSelectionArea').style.display = 'none';
-        selectMode('Payment'); 
-    }
-}
+        currentService = service;
+        const config = serviceConfig[service];
+        document.getElementById('menuGrid').style.display = 'none';
+        document.getElementById('mainHeader').style.display = 'none';
+        document.getElementById('formSection').style.display = 'block';
+        document.getElementById('formTitle').innerText = service;
 
-   function selectMode(mode) {
-    const config = serviceConfig[currentService];
-    
-    // I-set ang currentType base sa label
-    if (mode === 'Cash In') {
-        currentType = config.mInLabel || 'Payment';
-    } else if (mode === 'Cash Out') {
-        currentType = config.mOutLabel || 'Payment';
-    } else {
-        currentType = mode;
+        if (config && config.mInLabel) {
+            document.getElementById('modeSelectionArea').style.display = 'grid';
+            document.getElementById('kioskForm').style.display = 'none';
+            document.getElementById('mIn').innerText = config.mInLabel;
+            document.getElementById('mOut').innerText = config.mOutLabel;
+        } else {
+            document.getElementById('modeSelectionArea').style.display = 'none';
+            selectMode('Payment');
+        }
     }
 
-    document.getElementById('mIn')?.classList.toggle('active', mode === 'Cash In');
-    document.getElementById('mOut')?.classList.toggle('active', mode === 'Cash Out');
-    document.getElementById('kioskForm').style.display = 'block';
-    renderInputs(mode);
-}
+    function selectMode(mode) {
+        const config = serviceConfig[currentService];
+        if (mode === 'Cash In') currentType = config.mInLabel || 'Payment';
+        else if (mode === 'Cash Out') currentType = config.mOutLabel || 'Payment';
+        else currentType = mode;
+
+        document.getElementById('mIn')?.classList.toggle('active', mode === 'Cash In');
+        document.getElementById('mOut')?.classList.toggle('active', mode === 'Cash Out');
+        document.getElementById('kioskForm').style.display = 'block';
+        renderInputs(mode);
+    }
 
     function renderInputs(mode) {
-    const container = document.getElementById('dynamicInputs');
-    const config = serviceConfig[currentService] || { fields: ['custName', 'accNo', 'amount'], accLabel: "Account Number" };
-    let html = "";
+        const container = document.getElementById('dynamicInputs');
+        const config = serviceConfig[currentService] || { fields: ['custName', 'accNo', 'amount'], accLabel: "Account Number" };
+        let html = "";
 
-    config.fields.forEach(field => {
-    if (field === 'custName') {
-        let label = (currentType === 'CLAIM') ? "Receiver Full Name" : "Customer Full Name";
-        html += `<div class="field-group"><label>${label}</label><input type="text" id="custName" required></div>`;
-    } 
-    else if (field === 'accNo') {
-        html += `<div class="field-group"><label>${config.accLabel}</label><input type="number" id="accNo" required></div>`;
-    } 
-    else if (field === 'accName') {
-        html += `<div class="field-group"><label>${config.nameLabel}</label><input type="text" id="accName" required></div>`;
-    } 
-    else if (field === 'extra') {
-        html += `<div class="field-group"><label>${config.extraLabel}</label><input type="text" id="extra" required></div>`;
-    } 
-    else if (field === 'amount') {
-        html += `
-            <div class="field-group">
-                <label>Amount</label>
-                <input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required>
-                <div id="feeText" style="font-size: 13px; color: var(--dark-green); font-weight: bold; margin-top: 5px;"></div>
-            </div>`;
-    }
-            if (field === 'feeOption' && mode === 'Cash In') html += `
-                <div class="field-group">
-                    <label>Fee Option</label>
-                    <select id="feeOption" onchange="updateTotal()">
-                        <option value="add">Add-on (Pay Fee)</option>
-                        <option value="deduct">Deduct (Bawas sa Amount)</option>
-                    </select>
-                </div>`;
-            if (field === 'cashInExtra' && mode === 'Cash In') html += `
-                <div class="field-group" style="background: #fdfdfd; padding: 10px; border-radius: 10px; border: 1px solid #eee;">
-                    <label>Pera na Inabot (Sukli Calc)</label>
-                    <input type="checkbox" id="isExact" onchange="handleExactAmount()"> Sakto ang Pera
-                    <input type="number" id="cashReceived" placeholder="Magkano inabot?" oninput="updateTotal()">
-                </div>`;
+        config.fields.forEach(field => {
+            if (field === 'custName') {
+                let label = (currentType === 'CLAIM') ? "Receiver Full Name" : "Customer Full Name";
+                html += `<div class="field-group"><label>${label}</label><input type="text" id="custName" required></div>`;
+            } else if (field === 'accNo') {
+                html += `<div class="field-group"><label>${config.accLabel}</label><input type="number" id="accNo" required></div>`;
+            } else if (field === 'amount') {
+                html += `<div class="field-group"><label>Amount</label><input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required><div id="feeText" style="font-size: 13px; color: var(--dark-green); font-weight: bold; margin-top: 5px;"></div></div>`;
+            } else if (field === 'feeOption' && mode === 'Cash In') {
+                html += `<div class="field-group"><label>Fee Option</label><select id="feeOption" onchange="updateTotal()"><option value="add">Add-on (Pay Fee)</option><option value="deduct">Deduct (Bawas sa Amount)</option></select></div>`;
+            } else if (field === 'cashInExtra' && mode === 'Cash In') {
+                html += `<div class="field-group" style="background: #fdfdfd; padding: 10px; border-radius: 10px; border: 1px solid #eee;"><label>Pera na Inabot</label><input type="checkbox" id="isExact" onchange="handleExactAmount()"> Sakto ang Pera<input type="number" id="cashReceived" placeholder="Magkano inabot?" oninput="updateTotal()"></div>`;
+            }
         });
 
-        // Dagdag Reference No. kapag Cash Out o Claim
-    if (mode === 'Cash Out' || currentType === 'CLAIM') {
-        let refLabel = (currentService === 'PALAWAN') ? "Claim Code (PEP Code)" : "Reference No. (Last 6 digits)";
-        html += `<div class="field-group"><label>${refLabel}</label><input type="text" id="refNoInput" required></div>`;
-    }
+        if (mode === 'Cash Out' || currentType === 'CLAIM') {
+            let refLabel = (currentService === 'PALAWAN') ? "Claim Code (PEP Code)" : "Reference No. (Last 6 digits)";
+            html += `<div class="field-group"><label>${refLabel}</label><input type="text" id="refNoInput" required></div>`;
+        }
 
-    container.innerHTML = html;
-    
-    // QR Area: Ipakita lang kung Cash Out (hindi kasama ang Palawan Claim)
-    const showQR = (mode === 'Cash Out' && (currentService === 'GCASH' || currentService === 'MAYA'));
-    document.getElementById('qrArea').style.display = showQR ? 'block' : 'none';
-    
-    if(showQR) {
-        document.getElementById('qrImage').src = (currentService === 'GCASH') ? 'GCASH_QR_LINK' : 'MAYA_QR_LINK';
+        container.innerHTML = html;
+        const showQR = (mode === 'Cash Out' && (currentService === 'GCASH' || currentService === 'MAYA'));
+        document.getElementById('qrArea').style.display = showQR ? 'block' : 'none';
+        if(showQR) document.getElementById('qrImage').src = (currentService === 'GCASH') ? 'YOUR_GCASH_QR_URL' : 'YOUR_MAYA_QR_URL';
+        updateTotal();
     }
-    
-    updateTotal();
-}
 
     function updateTotal() {
-    const amt = parseFloat(document.getElementById('amount')?.value) || 0;
-    const config = serviceConfig[currentService];
-    if (!config) return;
-
-    let totalFee = 0;
-
-    if (config.feeType === 'fixed-percent') {
-        // GCASH/MAYA: Straight 1%
-        totalFee = amt * config.rate;
-    } 
-    else if (config.feeType === 'double-percent') {
-        // PALAWAN: 1% Palawan + 1% Sayo = 2%
-        totalFee = (amt * config.rate) * 2;
-    } 
-    else if (config.feeType === 'bills-special') {
-        // ANECO/WATER: P10 (Fixed) + (P10 or 1% Whichever is higher)
-        let providerFee = config.providerFixedFee; 
-        let ownerFee = Math.max(config.ownerMin, amt * config.ownerRate);
-        totalFee = providerFee + ownerFee;
-    }
-
-    const option = document.getElementById('feeOption')?.value || 'add';
-    const cashReceived = parseFloat(document.getElementById('cashReceived')?.value) || 0;
-    
-    let totalToPay = (option === 'add') ? amt + totalFee : amt;
-
-    const feeDiv = document.getElementById('feeText');
-    if (feeDiv) {
-        let displayHTML = `<div style="color: #d32f2f;">${config.feeLabel}: P${totalFee.toFixed(2)}</div>`;
-        displayHTML += `<div style="font-size: 16px;">Total to Pay: <b>P${totalToPay.toLocaleString()}</b></div>`;
-        
-        if (cashReceived > 0) {
-    let change = cashReceived - totalToPay;
-    if (change >= 0) {
-        displayHTML += `<div style="margin-top:5px; color: #1b431c; font-weight: bold;">Sukli: P${change.toFixed(2)}</div>`;
-    } else {
-        displayHTML += `<div style="margin-top:5px; color: #d32f2f; font-weight: bold;">Kulang: P${Math.abs(change).toFixed(2)}</div>`;
-    }
-}
-    
-    function handleExactAmount() {
-    const isExact = document.getElementById('isExact').checked;
-    if (isExact) {
-        // Imbes na manual 0.01, kukunin natin ang value na na-compute na ng updateTotal
-        const feeText = document.getElementById('feeText').innerText;
-        // Extract total amount from display text (simplest way for now)
-        const amt = parseFloat(document.getElementById('amount').value) || 0;
-        
-        // Tawagin muli ang computation logic para makuha ang tamang totalToPay
+        const amt = parseFloat(document.getElementById('amount')?.value) || 0;
         const config = serviceConfig[currentService];
-        let tFee = 0;
-        if (config.feeType === 'fixed-percent') tFee = amt * config.rate;
-        else if (config.feeType === 'double-percent') tFee = (amt * config.rate) * 2;
-        else if (config.feeType === 'bills-special') tFee = config.providerFixedFee + Math.max(config.ownerMin, amt * config.ownerRate);
-        
+        if (!config) return;
+
+        let totalFee = 0;
+        if (config.feeType === 'fixed-percent') totalFee = amt * config.rate;
+        else if (config.feeType === 'double-percent') totalFee = (amt * config.rate) * 2;
+        else if (config.feeType === 'bills-special') totalFee = config.providerFixedFee + Math.max(config.ownerMin, amt * config.ownerRate);
+
         const option = document.getElementById('feeOption')?.value || 'add';
-        document.getElementById('cashReceived').value = (option === 'add') ? (amt + tFee).toFixed(2) : amt.toFixed(2);
-    } else {
-        document.getElementById('cashReceived').value = "";
+        const cashReceived = parseFloat(document.getElementById('cashReceived')?.value) || 0;
+        let totalToPay = (option === 'add') ? amt + totalFee : amt;
+
+        const feeDiv = document.getElementById('feeText');
+        if (feeDiv) {
+            let displayHTML = `<div style="color: #d32f2f;">${config.feeLabel}: P${totalFee.toFixed(2)}</div>`;
+            displayHTML += `<div style="font-size: 16px;">Total to Pay: <b>P${totalToPay.toLocaleString(undefined, {minimumFractionDigits: 2})}</b></div>`;
+            if (cashReceived > 0) {
+                let change = cashReceived - totalToPay;
+                displayHTML += `<div style="margin-top:5px; color: ${change >= 0 ? '#1b431c' : '#d32f2f'}; font-weight: bold;">${change >= 0 ? 'Sukli: P' + change.toFixed(2) : 'Kulang: P' + Math.abs(change).toFixed(2)}</div>`;
+            }
+            feeDiv.innerHTML = displayHTML;
+        }
+    } // ETO YUNG PINAKAMAHALAGANG BRACKET NA NAWALA KANINA
+
+    function handleExactAmount() {
+        const isExact = document.getElementById('isExact').checked;
+        if (isExact) {
+            const amt = parseFloat(document.getElementById('amount').value) || 0;
+            const config = serviceConfig[currentService];
+            let tFee = 0;
+            if (config.feeType === 'fixed-percent') tFee = amt * config.rate;
+            else if (config.feeType === 'double-percent') tFee = (amt * config.rate) * 2;
+            else if (config.feeType === 'bills-special') tFee = config.providerFixedFee + Math.max(config.ownerMin, amt * config.ownerRate);
+            
+            const option = document.getElementById('feeOption')?.value || 'add';
+            document.getElementById('cashReceived').value = (option === 'add') ? (amt + tFee).toFixed(2) : amt.toFixed(2);
+        } else {
+            document.getElementById('cashReceived').value = "";
+        }
+        updateTotal();
     }
-    updateTotal();
-}
 
     function showReview() {
-    const config = serviceConfig[currentService];
-    const amt = parseFloat(document.getElementById('amount').value) || 0;
-    
-    // Kunin ang total base sa fee logic na ginawa natin sa updateTotal
-    let totalFee = 0;
-    if (config.feeType === 'fixed-percent') {
-        totalFee = amt * config.rate;
-    } else if (config.feeType === 'double-percent') {
-        totalFee = (amt * config.rate) * 2;
-    } else if (config.feeType === 'bills-special') {
-        totalFee = config.providerFixedFee + Math.max(config.ownerMin, amt * config.ownerRate);
+        const config = serviceConfig[currentService];
+        const amt = parseFloat(document.getElementById('amount').value) || 0;
+        let totalFee = 0;
+        if (config.feeType === 'fixed-percent') totalFee = amt * config.rate;
+        else if (config.feeType === 'double-percent') totalFee = (amt * config.rate) * 2;
+        else if (config.feeType === 'bills-special') totalFee = config.providerFixedFee + Math.max(config.ownerMin, amt * config.ownerRate);
+
+        const option = document.getElementById('feeOption')?.value || 'add';
+        const finalTotal = (option === 'add') ? amt + totalFee : amt;
+
+        document.getElementById('summaryContent').innerHTML = `
+            <strong>SERVICE:</strong> ${currentService} (${currentType})<br>
+            <strong>CUSTOMER:</strong> ${document.getElementById('custName').value}<br>
+            <strong>ACCOUNT:</strong> ${document.getElementById('accNo').value}<br>
+            <hr>
+            <strong style="font-size:18px; color: #1b431c;">TOTAL TO PAY: P${finalTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</strong>
+        `;
+        document.getElementById('dynamicTerms').innerText = config.terms || "Please ensure all details are correct.";
+        document.getElementById('formSection').style.display = 'none';
+        document.getElementById('agreementSection').style.display = 'block';
     }
 
-    const option = document.getElementById('feeOption')?.value || 'add';
-    const finalTotal = (option === 'add') ? amt + totalFee : amt;
-
-    document.getElementById('summaryContent').innerHTML = `
-        <strong>SERVICE:</strong> ${currentService} (${currentType})<br>
-        <strong>CUSTOMER:</strong> ${document.getElementById('custName').value}<br>
-        <strong>ACCOUNT:</strong> ${document.getElementById('accNo').value}<br>
-        <hr>
-        <strong style="font-size:18px; color: #1b431c;">TOTAL TO PAY: P${finalTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</strong>
-    `;
-    
-    // I-set ang terms (siguraduhin na may 'terms' property ang bawat service sa config mo)
-    document.getElementById('dynamicTerms').innerText = config.terms || "Please ensure all details are correct.";
-    
-    document.getElementById('formSection').style.display = 'none';
-    document.getElementById('agreementSection').style.display = 'block';
-}
     function backToForm() {
         document.getElementById('agreementSection').style.display = 'none';
         document.getElementById('formSection').style.display = 'block';
@@ -369,17 +303,14 @@
         const btn = document.getElementById('finalSubmitBtn');
         btn.innerText = "PRINTER BUSY...";
         btn.disabled = true;
-
         const payload = {
             name: document.getElementById('custName').value,
             service: currentService,
             type: currentType,
             account: document.getElementById('accNo').value,
             amount: document.getElementById('amount').value,
-            extra: document.getElementById('extra')?.value || "",
             refNo: document.getElementById('refNoInput')?.value || ""
         };
-
         fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) })
         .then(res => res.json())
         .then(data => {
