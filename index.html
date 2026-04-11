@@ -105,8 +105,7 @@
         mInLabel: "CASH IN",
         mOutLabel: "CASH OUT",
         fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
-        accLabel: "GCash Number",
-        nameLabel: "GCash Name"
+        accLabel: "GCash Number"
     },
     'MAYA': {
         feeType: 'fixed-percent',
@@ -115,36 +114,34 @@
         mInLabel: "CASH IN",
         mOutLabel: "CASH OUT",
         fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
-        accLabel: "Maya Number",
-        nameLabel: "Maya Name"
+        accLabel: "Maya Number"
     },
     'PALAWAN': {
         feeType: 'double-percent',
-        rate: 0.01, // 1% + 1% = 2%
+        rate: 0.01, // 1% + 1%
         feeLabel: "Service Charge",
         mInLabel: "PADALA",
         mOutLabel: "CLAIM",
         fields: ['custName', 'accNo', 'extra', 'amount'],
-        accLabel: "Mobile Number",
-        extraLabel: "Receiver Name / Code"
+        accLabel: "Mobile Number"
     },
     'ANECO': {
-        feeType: 'double-min-percent',
-        rate: 0.01,
-        min: 10, // P10 + P10 minimum
+        feeType: 'bills-special',
+        providerFixedFee: 10, // Fixed P10 sa provider
+        ownerMin: 10,         // P10 minimum sa iyo
+        ownerRate: 0.01,      // 1% sa iyo
         feeLabel: "Convenience Fee",
         fields: ['custName', 'accNo', 'extra', 'amount'],
-        accLabel: "Account Number",
-        extraLabel: "Meter Number"
+        accLabel: "Account Number"
     },
     'WATER': {
-        feeType: 'double-min-percent',
-        rate: 0.01,
-        min: 10,
+        feeType: 'bills-special',
+        providerFixedFee: 10,
+        ownerMin: 10,
+        ownerRate: 0.01,
         feeLabel: "Convenience Fee",
         fields: ['custName', 'accNo', 'extra', 'amount'],
-        accLabel: "Account Number",
-        extraLabel: "Meter Number"
+        accLabel: "Account Number"
     }
 };
     
@@ -259,18 +256,18 @@
     let totalFee = 0;
 
     if (config.feeType === 'fixed-percent') {
-        // GCASH/MAYA: Straight 1% lang
+        // GCASH/MAYA: Straight 1%
         totalFee = amt * config.rate;
     } 
     else if (config.feeType === 'double-percent') {
-        // PALAWAN: 1% (Palawan) + 1% (Sayo) = 2% total
-        totalFee = (amt * config.rate) + (amt * config.rate);
+        // PALAWAN: 1% Palawan + 1% Sayo = 2%
+        totalFee = (amt * config.rate) * 2;
     } 
-    else if (config.feeType === 'double-min-percent') {
-        // ANECO/WATER: (Whichever is higher P10 or 1%) TIMES TWO
-        let providerSide = Math.max(config.min, amt * config.rate);
-        let ownerSide = Math.max(config.min, amt * config.rate);
-        totalFee = providerSide + ownerSide;
+    else if (config.feeType === 'bills-special') {
+        // ANECO/WATER: P10 (Fixed) + (P10 or 1% Whichever is higher)
+        let providerFee = config.providerFixedFee; 
+        let ownerFee = Math.max(config.ownerMin, amt * config.ownerRate);
+        totalFee = providerFee + ownerFee;
     }
 
     const option = document.getElementById('feeOption')?.value || 'add';
@@ -285,7 +282,7 @@
         
         if (cashReceived > 0) {
             let change = cashReceived - totalToPay;
-            displayHTML += `<div style="margin-top:5px; color: blue;">Sukli: P${change.toFixed(2)}</div>`;
+            displayHTML += `<div style="margin-top:5px; color: #1b431c; font-weight: bold;">Sukli: P${change.toFixed(2)}</div>`;
         }
         feeDiv.innerHTML = displayHTML;
     }
