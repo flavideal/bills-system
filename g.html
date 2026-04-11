@@ -385,24 +385,26 @@ setMode('Cash In');
     // Siguraduhin na ang Queue Number ay UNIQUE bago ipadala
     const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
-    const formData = {
-        customerName: document.getElementById('custName').value,
-        queueNo: generatedNum,
-        timestamp: new Date().toLocaleString(),
-        provider: "GCASH",
-        transType: currentMode,
-        gcashName: document.getElementById('accName').value,
-        gcashNo: document.getElementById('accNo').value,
-        amount: parseFloat(document.getElementById('amount').value) || 0,
-        feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
-        feeOption: document.getElementById('reviewFeeOption').value,
-        cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
-        change: 0,
-        consent: "YES",
-        receiptFile: fileData ? fileData.base64 : null,
-        receiptFileName: fileData ? fileData.name : null,
-        receiptFileType: fileData ? fileData.type : null
-    };
+    // SA LOOB NG generateNumber()
+const formData = {
+    customerName: document.getElementById('custName').value,
+    queueNo: generatedNum,
+    timestamp: new Date().toLocaleString(),
+    provider: "GCASH",
+    transType: currentMode,
+    gcashName: document.getElementById('accName').value,
+    gcashNo: document.getElementById('accNo').value,
+    amount: parseFloat(document.getElementById('amount').value) || 0,
+    feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
+    feeOption: document.getElementById('reviewFeeOption').value,
+    // FIX: Kung Cash Out, gawing 0 ang cashAmount para hindi mag-error
+    cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
+    change: 0,
+    consent: "YES",
+    receiptFile: fileData ? fileData.base64 : null,
+    receiptFileName: fileData ? fileData.name : null,
+    receiptFileType: fileData ? fileData.type : null
+};
 
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec"; 
 
