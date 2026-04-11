@@ -98,15 +98,16 @@
 
     const serviceConfig = {
         'GCASH': {
-            feeType: 'fixed-percent',
-            rate: 0.01,
-            feeLabel: "Service Fee",
-            mInLabel: "CASH IN",
-            mOutLabel: "CASH OUT",
-            fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
-            accLabel: "GCash Number",
-            terms: "1. 1% Service Fee applies. 2. Ensure the GCash number is correct."
-        },
+    feeType: 'fixed-percent',
+    rate: 0.01,
+    feeLabel: "Service Fee",
+    mInLabel: "CASH IN",
+    mOutLabel: "CASH OUT",
+    fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
+    accLabel: "GCash Number (11-digits)",
+    nameLabel: "GCash Account Name (eg: J***N D. C**Z)", // Ito yung format na gusto mo
+    terms: "1. 1% Service Fee applies. 2. Ensure the GCash number and name match."
+},
         'MAYA': {
             feeType: 'fixed-percent',
             rate: 0.01,
@@ -189,82 +190,114 @@
     }
 
     function renderInputs(mode) {
-        const container = document.getElementById('dynamicInputs');
-        const config = serviceConfig[currentService] || { fields: ['custName', 'accNo', 'amount'], accLabel: "Account Number" };
-        let html = "";
+    const container = document.getElementById('dynamicInputs');
+    const config = serviceConfig[currentService] || { fields: ['custName', 'accNo', 'amount'], accLabel: "Account Number" };
+    let html = "";
 
-        config.fields.forEach(field => {
-            if (field === 'custName') {
-                let label = (currentType === 'CLAIM') ? "Receiver Full Name" : "Customer Full Name";
-                html += `<div class="field-group"><label>${label}</label><input type="text" id="custName" required></div>`;
-            } else if (field === 'accNo') {
-                html += `<div class="field-group"><label>${config.accLabel}</label><input type="number" id="accNo" required></div>`;
-            } else if (field === 'amount') {
-                html += `<div class="field-group"><label>Amount</label><input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required><div id="feeText" style="font-size: 13px; color: var(--dark-green); font-weight: bold; margin-top: 5px;"></div></div>`;
-            } else if (field === 'feeOption' && mode === 'Cash In') {
-                html += `<div class="field-group"><label>Fee Option</label><select id="feeOption" onchange="updateTotal()"><option value="add">Add-on (Pay Fee)</option><option value="deduct">Deduct (Bawas sa Amount)</option></select></div>`;
-            } else if (field === 'cashInExtra' && mode === 'Cash In') {
-                html += `<div class="field-group" style="background: #fdfdfd; padding: 10px; border-radius: 10px; border: 1px solid #eee;"><label>Pera na Inabot</label><input type="checkbox" id="isExact" onchange="handleExactAmount()"> Sakto ang Pera<input type="number" id="cashReceived" placeholder="Magkano inabot?" oninput="updateTotal()"></div>`;
-            }
-        });
-
-        if (mode === 'Cash Out' || currentType === 'CLAIM') {
-            let refLabel = (currentService === 'PALAWAN') ? "Claim Code (PEP Code)" : "Reference No. (Last 6 digits)";
-            html += `<div class="field-group"><label>${refLabel}</label><input type="text" id="refNoInput" required></div>`;
-        }
-
-        container.innerHTML = html;
-        const showQR = (mode === 'Cash Out' && (currentService === 'GCASH' || currentService === 'MAYA'));
-        document.getElementById('qrArea').style.display = showQR ? 'block' : 'none';
-        if(showQR) document.getElementById('qrImage').src = (currentService === 'GCASH') ? 'YOUR_GCASH_QR_URL' : 'YOUR_MAYA_QR_URL';
-        updateTotal();
+    // A. SA CASH OUT: Ilagay ang QR sa TAAS
+    const isCashOut = (mode === 'Cash Out' && (currentService === 'GCASH' || currentService === 'MAYA'));
+    if (isCashOut) {
+        html += `
+            <div class="qr-box" style="margin-bottom: 20px; border: 2px solid var(--dark-green);">
+                <p style="font-size: 14px; font-weight:bold; color: var(--dark-green);">STEP 1: SCAN & PAY FIRST</p>
+                <img src="${currentService === 'GCASH' ? 'YOUR_GCASH_QR_URL' : 'YOUR_MAYA_QR_URL'}" style="width: 200px; border-radius: 10px;">
+                <p style="font-size: 11px; color: #666;">Scan this QR to send the cash out amount</p>
+            </div>`;
     }
 
-    function updateTotal() {
+    config.fields.forEach(field => {
+        if (field === 'custName') {
+            let label = (mode === 'Cash Out') ? "Sender Name (Who is transacting)" : "Customer Full Name";
+            html += `<div class="field-group"><label>${label}</label><input type="text" id="custName" placeholder="Juan Dela Cruz" required></div>`;
+        } 
+        else if (field === 'accNo') {
+            html += `<div class="field-group"><label>${config.accLabel}</label><input type="number" id="accNo" placeholder="09123456789" oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11);" required></div>`;
+        } 
+        else if (field === 'accName') {
+            html += `<div class="field-group"><label>${config.nameLabel}</label><input type="text" id="accName" placeholder="J***N D. C**Z" required></div>`;
+        } 
+        else if (field === 'amount') {
+            html += `<div class="field-group"><label>Amount</label><input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required><div id="feeText" style="padding: 10px; background: #f9f9f9; border-radius: 8px; margin-top: 5px;"></div></div>`;
+        } 
+        else if (field === 'feeOption') {
+            html += `<div class="field-group"><label>Fee Option</label><select id="feeOption" onchange="updateTotal()"><option value="add">Add-on (Pay fee on top)</option><option value="deduct">Deduct (Bawas sa amount)</option></select></div>`;
+        } 
+        else if (field === 'cashInExtra' && mode === 'Cash In') {
+            html += `
+                <div class="field-group" style="background: #fff9e6; padding: 12px; border-radius: 10px; border: 1px solid #ffc267;">
+                    <label style="color: #856404;">CASH PAYMENT (SUKLI CALC)</label>
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <input type="checkbox" id="isExact" onchange="handleExactAmount()" style="width:18px; height:18px;"> <span>Sakto ang Pera</span>
+                    </div>
+                    <input type="number" id="cashReceived" placeholder="Magkano ang inabot na pera?" oninput="updateTotal()">
+                </div>`;
+        }
+    });
+
+    // B. SA CASH OUT: Reference No at Upload Proof
+    if (mode === 'Cash Out') {
+        html += `
+            <div class="field-group"><label>Reference Number (Last 6 Digits)</label><input type="text" id="refNoInput" maxlength="6" placeholder="123456" required></div>
+            <div class="field-group">
+                <label>Upload Receipt / Screenshot</label>
+                <input type="file" id="proofUpload" accept="image/*" style="font-size: 12px; padding: 5px;">
+            </div>`;
+    }
+
+    container.innerHTML = html;
+    // Itago yung lumang QR area sa baba since nilagay na natin sa taas
+    document.getElementById('qrArea').style.display = 'none';
+    updateTotal();
+}
+    
+   function updateTotal() {
     const amt = parseFloat(document.getElementById('amount')?.value) || 0;
     const config = serviceConfig[currentService];
-    if (!config) return;
+    if (!config || amt <= 0) {
+        if(document.getElementById('feeText')) document.getElementById('feeText').innerHTML = "";
+        return;
+    }
 
     let totalFee = 0;
-    // 1. Compute ang fee base sa input amount
     if (config.feeType === 'fixed-percent') totalFee = amt * config.rate;
     else if (config.feeType === 'double-percent') totalFee = (amt * config.rate) * 2;
     else if (config.feeType === 'bills-special') totalFee = config.providerFixedFee + Math.max(config.ownerMin, amt * config.ownerRate);
 
     const option = document.getElementById('feeOption')?.value || 'add';
-    
-    // 2. DITO ANG LOGIC NG DEDUCT VS ADD
-    let totalToPay = 0;
-    let netAmount = 0; // Ito yung papasok sa account ng customer
-
-    if (option === 'add') {
-        totalToPay = amt + totalFee;
-        netAmount = amt;
-    } else {
-        totalToPay = amt;           // Ang perang hawak ng customer ang total
-        netAmount = amt - totalFee; // Binawasan natin ang matatanggap nila
-    }
+    let totalToPay = (option === 'add') ? amt + totalFee : amt;
+    let receiveAmt = (option === 'add') ? amt : amt - totalFee;
 
     const feeDiv = document.getElementById('feeText');
     if (feeDiv) {
-        let displayHTML = `<div style="color: #d32f2f;">${config.feeLabel}: P${totalFee.toFixed(2)}</div>`;
-        
-        // Ipakita ang Net Amount kung Deduct ang pinili para hindi malito ang customer
-        if (option === 'deduct') {
-            displayHTML += `<div style="color: #1b431c; font-size: 13px;">Matatanggap: <b>P${netAmount.toFixed(2)}</b></div>`;
-        }
+        let breakdownHTML = `
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #555;">
+                <span>Principal Amount:</span> <span>P${amt.toFixed(2)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #d32f2f;">
+                <span>${config.feeLabel}:</span> <span>+ P${totalFee.toFixed(2)}</span>
+            </div>
+            <div style="border-top: 1px solid #ddd; margin: 5px 0; padding-top: 5px; display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; color: var(--dark-green);">
+                <span>TOTAL TO PAY:</span> <span>P${totalToPay.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+            </div>
+            <div style="font-size: 11px; color: #666; font-style: italic;">
+                *Ang papasok sa account: P${receiveAmt.toFixed(2)}
+            </div>
+        `;
 
-        displayHTML += `<div style="font-size: 16px; margin-top:5px;">Total to Pay: <b>P${totalToPay.toLocaleString(undefined, {minimumFractionDigits: 2})}</b></div>`;
-        
         const cashReceived = parseFloat(document.getElementById('cashReceived')?.value) || 0;
         if (cashReceived > 0) {
             let change = cashReceived - totalToPay;
-            displayHTML += `<div style="margin-top:5px; color: ${change >= 0 ? '#1b431c' : '#d32f2f'}; font-weight: bold;">${change >= 0 ? 'Sukli: P' + change.toFixed(2) : 'Kulang: P' + Math.abs(change).toFixed(2)}</div>`;
+            breakdownHTML += `
+                <div style="margin-top: 8px; padding: 8px; border-radius: 5px; background: ${change >= 0 ? '#e6fffa' : '#fff5f5'}; text-align: center;">
+                    <span style="font-weight: bold; color: ${change >= 0 ? '#1b431c' : '#d32f2f'};">
+                        ${change >= 0 ? 'SUKLI: P' + change.toFixed(2) : 'KULANG: P' + Math.abs(change).toFixed(2)}
+                    </span>
+                </div>`;
         }
-        feeDiv.innerHTML = displayHTML;
+        feeDiv.innerHTML = breakdownHTML;
     }
 }
-
+    
     function handleExactAmount() {
         const isExact = document.getElementById('isExact').checked;
         if (isExact) {
