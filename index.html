@@ -99,55 +99,50 @@
     // DITO MO I-EEDIT ANG LAMAN NG BAWAT SERVICE PARA HINDI MAHABANG CODE
    const serviceConfig = {
     'GCASH': {
-        mInLabel: "CASH IN",
-        mOutLabel: "CASH OUT",
-        feeType: 'percent', // 1% calculation
+        feeType: 'fixed-percent',
         rate: 0.01,
         feeLabel: "Service Fee",
+        mInLabel: "CASH IN",
+        mOutLabel: "CASH OUT",
         fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
-        terms: "1. 1% service fee applies. 2. Verify number carefully.",
         accLabel: "GCash Number",
         nameLabel: "GCash Name"
     },
     'MAYA': {
-        mInLabel: "CASH IN",
-        mOutLabel: "CASH OUT",
-        feeType: 'percent', // 1% calculation
+        feeType: 'fixed-percent',
         rate: 0.01,
         feeLabel: "Service Fee",
+        mInLabel: "CASH IN",
+        mOutLabel: "CASH OUT",
         fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
-        terms: "1. 1% service fee applies. 2. Maya processing rules apply.",
         accLabel: "Maya Number",
         nameLabel: "Maya Name"
     },
     'PALAWAN': {
+        feeType: 'double-percent',
+        rate: 0.01, // 1% + 1% = 2%
+        feeLabel: "Service Charge",
         mInLabel: "PADALA",
         mOutLabel: "CLAIM",
-        feeType: 'percent', // 1% calculation
-        rate: 0.01,
-        feeLabel: "Service Charge",
         fields: ['custName', 'accNo', 'extra', 'amount'],
-        terms: "1. 1% Service Charge applies. 2. Present valid ID for claims.",
         accLabel: "Mobile Number",
         extraLabel: "Receiver Name / Code"
     },
     'ANECO': {
-        feeType: 'min-percent', // P10 minimum or 1% logic
+        feeType: 'double-min-percent',
         rate: 0.01,
-        min: 10,
+        min: 10, // P10 + P10 minimum
         feeLabel: "Convenience Fee",
         fields: ['custName', 'accNo', 'extra', 'amount'],
-        terms: "1. P10 Minimum Convenience Fee or 1% for higher amounts.",
         accLabel: "Account Number",
         extraLabel: "Meter Number"
     },
-    'WATER': { // Idinagdag ko na rin ito dahil nabanggit mo
-        feeType: 'min-percent',
+    'WATER': {
+        feeType: 'double-min-percent',
         rate: 0.01,
         min: 10,
         feeLabel: "Convenience Fee",
         fields: ['custName', 'accNo', 'extra', 'amount'],
-        terms: "1. P10 Minimum Convenience Fee applies.",
         accLabel: "Account Number",
         extraLabel: "Meter Number"
     }
@@ -259,34 +254,41 @@
     function updateTotal() {
     const amt = parseFloat(document.getElementById('amount')?.value) || 0;
     const config = serviceConfig[currentService];
-    let fee = 0;
+    if (!config) return;
 
-    if (config.feeType === 'percent') {
-        // GCash, Maya, Palawan (Straight 1%)
-        fee = amt * config.rate;
+    let totalFee = 0;
+
+    if (config.feeType === 'fixed-percent') {
+        // GCASH/MAYA: Straight 1% lang
+        totalFee = amt * config.rate;
     } 
-    else if (config.feeType === 'min-percent') {
-        // Aneco, Water (P10 Minimum or 1%)
-        let computedFee = amt * config.rate;
-        fee = Math.max(config.min, computedFee); 
-        // Math.max ang kukuha kung alin ang mas mataas sa P10 o sa 1%
+    else if (config.feeType === 'double-percent') {
+        // PALAWAN: 1% (Palawan) + 1% (Sayo) = 2% total
+        totalFee = (amt * config.rate) + (amt * config.rate);
+    } 
+    else if (config.feeType === 'double-min-percent') {
+        // ANECO/WATER: (Whichever is higher P10 or 1%) TIMES TWO
+        let providerSide = Math.max(config.min, amt * config.rate);
+        let ownerSide = Math.max(config.min, amt * config.rate);
+        totalFee = providerSide + ownerSide;
     }
 
     const option = document.getElementById('feeOption')?.value || 'add';
     const cashReceived = parseFloat(document.getElementById('cashReceived')?.value) || 0;
     
-    let totalToPay = (option === 'add') ? amt + fee : amt;
-    
-    // UI Display
-    let feeDisplay = `${config.label}: P${fee.toFixed(2)} | Total: P${totalToPay.toLocaleString()}`;
-    
-    if (cashReceived > 0) {
-        let change = cashReceived - totalToPay;
-        feeDisplay += (change >= 0) ? ` | Sukli: P${change.toFixed(2)}` : ` | Kulang: P${Math.abs(change).toFixed(2)}`;
-    }
+    let totalToPay = (option === 'add') ? amt + totalFee : amt;
 
     const feeDiv = document.getElementById('feeText');
-    if (feeDiv) feeDiv.innerText = feeDisplay;
+    if (feeDiv) {
+        let displayHTML = `<div style="color: #d32f2f;">${config.feeLabel}: P${totalFee.toFixed(2)}</div>`;
+        displayHTML += `<div style="font-size: 16px;">Total to Pay: <b>P${totalToPay.toLocaleString()}</b></div>`;
+        
+        if (cashReceived > 0) {
+            let change = cashReceived - totalToPay;
+            displayHTML += `<div style="margin-top:5px; color: blue;">Sukli: P${change.toFixed(2)}</div>`;
+        }
+        feeDiv.innerHTML = displayHTML;
+    }
 }
     
     function handleExactAmount() {
