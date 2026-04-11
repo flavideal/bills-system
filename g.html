@@ -190,20 +190,44 @@ setMode('Cash In');
 
     const cashIn = parseFloat(document.getElementById('cashReceived').value) || 0;
     const sukliDiv = document.getElementById('sukliDisplay');
-    if (!document.getElementById('isExact').checked && cashIn > totalToPay) {
-        sukliDiv.innerHTML = "SUKLI: " + formatPHP(cashIn - totalToPay);
-    } else { sukliDiv.innerHTML = ""; }
+    
+    if (!document.getElementById('isExact').checked && cashIn > 0) {
+        if (cashIn < totalToPay) {
+            sukliDiv.style.color = "#d32f2f"; // Pula kung kulang
+            sukliDiv.innerHTML = "KULANG NG: " + formatPHP(totalToPay - cashIn);
+        } else {
+            sukliDiv.style.color = "#1b431c"; // Green kung may sukli
+            sukliDiv.innerHTML = "SUKLI: " + formatPHP(cashIn - totalToPay);
+        }
+    } else { 
+        sukliDiv.innerHTML = ""; 
+    }
 }
 
     function showReview() {
     const name = document.getElementById('custName').value;
     const acc = document.getElementById('accNo').value;
     const amt = parseFloat(document.getElementById('amount').value) || 0;
+    
+    // Kunin ang fee at total para sa validation
+    const fee = amt * 0.01;
+    const totalWithFee = amt + fee;
 
-    if(!name || !acc || amt <= 0) { alert("Pakikumpleto ang detalye."); return; }
+    if(!name || !acc || amt <= 0) { 
+        alert("Pakikumpleto ang detalye."); 
+        return; 
+    }
 
-    // Ang HTML sa ibaba ay ilalagay sa reviewContent
-    // Pansinin na may onchange="updateReviewTotal()" ang select
+    // VALIDATION: Strict Amount Check para sa Cash In
+    if (currentMode === 'Cash In' && !document.getElementById('isExact').checked) {
+        const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
+        if (cashReceived < totalWithFee) {
+            alert("Kulang po ang cash na ininput. Dapat ay hindi bababa sa " + formatPHP(totalWithFee));
+            return;
+        }
+    }
+
+    // ... (itutuloy ang rest ng showReview logic mo dito)
     let reviewHTML = `
         <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
         <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
@@ -219,16 +243,15 @@ setMode('Cash In');
         </div>
 
         <div id="finalBreakdown" style="margin-top:10px; border-top: 1px dashed #ccc; padding-top:10px;">
-            </div>
+        </div>
     `;
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
     document.getElementById('stepReview').style.display = 'block';
-    
-    // Tawagin agad ito para lumabas ang unang calculation
     updateReviewTotal();
 }
 
+    
     function hideReview() { document.getElementById('stepReview').style.display = 'none'; }
 
     function generateNumber() {
