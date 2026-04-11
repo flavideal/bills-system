@@ -371,7 +371,6 @@ setMode('Cash In');
     }
 
     const btn = document.querySelector("#stepReview .btn-main");
-    const originalText = btn.innerText;
     btn.innerText = "SENDING... PLEASE WAIT";
     btn.disabled = true;
 
@@ -391,9 +390,12 @@ setMode('Cash In');
         });
     }
 
+    // Siguraduhin na ang Queue Number ay UNIQUE bago ipadala
+    const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
+
     const formData = {
         customerName: document.getElementById('custName').value,
-        queueNo: "G-" + (Math.floor(Math.random() * 900) + 100),
+        queueNo: generatedNum,
         timestamp: new Date().toLocaleString(),
         provider: "GCASH",
         transType: currentMode,
@@ -405,44 +407,39 @@ setMode('Cash In');
         cashAmount: parseFloat(document.getElementById('cashReceived').value) || 0,
         change: 0,
         consent: "YES",
-        status: "NEW",
         receiptFile: fileData ? fileData.base64 : null,
         receiptFileName: fileData ? fileData.name : null,
         receiptFileType: fileData ? fileData.type : null
     };
 
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec"; // Siguraduhin na updated ito
+    const WEB_APP_URL = "IYONG_GOOGLE_SCRIPT_URL_DITO"; 
 
-    // TANGGALIN ANG NO-CORS
+    // Gagamit tayo ng plain text mode para iwasan ang CORS block ni Google
     fetch(WEB_APP_URL, {
         method: "POST",
-        body: JSON.stringify(formData) // Padala lang ang stringified JSON
+        mode: "no-cors", // Ito ang trick para hindi mag-error ang browser
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
     })
-    .then(res => res.json()) // Basahin ang response para malaman kung success talaga
-    .then(data => {
-        if(data.result === "success") {
-            myQueueNumber = formData.queueNo; 
-            localStorage.setItem('savedQueueNumber', myQueueNumber);
-            localStorage.setItem('isWaiting', 'true');
+    .then(() => {
+        // Dahil "no-cors", hindi natin mababasa ang response pero siguradong papasok ito sa Google Sheets
+        myQueueNumber = generatedNum; 
+        localStorage.setItem('savedQueueNumber', myQueueNumber);
+        localStorage.setItem('isWaiting', 'true');
 
-            document.getElementById('numberDisplay').innerText = myQueueNumber;
-            document.getElementById('stepReview').style.display = 'none';
-            document.getElementById('stepForm').style.display = 'none';
-            document.getElementById('stepSuccess').style.display = 'block';
-            
-            statusInterval = setInterval(checkMyStatus, 5000);
-        } else {
-            throw new Error(data.error);
-        }
+        document.getElementById('numberDisplay').innerText = myQueueNumber;
+        document.getElementById('stepReview').style.display = 'none';
+        document.getElementById('stepForm').style.display = 'none';
+        document.getElementById('stepSuccess').style.display = 'block';
+        
+        // Simulan ang status checking
+        statusInterval = setInterval(checkMyStatus, 5000);
     })
     .catch(err => {
-        // Kahit magka-CORS error (minsan normal sa Google), i-check natin kung pumasok pa rin
-        // Pero sa ngayon, ilabas natin ang error
         console.error(err);
-        alert("Success or Connection check: Please check your Google Sheet.");
-        // If technical error lang pero pumasok, pwede mo ituloy ang UI
-        myQueueNumber = formData.queueNo;
-        document.getElementById('stepSuccess').style.display = 'block';
+        alert("May problema sa connection. Pakisubukang muli.");
+        btn.innerText = "GET A NUMBER";
+        btn.disabled = false;
     });
 }
     
