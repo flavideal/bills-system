@@ -178,18 +178,27 @@
     let html = "";
 
     config.fields.forEach(field => {
-        if (field === 'custName') {
-            let label = (currentType === 'CLAIM') ? "Receiver Full Name" : "Customer Full Name";
-            html += `<div class="field-group"><label>${label}</label><input type="text" id="custName" required></div>`;
-            if (field === 'accNo') html += `<div class="field-group"><label>${config.accLabel}</label><input type="number" id="accNo" required></div>`;
-            if (field === 'accName') html += `<div class="field-group"><label>${config.nameLabel}</label><input type="text" id="accName" required></div>`;
-            if (field === 'extra') html += `<div class="field-group"><label>${config.extraLabel}</label><input type="text" id="extra" required></div>`;
-            if (field === 'amount') html += `
-                <div class="field-group">
-                    <label>Amount</label>
-                    <input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required>
-                    <div id="feeText" style="font-size: 13px; color: var(--dark-green); font-weight: bold; margin-top: 5px;"></div>
-                </div>`;
+    if (field === 'custName') {
+        let label = (currentType === 'CLAIM') ? "Receiver Full Name" : "Customer Full Name";
+        html += `<div class="field-group"><label>${label}</label><input type="text" id="custName" required></div>`;
+    } 
+    else if (field === 'accNo') {
+        html += `<div class="field-group"><label>${config.accLabel}</label><input type="number" id="accNo" required></div>`;
+    } 
+    else if (field === 'accName') {
+        html += `<div class="field-group"><label>${config.nameLabel}</label><input type="text" id="accName" required></div>`;
+    } 
+    else if (field === 'extra') {
+        html += `<div class="field-group"><label>${config.extraLabel}</label><input type="text" id="extra" required></div>`;
+    } 
+    else if (field === 'amount') {
+        html += `
+            <div class="field-group">
+                <label>Amount</label>
+                <input type="number" id="amount" placeholder="0.00" oninput="updateTotal()" required>
+                <div id="feeText" style="font-size: 13px; color: var(--dark-green); font-weight: bold; margin-top: 5px;"></div>
+            </div>`;
+    }
             if (field === 'feeOption' && mode === 'Cash In') html += `
                 <div class="field-group">
                     <label>Fee Option</label>
