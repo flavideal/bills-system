@@ -118,21 +118,23 @@
     },
     'PALAWAN': {
         feeType: 'double-percent',
-        rate: 0.01, // 1% + 1%
+        rate: 0.01,
         feeLabel: "Service Charge",
         mInLabel: "PADALA",
         mOutLabel: "CLAIM",
         fields: ['custName', 'accNo', 'extra', 'amount'],
-        accLabel: "Mobile Number"
+        accLabel: "Mobile Number",
+        terms: "1. 1% Provider Fee + 1% Service Charge applies. 2. Valid ID is required for claims."
     },
     'ANECO': {
         feeType: 'bills-special',
-        providerFixedFee: 10, // Fixed P10 sa provider
-        ownerMin: 10,         // P10 minimum sa iyo
-        ownerRate: 0.01,      // 1% sa iyo
+        providerFixedFee: 10,
+        ownerMin: 10,
+        ownerRate: 0.01,
         feeLabel: "Convenience Fee",
         fields: ['custName', 'accNo', 'extra', 'amount'],
-        accLabel: "Account Number"
+        accLabel: "Account Number",
+        terms: "1. P10 Fixed Provider Fee + Convenience Fee applies. 2. Verify Account Number carefully."
     },
     'WATER': {
         feeType: 'bills-special',
@@ -142,6 +144,14 @@
         feeLabel: "Convenience Fee",
         fields: ['custName', 'accNo', 'extra', 'amount'],
         accLabel: "Account Number"
+    },
+    'LOAD': {
+        feeType: 'fixed-percent',
+        rate: 0, // O kung magkano ang patong mo (ex: 2 pesos fixed)
+        feeLabel: "Service Fee",
+        fields: ['accNo', 'amount'],
+        accLabel: "Mobile Number",
+        terms: "1. Load will be sent to the number provided. 2. No refund for wrong numbers."
     }
 };
     
@@ -281,10 +291,11 @@
         displayHTML += `<div style="font-size: 16px;">Total to Pay: <b>P${totalToPay.toLocaleString()}</b></div>`;
         
         if (cashReceived > 0) {
-            let change = cashReceived - totalToPay;
-            displayHTML += `<div style="margin-top:5px; color: #1b431c; font-weight: bold;">Sukli: P${change.toFixed(2)}</div>`;
-        }
-        feeDiv.innerHTML = displayHTML;
+    let change = cashReceived - totalToPay;
+    if (change >= 0) {
+        displayHTML += `<div style="margin-top:5px; color: #1b431c; font-weight: bold;">Sukli: P${change.toFixed(2)}</div>`;
+    } else {
+        displayHTML += `<div style="margin-top:5px; color: #d32f2f; font-weight: bold;">Kulang: P${Math.abs(change).toFixed(2)}</div>`;
     }
 }
     
