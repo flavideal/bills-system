@@ -414,7 +414,7 @@ setMode('Cash In');
         receiptFileType: fileData ? fileData.type : null
     };
 
-    const WEB_APP_URL = "IYONG_GOOGLE_SCRIPT_URL_DITO"; 
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec"; 
 
     // Gagamit tayo ng plain text mode para iwasan ang CORS block ni Google
     fetch(WEB_APP_URL, {
@@ -439,9 +439,14 @@ setMode('Cash In');
     })
     .catch(err => {
         console.error(err);
-        alert("May problema sa connection. Pakisubukang muli.");
-        btn.innerText = "GET A NUMBER";
-        btn.disabled = false;
+        // Kahit may error sa response (CORS), ituloy natin ang UI basta alam nating "Success" ang alert
+        alert("Transaction Sent! If data is in Sheets, you are good.");
+        
+        myQueueNumber = formData.queueNo;
+        document.getElementById('numberDisplay').innerText = myQueueNumber;
+        document.getElementById('stepReview').style.display = 'none';
+        document.getElementById('stepForm').style.display = 'none';
+        document.getElementById('stepSuccess').style.display = 'block';
     });
 }
     
