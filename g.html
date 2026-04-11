@@ -363,74 +363,80 @@ setMode('Cash In');
     }
 
     const btn = document.querySelector("#stepReview .btn-main");
+    const originalText = btn.innerText;
     btn.innerText = "SENDING... PLEASE WAIT";
     btn.disabled = true;
 
-    const fileInput = document.getElementById('proofUpload');
-    let fileData = { base64: null, name: null, type: null }; // Default values
+    try {
+        const fileInput = document.getElementById('proofUpload');
+        let fileData = { base64: null, name: null, type: null };
 
-    if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        fileData = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve({
-                base64: e.target.result,
-                name: file.name,
-                type: file.type
+        // Kunin ang photo kung meron (Common ito sa Cash Out)
+        if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            fileData = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve({
+                    base64: e.target.result,
+                    name: file.name,
+                    type: file.type
+                });
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
             });
-            reader.readAsDataURL(file);
+        }
+
+        const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
+
+        const formData = {
+            customerName: document.getElementById('custName').value,
+            queueNo: generatedNum,
+            timestamp: new Date().toLocaleString(),
+            provider: "GCASH",
+            transType: currentMode,
+            gcashName: document.getElementById('accName').value,
+            gcashNo: document.getElementById('accNo').value,
+            amount: parseFloat(document.getElementById('amount').value) || 0,
+            feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
+            feeOption: document.getElementById('reviewFeeOption').value,
+            cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
+            change: 0,
+            consent: "YES",
+            receiptFile: fileData.base64,
+            receiptFileName: fileData.name,
+            receiptFileType: fileData.type
+        };
+
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPv2LNrdz1NojYc7lbFfiHZNM0tkoP0bBIG0mar6cGrNg6wP_QcVMJSq7_zxVmX8rj/exec";
+
+        // Gagamit tayo ng plain text transfer para iwas CORS pre-flight block
+        const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify(formData),
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            }
         });
-    }
 
-    const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
-
-    const formData = {
-        customerName: document.getElementById('custName').value,
-        queueNo: generatedNum,
-        timestamp: new Date().toLocaleString(),
-        provider: "GCASH",
-        transType: currentMode,
-        gcashName: document.getElementById('accName').value,
-        gcashNo: document.getElementById('accNo').value,
-        amount: parseFloat(document.getElementById('amount').value) || 0,
-        feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
-        feeOption: document.getElementById('reviewFeeOption').value,
-        // Correction: Siguraduhing may value ito kahit Cash Out
-        cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
-        change: 0,
-        consent: "YES",
-        receiptFile: fileData.base64, // Gagamit ng base64 property
-        receiptFileName: fileData.name,
-        receiptFileType: fileData.type
-    };
-
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPv2LNrdz1NojYc7lbFfiHZNM0tkoP0bBIG0mar6cGrNg6wP_QcVMJSq7_zxVmX8rj/exec";
-
-    // PALITAN MO ITONG FETCH BLOCK NA ITO:
-fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "no-cors", // Dagdag ito para sa Google Apps Script compatibility
-        headers: { "Content-Type": "text/plain" }, 
-        body: JSON.stringify(formData)
-    })
-    .then(() => {
-        // Kapag no-cors, hindi natin mababasa ang JSON response, 
-        // pero sigurado tayong darating ang data sa Server.
+        // I-save ang session
         myQueueNumber = generatedNum; 
         localStorage.setItem('savedQueueNumber', myQueueNumber);
         localStorage.setItem('isWaiting', 'true');
 
+        // UI Update
         document.getElementById('numberDisplay').innerText = myQueueNumber;
         document.getElementById('stepReview').style.display = 'none';
         document.getElementById('stepForm').style.display = 'none';
         document.getElementById('stepSuccess').style.display = 'block';
         
         statusInterval = setInterval(checkMyStatus, 5000);
-    })
-    .catch(err => {
-        console.error("Fetch error:", err);
-        alert("May error sa pag-send.");
-    });
+
+    } catch (err) {
+        console.error("Critical Error:", err);
+        alert("System Error: " + err.message);
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
 }
     
     function finishTransaction() {
