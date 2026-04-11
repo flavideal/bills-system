@@ -177,34 +177,31 @@
 
     if(!name || !acc || amt <= 0) { alert("Pakikumpleto ang detalye."); return; }
 
-    const fee = amt * 0.01;
-    const feeSelect = document.getElementById('feeOption');
-    const feeOptionText = feeSelect.options[feeSelect.selectedIndex].text; // Nakukuha ang text ng option
-    const feeOptionValue = feeSelect.value;
-    const total = (feeOptionValue === 'add') ? amt + fee : amt;
-
+    // Ang HTML sa ibaba ay ilalagay sa reviewContent
+    // Pansinin na may onchange="updateReviewTotal()" ang select
     let reviewHTML = `
         <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
         <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
         <div class="review-item"><span>GCash Number:</span><strong>${acc}</strong></div>
         <div class="review-item"><span>Amount:</span><strong>P${amt.toFixed(2)}</strong></div>
-        <div class="review-item"><span>Fee Option:</span><strong style="font-size:11px; text-align:right;">${feeOptionText}</strong></div>
-        <div class="review-item"><span>Service Fee:</span><strong>P${fee.toFixed(2)}</strong></div>
-        <div class="review-item" style="border:none; font-size:18px; margin-top:10px;"><span>Total:</span><strong>P${total.toFixed(2)}</strong></div>
+        
+        <div class="field-group" style="margin-top:15px;">
+            <label style="font-size:10px;">Select Fee Option:</label>
+            <select id="reviewFeeOption" onchange="updateReviewTotal()" style="padding:8px; font-size:14px;">
+                <option value="add">ADD-ON (Bayad ang Fee sa labas)</option>
+                <option value="deduct">DEDUCT (Bawas sa amount)</option>
+            </select>
+        </div>
+
+        <div id="finalBreakdown" style="margin-top:10px; border-top: 1px dashed #ccc; padding-top:10px;">
+            </div>
     `;
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
-    
-    // QR Logic... (mananatili ang dati mong code dito)
-    if(currentMode === 'Cash Out') {
-        document.getElementById('qrReviewArea').style.display = 'block';
-        document.getElementById('qrInstructionReview').innerText = (feeOptionValue === 'add') 
-            ? `Paki-send ang P${total.toFixed(2)}` : `Paki-send ang P${amt.toFixed(2)}`;
-    } else {
-        document.getElementById('qrReviewArea').style.display = 'none';
-    }
-
     document.getElementById('stepReview').style.display = 'block';
+    
+    // Tawagin agad ito para lumabas ang unang calculation
+    updateReviewTotal();
 }
 
     function hideReview() { document.getElementById('stepReview').style.display = 'none'; }
@@ -217,6 +214,31 @@
         document.getElementById('numberDisplay').innerText = "G-" + randomNum;
         document.getElementById('stepSuccess').style.display = 'block';
     }
+
+    function updateReviewTotal() {
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const fee = amt * 0.01;
+    const feeOption = document.getElementById('reviewFeeOption').value;
+    const total = (feeOption === 'add') ? amt + fee : amt;
+    const finalBreakdown = document.getElementById('finalBreakdown');
+
+    finalBreakdown.innerHTML = `
+        <div class="review-item"><span>Service Fee:</span><strong>P${fee.toFixed(2)}</strong></div>
+        <div class="review-item" style="border:none; font-size:18px; margin-top:5px;">
+            <span>Total to Pay:</span><strong>P${total.toFixed(2)}</strong>
+        </div>
+    `;
+
+    // I-update din ang QR instruction kung Cash Out
+    if(currentMode === 'Cash Out') {
+        document.getElementById('qrReviewArea').style.display = 'block';
+        document.getElementById('qrInstructionReview').innerText = (feeOption === 'add') 
+            ? `Paki-send ang P${total.toFixed(2)} (Total with Fee)` 
+            : `Paki-send ang P${amt.toFixed(2)} (Fee will be deducted)`;
+    } else {
+        document.getElementById('qrReviewArea').style.display = 'none';
+    }
+}
 </script>
 
 </body>
