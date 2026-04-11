@@ -289,36 +289,59 @@
 }
     
     function handleExactAmount() {
-        const isExact = document.getElementById('isExact').checked;
-        if (isExact) {
-            const amt = parseFloat(document.getElementById('amount').value) || 0;
-            const fee = amt * 0.01;
-            const option = document.getElementById('feeOption').value;
-            document.getElementById('cashReceived').value = (option === 'add') ? amt + fee : amt;
-        } else {
-            document.getElementById('cashReceived').value = "";
-        }
-        updateTotal();
+    const isExact = document.getElementById('isExact').checked;
+    if (isExact) {
+        // Imbes na manual 0.01, kukunin natin ang value na na-compute na ng updateTotal
+        const feeText = document.getElementById('feeText').innerText;
+        // Extract total amount from display text (simplest way for now)
+        const amt = parseFloat(document.getElementById('amount').value) || 0;
+        
+        // Tawagin muli ang computation logic para makuha ang tamang totalToPay
+        const config = serviceConfig[currentService];
+        let tFee = 0;
+        if (config.feeType === 'fixed-percent') tFee = amt * config.rate;
+        else if (config.feeType === 'double-percent') tFee = (amt * config.rate) * 2;
+        else if (config.feeType === 'bills-special') tFee = config.providerFixedFee + Math.max(config.ownerMin, amt * config.ownerRate);
+        
+        const option = document.getElementById('feeOption')?.value || 'add';
+        document.getElementById('cashReceived').value = (option === 'add') ? (amt + tFee).toFixed(2) : amt.toFixed(2);
+    } else {
+        document.getElementById('cashReceived').value = "";
     }
+    updateTotal();
+}
 
     function showReview() {
-        const config = serviceConfig[currentService];
-        const amt = parseFloat(document.getElementById('amount').value) || 0;
-        const option = document.getElementById('feeOption')?.value || 'add';
-        const total = (option === 'add') ? amt + (amt*0.01) : amt;
-
-        document.getElementById('summaryContent').innerHTML = `
-            <strong>SERVICE:</strong> ${currentService} (${currentType})<br>
-            <strong>CUSTOMER:</strong> ${document.getElementById('custName').value}<br>
-            <strong>ACCOUNT:</strong> ${document.getElementById('accNo').value}<br>
-            <hr>
-            <strong style="font-size:16px;">TOTAL TO PAY: P${total.toLocaleString()}</strong>
-        `;
-        document.getElementById('dynamicTerms').innerText = config.terms;
-        document.getElementById('formSection').style.display = 'none';
-        document.getElementById('agreementSection').style.display = 'block';
+    const config = serviceConfig[currentService];
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    
+    // Kunin ang total base sa fee logic na ginawa natin sa updateTotal
+    let totalFee = 0;
+    if (config.feeType === 'fixed-percent') {
+        totalFee = amt * config.rate;
+    } else if (config.feeType === 'double-percent') {
+        totalFee = (amt * config.rate) * 2;
+    } else if (config.feeType === 'bills-special') {
+        totalFee = config.providerFixedFee + Math.max(config.ownerMin, amt * config.ownerRate);
     }
 
+    const option = document.getElementById('feeOption')?.value || 'add';
+    const finalTotal = (option === 'add') ? amt + totalFee : amt;
+
+    document.getElementById('summaryContent').innerHTML = `
+        <strong>SERVICE:</strong> ${currentService} (${currentType})<br>
+        <strong>CUSTOMER:</strong> ${document.getElementById('custName').value}<br>
+        <strong>ACCOUNT:</strong> ${document.getElementById('accNo').value}<br>
+        <hr>
+        <strong style="font-size:18px; color: #1b431c;">TOTAL TO PAY: P${finalTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</strong>
+    `;
+    
+    // I-set ang terms (siguraduhin na may 'terms' property ang bawat service sa config mo)
+    document.getElementById('dynamicTerms').innerText = config.terms || "Please ensure all details are correct.";
+    
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('agreementSection').style.display = 'block';
+}
     function backToForm() {
         document.getElementById('agreementSection').style.display = 'none';
         document.getElementById('formSection').style.display = 'block';
