@@ -58,9 +58,11 @@
             </div>
 
             <div class="field-group">
-                <label>Amount</label>
-                <input type="number" id="amount" placeholder="0.00" oninput="calculateFee()">
-            </div>
+    <label>Amount</label>
+    <input type="number" id="amount" placeholder="0.00" oninput="calculateFee()">
+    <div id="liveBreakdown" style="font-size: 13px; margin-top: 8px; color: #555; display: none; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+    </div>
+</div>
 
             <div class="field-group">
                 <label id="feeOptLabel">Fee Option</label>
@@ -143,48 +145,67 @@
     }
 
     function calculateFee() {
-        const amt = parseFloat(document.getElementById('amount').value) || 0;
-        const totalToPay = (document.getElementById('feeOption').value === 'add') ? amt + (amt * 0.01) : amt;
-        const cashIn = parseFloat(document.getElementById('cashReceived').value) || 0;
-        const sukliDiv = document.getElementById('sukliDisplay');
-        if (!document.getElementById('isExact').checked && cashIn > totalToPay) {
-            sukliDiv.innerHTML = "SUKLI: P" + (cashIn - totalToPay).toFixed(2);
-        } else { sukliDiv.innerHTML = ""; }
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const fee = amt * 0.01;
+    const feeOption = document.getElementById('feeOption').value;
+    const totalToPay = (feeOption === 'add') ? amt + fee : amt;
+    const liveBreakdown = document.getElementById('liveBreakdown');
+
+    // Live Breakdown Logic
+    if (amt > 0) {
+        liveBreakdown.style.display = 'block';
+        liveBreakdown.innerHTML = `
+            Fee (1%): <b>P${fee.toFixed(2)}</b><br>
+            Total to Pay: <b>P${totalToPay.toFixed(2)}</b>
+        `;
+    } else {
+        liveBreakdown.style.display = 'none';
     }
+
+    // Sukli Logic
+    const cashIn = parseFloat(document.getElementById('cashReceived').value) || 0;
+    const sukliDiv = document.getElementById('sukliDisplay');
+    if (!document.getElementById('isExact').checked && cashIn > totalToPay) {
+        sukliDiv.innerHTML = "SUKLI: P" + (cashIn - totalToPay).toFixed(2);
+    } else { sukliDiv.innerHTML = ""; }
+}
 
     function showReview() {
-        const name = document.getElementById('custName').value;
-        const acc = document.getElementById('accNo').value;
-        const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const name = document.getElementById('custName').value;
+    const acc = document.getElementById('accNo').value;
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
 
-        if(!name || !acc || amt <= 0) { alert("Pakikumpleto ang detalye."); return; }
+    if(!name || !acc || amt <= 0) { alert("Pakikumpleto ang detalye."); return; }
 
-        const fee = amt * 0.01;
-        const feeOption = document.getElementById('feeOption').value;
-        const total = (feeOption === 'add') ? amt + fee : amt;
+    const fee = amt * 0.01;
+    const feeSelect = document.getElementById('feeOption');
+    const feeOptionText = feeSelect.options[feeSelect.selectedIndex].text; // Nakukuha ang text ng option
+    const feeOptionValue = feeSelect.value;
+    const total = (feeOptionValue === 'add') ? amt + fee : amt;
 
-        let reviewHTML = `
-            <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
-            <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
-            <div class="review-item"><span>GCash Number:</span><strong>${acc}</strong></div>
-            <div class="review-item"><span>Amount:</span><strong>P${amt.toFixed(2)}</strong></div>
-            <div class="review-item"><span>Service Fee:</span><strong>P${fee.toFixed(2)}</strong></div>
-            <div class="review-item" style="border:none; font-size:18px; margin-top:10px;"><span>Total:</span><strong>P${total.toFixed(2)}</strong></div>
-        `;
+    let reviewHTML = `
+        <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
+        <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
+        <div class="review-item"><span>GCash Number:</span><strong>${acc}</strong></div>
+        <div class="review-item"><span>Amount:</span><strong>P${amt.toFixed(2)}</strong></div>
+        <div class="review-item"><span>Fee Option:</span><strong style="font-size:11px; text-align:right;">${feeOptionText}</strong></div>
+        <div class="review-item"><span>Service Fee:</span><strong>P${fee.toFixed(2)}</strong></div>
+        <div class="review-item" style="border:none; font-size:18px; margin-top:10px;"><span>Total:</span><strong>P${total.toFixed(2)}</strong></div>
+    `;
 
-        document.getElementById('reviewContent').innerHTML = reviewHTML;
-        
-        // QR Logic in Review
-        if(currentMode === 'Cash Out') {
-            document.getElementById('qrReviewArea').style.display = 'block';
-            document.getElementById('qrInstructionReview').innerText = (feeOption === 'add') 
-                ? `Paki-send ang P${total.toFixed(2)}` : `Paki-send ang P${amt.toFixed(2)}`;
-        } else {
-            document.getElementById('qrReviewArea').style.display = 'none';
-        }
-
-        document.getElementById('stepReview').style.display = 'block';
+    document.getElementById('reviewContent').innerHTML = reviewHTML;
+    
+    // QR Logic... (mananatili ang dati mong code dito)
+    if(currentMode === 'Cash Out') {
+        document.getElementById('qrReviewArea').style.display = 'block';
+        document.getElementById('qrInstructionReview').innerText = (feeOptionValue === 'add') 
+            ? `Paki-send ang P${total.toFixed(2)}` : `Paki-send ang P${amt.toFixed(2)}`;
+    } else {
+        document.getElementById('qrReviewArea').style.display = 'none';
     }
+
+    document.getElementById('stepReview').style.display = 'block';
+}
 
     function hideReview() { document.getElementById('stepReview').style.display = 'none'; }
 
