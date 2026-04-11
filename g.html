@@ -22,7 +22,23 @@
         .sukli-display { font-size: 18px; font-weight: 900; color: #d32f2f; margin-top: 5px; }
         
         /* Review & Success Screens */
-        .overlay-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; border-radius: 20px; padding: 25px; box-sizing: border-box; z-index: 10; overflow-y: auto; }
+        .overlay-screen { 
+    display: none; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    min-height: 100%; /* Ginawang min-height para sumakop sa buong card */
+    background: white; 
+    border-radius: 20px; 
+    padding: 25px; 
+    box-sizing: border-box; 
+    z-index: 10; 
+    overflow-y: auto;
+}
+        #stepSuccess {
+    padding-bottom: 40px;
+            
         .review-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
         .review-item strong { color: var(--dark-green); }
         .que-number { font-size: 48px; font-weight: 900; color: var(--dark-green); margin: 20px 0; }
@@ -352,6 +368,12 @@ setMode('Cash In');
         return; 
     }
 
+    // Pakita agad ang loading state sa button para hindi pindot nang pindot ang user
+    const btn = document.querySelector("#stepReview .btn-main");
+    const originalText = btn.innerText;
+    btn.innerText = "SENDING... PLEASE WAIT";
+    btn.disabled = true;
+
     const fileInput = document.getElementById('proofUpload');
     let fileData = null;
 
@@ -390,16 +412,16 @@ setMode('Cash In');
 
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec";
 
-    // FETCH LOGIC START
+    // Pinalitan ang logic: No-cors is tricky, so we proceed to UI immediately 
+    // but we ensure the request is sent.
     fetch(WEB_APP_URL, {
         method: "POST",
         mode: "no-cors",
+        headers: { "Content-Type": "text/plain" }, // Important for Apps Script
         body: JSON.stringify(formData)
-    })
-    .then(() => {
+    }).then(() => {
+        // Ipakita ang Success UI
         myQueueNumber = formData.queueNo; 
-        
-        // I-save sa phone memory para iwas "Back" issue
         localStorage.setItem('savedQueueNumber', myQueueNumber);
         localStorage.setItem('isWaiting', 'true');
 
@@ -408,12 +430,13 @@ setMode('Cash In');
         document.getElementById('stepForm').style.display = 'none';
         document.getElementById('stepSuccess').style.display = 'block';
         
-        // Simulan ang pag-check sa status bawat 5 seconds
         statusInterval = setInterval(checkMyStatus, 5000);
-    })
-    .catch(err => alert("Error: " + err));
+    }).catch(err => {
+        alert("Connection Error. Please try again.");
+        btn.innerText = originalText;
+        btn.disabled = false;
+    });
 }
-
     
     function finishTransaction() {
     localStorage.removeItem('savedQueueNumber');
