@@ -403,46 +403,35 @@ setMode('Cash In');
         receiptFileType: fileData ? fileData.type : null
     };
 
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPv2LNrdz1NojYc7lbFfiHZNM0tkoP0bBIG0mar6cGrNg6wP_QcVMJSq7_zxVmX8rj/exec"; // SIGURADUHIN NA TAMA ITO
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPv2LNrdz1NojYc7lbFfiHZNM0tkoP0bBIG0mar6cGrNg6wP_QcVMJSq7_zxVmX8rj/exec";
 
-    // BAGONG FETCH: Inalis ang no-cors para pumasok ang JSON
-    // BAGONG FETCH: Mas "friendly" sa Google Script CORS issues
     fetch(WEB_APP_URL, {
         method: "POST",
-        mode: "no-cors", // Pinaka-mahalaga para iwas Exception
+        mode: "no-cors", 
         cache: "no-cache",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
     })
     .then(() => {
-        // Dahil 'no-cors', hindi natin mababasa ang JSON response, 
-        // pero 99% of the time, pumasok na ang data sa GSheet nito.
+        // SUCCESS UI UPDATE
         myQueueNumber = generatedNum; 
         localStorage.setItem('savedQueueNumber', myQueueNumber);
         localStorage.setItem('isWaiting', 'true');
 
         document.getElementById('numberDisplay').innerText = myQueueNumber;
-        document.getElementById('stepReview').style.setProperty('display', 'none', 'important');
+        
+        // Gamitin ang style.display para sigurado
+        document.getElementById('stepReview').style.display = 'none';
         document.getElementById('stepForm').style.display = 'none';
-        document.getElementById('stepSuccess').style.setProperty('display', 'block', 'important');
+        document.getElementById('stepSuccess').style.display = 'block';
         
         statusInterval = setInterval(checkMyStatus, 5000);
     })
     .catch(err => {
         console.error("Fetch error:", err);
-        alert("May konting problema sa koneksyon, pero paki-check kung lumitaw ang Success screen.");
-    });
-    .catch(err => {
-        // Kahit mag-CORS error, check natin kung pumasok pa rin sa GSheet
-        console.log("Possible CORS but checking sheet...");
-        myQueueNumber = generatedNum; 
-        localStorage.setItem('savedQueueNumber', myQueueNumber);
-        localStorage.setItem('isWaiting', 'true');
-        document.getElementById('numberDisplay').innerText = myQueueNumber;
-        document.getElementById('stepReview').style.display = 'none';
-        document.getElementById('stepForm').style.display = 'none';
-        document.getElementById('stepSuccess').style.display = 'block';
-        statusInterval = setInterval(checkMyStatus, 5000);
+        alert("Connection error. Pero i-check ang GSheet kung pumasok ang data.");
+        btn.innerText = "GET A NUMBER";
+        btn.disabled = false;
     });
 }
     
