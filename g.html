@@ -130,6 +130,14 @@
 </div>
 
 <script>
+    function formatPHP(number) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 2
+    }).format(number);
+}
+    
     let currentMode = "Cash In";
 
     function setMode(mode) {
@@ -150,25 +158,23 @@
     function calculateFee() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     const fee = amt * 0.01;
-    // Gawin nating default na 'add' muna ang logic dito para sa preview
     const totalToPay = amt + fee; 
     const liveBreakdown = document.getElementById('liveBreakdown');
 
     if (amt > 0) {
         liveBreakdown.style.display = 'block';
         liveBreakdown.innerHTML = `
-            Estimated Fee (1%): <b>P${fee.toFixed(2)}</b><br>
-            Estimated Total: <b>P${totalToPay.toFixed(2)}</b>
+            Estimated Fee (1%): <b>${formatPHP(fee)}</b><br>
+            Estimated Total: <b>${formatPHP(totalToPay)}</b>
         `;
     } else {
         liveBreakdown.style.display = 'none';
     }
 
-    // Sukli Logic (Gagamit ng totalToPay para sa computation ng sukli)
     const cashIn = parseFloat(document.getElementById('cashReceived').value) || 0;
     const sukliDiv = document.getElementById('sukliDisplay');
     if (!document.getElementById('isExact').checked && cashIn > totalToPay) {
-        sukliDiv.innerHTML = "SUKLI: P" + (cashIn - totalToPay).toFixed(2);
+        sukliDiv.innerHTML = "SUKLI: " + formatPHP(cashIn - totalToPay);
     } else { sukliDiv.innerHTML = ""; }
 }
 
@@ -185,7 +191,7 @@
         <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
         <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
         <div class="review-item"><span>GCash Number:</span><strong>${acc}</strong></div>
-        <div class="review-item"><span>Amount:</span><strong>P${amt.toFixed(2)}</strong></div>
+        <div class="review-item"><span>Amount:</span><strong>${formatPHP(amt)}</strong></div>
         
         <div class="field-group" style="margin-top:15px;">
             <label style="font-size:10px;">Select Fee Option:</label>
@@ -223,60 +229,53 @@
     const feeOption = document.getElementById('reviewFeeOption').value;
     const total = (feeOption === 'add') ? amt + fee : amt;
     
-    // Kunin ang latest values mula sa main form
     const isExact = document.getElementById('isExact').checked;
     const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
     const finalBreakdown = document.getElementById('finalBreakdown');
 
-    // 1. Standard Breakdown (Fee and Total)
+    // 1. Standard Breakdown
     let breakdownHTML = `
-        <div class="review-item"><span>Service Fee (1%):</span><strong>P${fee.toFixed(2)}</strong></div>
+        <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>
         <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
-            <span>Total to Pay:</span><strong>P${total.toFixed(2)}</strong>
+            <span>Total to Pay:</span><strong>${formatPHP(total)}</strong>
         </div>
     `;
 
-    // 2. Conditional Cash Logic (Dito lalabas ang Sukli o Exact status)
+    // 2. Cash In Logic
     if (currentMode === 'Cash In') {
         if (isExact) {
-            // Kung Sakto, lagyan lang ng label na Exact Amount
             breakdownHTML += `
                 <div class="review-item" style="color: #1b431c; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
                     <span>Payment Status:</span><strong>EXACT AMOUNT (SAKTO)</strong>
                 </div>`;
         } else {
-            // Kung may sukli, ipakita ang computation
             const sukli = cashReceived - total;
             breakdownHTML += `
                 <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-                    <div class="review-item"><span>Cash Handed:</span><strong>P${cashReceived.toFixed(2)}</strong></div>
+                    <div class="review-item"><span>Cash Handed:</span><strong>${formatPHP(cashReceived)}</strong></div>
                     <div class="review-item" style="color: #d32f2f; font-size: 16px;">
-                        <span>SUKLI:</span><strong>P${sukli > 0 ? sukli.toFixed(2) : '0.00'}</strong>
+                        <span>SUKLI:</span><strong>${formatPHP(sukli > 0 ? sukli : 0)}</strong>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
     }
 
     finalBreakdown.innerHTML = breakdownHTML;
 
     // 3. QR Update para sa Cash Out
-if(currentMode === 'Cash Out') {
-    document.getElementById('qrReviewArea').style.display = 'block';
-    
-    if(feeOption === 'add') {
-        // Customer sends Amount + Fee
-        document.getElementById('qrInstructionReview').innerHTML = 
-            `Paki-send ang <b>P${total.toFixed(2)}</b> para makuha ang buong P${amt.toFixed(2)}`;
+    if(currentMode === 'Cash Out') {
+        document.getElementById('qrReviewArea').style.display = 'block';
+        if(feeOption === 'add') {
+            document.getElementById('qrInstructionReview').innerHTML = 
+                `Paki-send ang <b>${formatPHP(total)}</b> para makuha ang buong ${formatPHP(amt)}`;
+        } else {
+            const amountToReceive = amt - fee;
+            document.getElementById('qrInstructionReview').innerHTML = 
+                `Paki-send ang <b>${formatPHP(amt)}</b><br><span style="color:blue;">Amount to Receive: ${formatPHP(amountToReceive)}</span>`;
+        }
     } else {
-        // Deduct: Customer sends Amount, but receives Amount - Fee
-        const amountToReceive = amt - fee;
-        document.getElementById('qrInstructionReview').innerHTML = 
-            `Paki-send ang <b>P${amt.toFixed(2)}</b><br><span style="color:blue;">Amount to Receive: P${amountToReceive.toFixed(2)}</span>`;
+        document.getElementById('qrReviewArea').style.display = 'none';
     }
-} else {
-    document.getElementById('qrReviewArea').style.display = 'none';
-}
 }
 </script>
 
