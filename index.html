@@ -221,30 +221,49 @@
     }
 
     function updateTotal() {
-        const amt = parseFloat(document.getElementById('amount')?.value) || 0;
-        const config = serviceConfig[currentService];
-        if (!config) return;
+    const amt = parseFloat(document.getElementById('amount')?.value) || 0;
+    const config = serviceConfig[currentService];
+    if (!config) return;
 
-        let totalFee = 0;
-        if (config.feeType === 'fixed-percent') totalFee = amt * config.rate;
-        else if (config.feeType === 'double-percent') totalFee = (amt * config.rate) * 2;
-        else if (config.feeType === 'bills-special') totalFee = config.providerFixedFee + Math.max(config.ownerMin, amt * config.ownerRate);
+    let totalFee = 0;
+    // 1. Compute ang fee base sa input amount
+    if (config.feeType === 'fixed-percent') totalFee = amt * config.rate;
+    else if (config.feeType === 'double-percent') totalFee = (amt * config.rate) * 2;
+    else if (config.feeType === 'bills-special') totalFee = config.providerFixedFee + Math.max(config.ownerMin, amt * config.ownerRate);
 
-        const option = document.getElementById('feeOption')?.value || 'add';
-        const cashReceived = parseFloat(document.getElementById('cashReceived')?.value) || 0;
-        let totalToPay = (option === 'add') ? amt + totalFee : amt;
+    const option = document.getElementById('feeOption')?.value || 'add';
+    
+    // 2. DITO ANG LOGIC NG DEDUCT VS ADD
+    let totalToPay = 0;
+    let netAmount = 0; // Ito yung papasok sa account ng customer
 
-        const feeDiv = document.getElementById('feeText');
-        if (feeDiv) {
-            let displayHTML = `<div style="color: #d32f2f;">${config.feeLabel}: P${totalFee.toFixed(2)}</div>`;
-            displayHTML += `<div style="font-size: 16px;">Total to Pay: <b>P${totalToPay.toLocaleString(undefined, {minimumFractionDigits: 2})}</b></div>`;
-            if (cashReceived > 0) {
-                let change = cashReceived - totalToPay;
-                displayHTML += `<div style="margin-top:5px; color: ${change >= 0 ? '#1b431c' : '#d32f2f'}; font-weight: bold;">${change >= 0 ? 'Sukli: P' + change.toFixed(2) : 'Kulang: P' + Math.abs(change).toFixed(2)}</div>`;
-            }
-            feeDiv.innerHTML = displayHTML;
+    if (option === 'add') {
+        totalToPay = amt + totalFee;
+        netAmount = amt;
+    } else {
+        totalToPay = amt;           // Ang perang hawak ng customer ang total
+        netAmount = amt - totalFee; // Binawasan natin ang matatanggap nila
+    }
+
+    const feeDiv = document.getElementById('feeText');
+    if (feeDiv) {
+        let displayHTML = `<div style="color: #d32f2f;">${config.feeLabel}: P${totalFee.toFixed(2)}</div>`;
+        
+        // Ipakita ang Net Amount kung Deduct ang pinili para hindi malito ang customer
+        if (option === 'deduct') {
+            displayHTML += `<div style="color: #1b431c; font-size: 13px;">Matatanggap: <b>P${netAmount.toFixed(2)}</b></div>`;
         }
-    } // ETO YUNG PINAKAMAHALAGANG BRACKET NA NAWALA KANINA
+
+        displayHTML += `<div style="font-size: 16px; margin-top:5px;">Total to Pay: <b>P${totalToPay.toLocaleString(undefined, {minimumFractionDigits: 2})}</b></div>`;
+        
+        const cashReceived = parseFloat(document.getElementById('cashReceived')?.value) || 0;
+        if (cashReceived > 0) {
+            let change = cashReceived - totalToPay;
+            displayHTML += `<div style="margin-top:5px; color: ${change >= 0 ? '#1b431c' : '#d32f2f'}; font-weight: bold;">${change >= 0 ? 'Sukli: P' + change.toFixed(2) : 'Kulang: P' + Math.abs(change).toFixed(2)}</div>`;
+        }
+        feeDiv.innerHTML = displayHTML;
+    }
+}
 
     function handleExactAmount() {
         const isExact = document.getElementById('isExact').checked;
