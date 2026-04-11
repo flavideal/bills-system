@@ -157,7 +157,7 @@
 
     <p id="instructionText" style="font-weight: bold; color: #d32f2f; margin-top: 15px;">Please wait for your number to be called.</p>
     
-    <button onclick="window.location.reload()" class="btn-main">DONE / NEW TRANSACTION</button>
+    <button onclick="finishTransaction()" class="btn-main">DONE / NEW TRANSACTION</button>
 </div>
     </div>
 </div>
@@ -165,6 +165,24 @@
 <script>
     let myQueueNumber = "";
 let statusInterval;
+
+window.onload = function() {
+    const savedNumber = localStorage.getItem('savedQueueNumber');
+    const isWaiting = localStorage.getItem('isWaiting');
+
+    if (savedNumber && isWaiting === 'true') {
+        myQueueNumber = savedNumber;
+        document.getElementById('numberDisplay').innerText = myQueueNumber;
+        
+        // Itago ang form at review, ipakita agad ang success screen
+        document.getElementById('stepForm').style.display = 'none';
+        document.getElementById('stepReview').style.display = 'none';
+        document.getElementById('stepSuccess').style.display = 'block';
+        
+        statusInterval = setInterval(checkMyStatus, 5000);
+    }
+    setMode('Cash In'); // Existing call mo ito
+};
 
 async function checkMyStatus() {
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec"; // Same URL
@@ -373,16 +391,36 @@ setMode('Cash In');
 
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec";
 
+    / DITO MO IPAPASTE YUNG UPDATED FETCH LOGIC:
     fetch(WEB_APP_URL, {
         method: "POST",
         mode: "no-cors",
         body: JSON.stringify(formData)
     })
     .then(() => {
-        document.getElementById('numberDisplay').innerText = formData.queueNo;
+        myQueueNumber = formData.queueNo; // Gamitin ang generated number
+        
+        // I-save sa phone memory para iwas "Back" issue
+        localStorage.setItem('savedQueueNumber', myQueueNumber);
+        localStorage.setItem('isWaiting', 'true');
+
+        document.getElementById('numberDisplay').innerText = myQueueNumber;
+        document.getElementById('stepReview').style.display = 'none';
+        document.getElementById('stepForm').style.display = 'none';
         document.getElementById('stepSuccess').style.display = 'block';
+        
+        // Simulan ang pag-check sa status bawat 5 seconds
+        statusInterval = setInterval(checkMyStatus, 5000);
     })
     .catch(err => alert("Error: " + err));
+}
+
+    
+    function finishTransaction() {
+    localStorage.removeItem('savedQueueNumber');
+    localStorage.removeItem('isWaiting');
+    if(statusInterval) clearInterval(statusInterval);
+    window.location.reload();
 }
     
     function updateReviewTotal() {
