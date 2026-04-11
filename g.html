@@ -202,7 +202,7 @@ window.onload = function() {
 };
 
 async function checkMyStatus() {
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPv2LNrdz1NojYc7lbFfiHZNM0tkoP0bBIG0mar6cGrNg6wP_QcVMJSq7_zxVmX8rj/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
     
     try {
         const response = await fetch(`${WEB_APP_URL}?checkStatus=${myQueueNumber}`);
@@ -407,7 +407,7 @@ setMode('Cash In');
             receiptFileType: fileData.type
         };
 
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPv2LNrdz1NojYc7lbFfiHZNM0tkoP0bBIG0mar6cGrNg6wP_QcVMJSq7_zxVmX8rj/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
         // Gagamit tayo ng plain text transfer para iwas CORS pre-flight block
         const response = await fetch(WEB_APP_URL, {
