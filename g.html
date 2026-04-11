@@ -254,52 +254,59 @@ setMode('Cash In');
     
     function hideReview() { document.getElementById('stepReview').style.display = 'none'; }
 
-    function generateNumber() {
+    async function generateNumber() {
     if(!document.getElementById('termsAgree').checked) { 
         alert("Please agree to the terms."); 
         return; 
     }
 
-    // Kolektahin ang data
-    const amt = parseFloat(document.getElementById('amount').value) || 0;
-    const fee = amt * 0.01;
-    const feeOption = document.getElementById('reviewFeeOption').value;
-    const isExact = document.getElementById('isExact').checked;
-    const cashReceived = isExact ? (feeOption === 'add' ? amt + fee : amt) : (parseFloat(document.getElementById('cashReceived').value) || 0);
-    const totalToPay = (feeOption === 'add') ? amt + fee : amt;
-    const change = isExact ? 0 : (cashReceived - totalToPay);
-    const queueNo = "G-" + (Math.floor(Math.random() * 900) + 100);
+    const fileInput = document.getElementById('proofUpload');
+    let fileData = null;
+
+    // Basahin ang file kung meron
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileData = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve({
+                base64: e.target.result,
+                name: file.name,
+                type: file.type
+            });
+            reader.readAsDataURL(file);
+        });
+    }
 
     const formData = {
         customerName: document.getElementById('custName').value,
-        queueNo: queueNo,
+        queueNo: "G-" + (Math.floor(Math.random() * 900) + 100),
         timestamp: new Date().toLocaleString(),
         provider: "GCASH",
         transType: currentMode,
         gcashName: document.getElementById('accName').value,
         gcashNo: document.getElementById('accNo').value,
-        amount: amt,
-        feeAmount: fee,
-        feeOption: feeOption,
-        cashAmount: cashReceived,
-        change: change > 0 ? change : 0,
+        amount: parseFloat(document.getElementById('amount').value) || 0,
+        feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
+        feeOption: document.getElementById('reviewFeeOption').value,
+        cashAmount: parseFloat(document.getElementById('cashReceived').value) || 0,
+        change: 0, // Idagdag ang calculation logic mo dito
         consent: "YES",
-        status: "NEW"
+        status: "NEW",
+        // File data para sa Drive upload
+        receiptFile: fileData ? fileData.base64 : null,
+        receiptFileName: fileData ? fileData.name : null,
+        receiptFileType: fileData ? fileData.type : null
     };
 
-    // PALITAN ITO: Ilagay dito ang nakuha mong Web App URL mula sa Deploy
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec";
 
-    // Paggamit ng Fetch API (dahil nasa GitHub ang file)
     fetch(WEB_APP_URL, {
         method: "POST",
-        mode: "no-cors", // Importante ito para sa Google Apps Script
-        cache: "no-cache",
-        headers: { "Content-Type": "application/json" },
+        mode: "no-cors",
         body: JSON.stringify(formData)
     })
     .then(() => {
-        document.getElementById('numberDisplay').innerText = queueNo;
+        document.getElementById('numberDisplay').innerText = formData.queueNo;
         document.getElementById('stepSuccess').style.display = 'block';
     })
     .catch(err => alert("Error: " + err));
