@@ -141,13 +141,30 @@
     let currentMode = "Cash In";
 
     function setMode(mode) {
-        currentMode = mode;
-        document.getElementById('btnIn').classList.toggle('active', mode === 'Cash In');
-        document.getElementById('btnOut').classList.toggle('active', mode === 'Cash Out');
-        document.getElementById('nameLabel').innerText = (mode === 'Cash Out') ? "Customer Name (Personally Transacting)" : "Customer Name (Personally Transacting)";
-        document.getElementById('cashLogicArea').style.display = (mode === 'Cash In') ? 'block' : 'none';
-        calculateFee();
+    currentMode = mode;
+    
+    // UI Buttons
+    document.getElementById('btnIn').classList.toggle('active', mode === 'Cash In');
+    document.getElementById('btnOut').classList.toggle('active', mode === 'Cash Out');
+    
+    // Labels
+    const nameLabel = document.getElementById('nameLabel');
+    if (mode === 'Cash Out') {
+        nameLabel.innerText = "Customer Name (Nag-transact personally)";
+    } else {
+        nameLabel.innerText = "Sender Name (Personally Transacting)";
     }
+    
+    // Visibility of Cash Logic Area
+    // Dito natin sinisiguro na lilitaw ang box pag "Cash In"
+    const logicArea = document.getElementById('cashLogicArea');
+    logicArea.style.display = (mode === 'Cash In') ? 'block' : 'none';
+    
+    calculateFee();
+}
+
+// Mahalaga: Tawagin ito pag-load ng script
+setMode('Cash In');
 
     function toggleExact() {
         const isExact = document.getElementById('isExact').checked;
