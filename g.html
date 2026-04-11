@@ -202,39 +202,30 @@ window.onload = function() {
 };
 
 async function checkMyStatus() {
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec"; // Same URL
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec";
     
     try {
-        // Mag-send tayo ng request sa doGet para i-check ang status ng number
         const response = await fetch(`${WEB_APP_URL}?checkStatus=${myQueueNumber}`);
         const result = await response.json();
+        console.log("Status Check Result:", result); // Dagdag ito para sa debugging
 
         const statusBox = document.getElementById('liveStatusBox');
         const instruction = document.getElementById('instructionText');
 
+        // Force UI update
         if (result.status === "CALLING") {
+            statusBox.style.display = "block";
             statusBox.className = "status-badge status-calling";
             statusBox.innerText = "📣 PLEASE GO TO COUNTER NOW!";
-            statusBox.style.display = "block";
             instruction.style.display = "none";
         } else if (result.status === "COMPLETED") {
+            statusBox.style.display = "block";
             statusBox.className = "status-badge status-completed";
             statusBox.innerText = "✅ TRANSACTION FINISHED";
-            statusBox.style.display = "block";
-            
-            // Ipakita ang resibong galing sa iyo (Admin)
-            if (result.adminReceipt) {
-                const img = document.getElementById('adminReceipt');
-                img.src = result.adminReceipt;
-                img.style.display = "block";
-                document.getElementById('adminReceiptLink').href = result.adminReceipt;
-                document.getElementById('adminReceiptLink').style.display = "block";
-            }
-            document.getElementById('completedDetails').style.display = "block";
-            clearInterval(statusInterval); // Stop checking pag tapos na
+            // ... (rest of your completed logic)
         }
     } catch (e) {
-        console.log("Waiting for update...");
+        console.error("Error checking status:", e);
     }
 }
     
@@ -405,7 +396,7 @@ setMode('Cash In');
         amount: parseFloat(document.getElementById('amount').value) || 0,
         feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
         feeOption: document.getElementById('reviewFeeOption').value,
-        cashAmount: parseFloat(document.getElementById('cashReceived').value) || 0,
+        cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
         change: 0,
         consent: "YES",
         receiptFile: fileData ? fileData.base64 : null,
