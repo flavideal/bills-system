@@ -223,11 +223,12 @@
     const feeOption = document.getElementById('reviewFeeOption').value;
     const total = (feeOption === 'add') ? amt + fee : amt;
     
+    // Kunin ang latest values mula sa main form
     const isExact = document.getElementById('isExact').checked;
     const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
     const finalBreakdown = document.getElementById('finalBreakdown');
 
-    // Base Breakdown HTML
+    // 1. Standard Breakdown (Fee and Total)
     let breakdownHTML = `
         <div class="review-item"><span>Service Fee (1%):</span><strong>P${fee.toFixed(2)}</strong></div>
         <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
@@ -235,22 +236,31 @@
         </div>
     `;
 
-    // Cash-In Logic (Ipakita ang Sukli sa Review kung hindi Exact)
+    // 2. Conditional Cash Logic (Dito lalabas ang Sukli o Exact status)
     if (currentMode === 'Cash In') {
         if (isExact) {
-            breakdownHTML += `<div class="review-item" style="color: blue;"><span>Payment Status:</span><strong>EXACT AMOUNT</strong></div>`;
+            // Kung Sakto, lagyan lang ng label na Exact Amount
+            breakdownHTML += `
+                <div class="review-item" style="color: #1b431c; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                    <span>Payment Status:</span><strong>EXACT AMOUNT (SAKTO)</strong>
+                </div>`;
         } else {
+            // Kung may sukli, ipakita ang computation
             const sukli = cashReceived - total;
             breakdownHTML += `
-                <div class="review-item"><span>Cash Handed:</span><strong>P${cashReceived.toFixed(2)}</strong></div>
-                <div class="review-item" style="color: #d32f2f;"><span>Sukli:</span><strong>P${sukli > 0 ? sukli.toFixed(2) : '0.00'}</strong></div>
+                <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                    <div class="review-item"><span>Cash Handed:</span><strong>P${cashReceived.toFixed(2)}</strong></div>
+                    <div class="review-item" style="color: #d32f2f; font-size: 16px;">
+                        <span>SUKLI:</span><strong>P${sukli > 0 ? sukli.toFixed(2) : '0.00'}</strong>
+                    </div>
+                </div>
             `;
         }
     }
 
     finalBreakdown.innerHTML = breakdownHTML;
 
-    // QR Logic para sa Cash Out
+    // 3. QR Update para sa Cash Out
     if(currentMode === 'Cash Out') {
         document.getElementById('qrReviewArea').style.display = 'block';
         document.getElementById('qrInstructionReview').innerText = (feeOption === 'add') 
