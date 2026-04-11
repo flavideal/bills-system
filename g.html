@@ -27,6 +27,26 @@
         .review-item strong { color: var(--dark-green); }
         .que-number { font-size: 48px; font-weight: 900; color: var(--dark-green); margin: 20px 0; }
         .btn-main { width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+    .status-badge {
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-weight: bold;
+    display: none;
+}
+.status-waiting { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.status-calling { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; animation: blink 1s infinite; }
+.status-completed { background: #cce5ff; color: #004085; border: 1px solid #b8daff; }
+
+@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+#adminReceipt {
+    width: 100%;
+    max-width: 200px;
+    margin-top: 10px;
+    border-radius: 8px;
+    display: none;
+}
     </style>
 </head>
 <body>
@@ -118,18 +138,71 @@
         </div>
 
         <div id="stepSuccess" class="overlay-screen" style="text-align: center;">
-            <div style="font-size: 50px;">✅</div>
-            <h2 style="color: var(--dark-green);">SUCCESS!</h2>
-            <p style="font-size: 14px; color: #666;">Your transaction has been submitted.</p>
-            <p style="margin-bottom: 0;">YOUR QUEUE NUMBER:</p>
-            <div id="numberDisplay" class="que-number">G-001</div>
-            <p style="font-weight: bold; color: #d32f2f;">Please wait for your number to be called.</p>
-            <button onclick="window.location.reload()" class="btn-main">DONE</button>
-        </div>
+    <div style="font-size: 50px;">✅</div>
+    <h2 style="color: var(--dark-green);">SUCCESS!</h2>
+    <p style="margin-bottom: 0;">YOUR QUEUE NUMBER:</p>
+    <div id="numberDisplay" class="que-number">G-000</div>
+
+    <div id="liveStatusBox" class="status-badge status-waiting">
+        STATUS: WAITING IN QUEUE
+    </div>
+    
+    <div id="completedDetails" style="display:none; margin-top:15px; text-align:left; font-size: 13px; background: #f8f9fa; padding: 10px; border-radius: 10px;">
+        <p style="font-weight:bold; color:var(--dark-green); border-bottom:1px solid #ddd;">TRANSACTION COMPLETED</p>
+        <div id="adminNote"></div>
+        <p>Official Receipt:</p>
+        <img id="adminReceipt" src="" alt="Receipt">
+        <a id="adminReceiptLink" href="#" target="_blank" style="display:none; color: blue;">View Full Receipt</a>
+    </div>
+
+    <p id="instructionText" style="font-weight: bold; color: #d32f2f; margin-top: 15px;">Please wait for your number to be called.</p>
+    
+    <button onclick="window.location.reload()" class="btn-main">DONE / NEW TRANSACTION</button>
+</div>
     </div>
 </div>
 
 <script>
+    let myQueueNumber = "";
+let statusInterval;
+
+async function checkMyStatus() {
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec"; // Same URL
+    
+    try {
+        // Mag-send tayo ng request sa doGet para i-check ang status ng number
+        const response = await fetch(`${WEB_APP_URL}?checkStatus=${myQueueNumber}`);
+        const result = await response.json();
+
+        const statusBox = document.getElementById('liveStatusBox');
+        const instruction = document.getElementById('instructionText');
+
+        if (result.status === "CALLING") {
+            statusBox.className = "status-badge status-calling";
+            statusBox.innerText = "📣 PLEASE GO TO COUNTER NOW!";
+            statusBox.style.display = "block";
+            instruction.style.display = "none";
+        } else if (result.status === "COMPLETED") {
+            statusBox.className = "status-badge status-completed";
+            statusBox.innerText = "✅ TRANSACTION FINISHED";
+            statusBox.style.display = "block";
+            
+            // Ipakita ang resibong galing sa iyo (Admin)
+            if (result.adminReceipt) {
+                const img = document.getElementById('adminReceipt');
+                img.src = result.adminReceipt;
+                img.style.display = "block";
+                document.getElementById('adminReceiptLink').href = result.adminReceipt;
+                document.getElementById('adminReceiptLink').style.display = "block";
+            }
+            document.getElementById('completedDetails').style.display = "block";
+            clearInterval(statusInterval); // Stop checking pag tapos na
+        }
+    } catch (e) {
+        console.log("Waiting for update...");
+    }
+}
+    
     function formatPHP(number) {
     return new Intl.NumberFormat('en-PH', {
         style: 'currency',
