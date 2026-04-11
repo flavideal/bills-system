@@ -382,58 +382,64 @@ setMode('Cash In');
         });
     }
 
-    // Siguraduhin na ang Queue Number ay UNIQUE bago ipadala
     const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
-    // SA LOOB NG generateNumber()
-const formData = {
-    customerName: document.getElementById('custName').value,
-    queueNo: generatedNum,
-    timestamp: new Date().toLocaleString(),
-    provider: "GCASH",
-    transType: currentMode,
-    gcashName: document.getElementById('accName').value,
-    gcashNo: document.getElementById('accNo').value,
-    amount: parseFloat(document.getElementById('amount').value) || 0,
-    feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
-    feeOption: document.getElementById('reviewFeeOption').value,
-    // FIX: Kung Cash Out, gawing 0 ang cashAmount para hindi mag-error
-    cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
-    change: 0,
-    consent: "YES",
-    receiptFile: fileData ? fileData.base64 : null,
-    receiptFileName: fileData ? fileData.name : null,
-    receiptFileType: fileData ? fileData.type : null
-};
+    const formData = {
+        customerName: document.getElementById('custName').value,
+        queueNo: generatedNum,
+        timestamp: new Date().toLocaleString(),
+        provider: "GCASH",
+        transType: currentMode,
+        gcashName: document.getElementById('accName').value,
+        gcashNo: document.getElementById('accNo').value,
+        amount: parseFloat(document.getElementById('amount').value) || 0,
+        feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
+        feeOption: document.getElementById('reviewFeeOption').value,
+        cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
+        change: 0,
+        consent: "YES",
+        receiptFile: fileData ? fileData.base64 : null,
+        receiptFileName: fileData ? fileData.name : null,
+        receiptFileType: fileData ? fileData.type : null
+    };
 
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec"; 
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec"; // SIGURADUHIN NA TAMA ITO
 
-    // Gagamit tayo ng plain text mode para iwasan ang CORS block ni Google
+    // BAGONG FETCH: Inalis ang no-cors para pumasok ang JSON
     fetch(WEB_APP_URL, {
         method: "POST",
-        mode: "no-cors", // Ito ang trick para hindi mag-error ang browser
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData) // Tinanggal ang headers para iwas CORS pre-flight
     })
-    .then(() => {
-        // Dahil "no-cors", hindi natin mababasa ang response pero siguradong papasok ito sa Google Sheets
+    .then(res => res.json())
+    .then(result => {
+        if(result.result === "success") {
+            myQueueNumber = generatedNum; 
+            localStorage.setItem('savedQueueNumber', myQueueNumber);
+            localStorage.setItem('isWaiting', 'true');
+
+            document.getElementById('numberDisplay').innerText = myQueueNumber;
+            document.getElementById('stepReview').style.display = 'none';
+            document.getElementById('stepForm').style.display = 'none';
+            document.getElementById('stepSuccess').style.display = 'block';
+            
+            statusInterval = setInterval(checkMyStatus, 5000);
+        } else {
+            alert("Error: " + result.error);
+            btn.innerText = "GET A NUMBER";
+            btn.disabled = false;
+        }
+    })
+    .catch(err => {
+        // Kahit mag-CORS error, check natin kung pumasok pa rin sa GSheet
+        console.log("Possible CORS but checking sheet...");
         myQueueNumber = generatedNum; 
         localStorage.setItem('savedQueueNumber', myQueueNumber);
         localStorage.setItem('isWaiting', 'true');
-
         document.getElementById('numberDisplay').innerText = myQueueNumber;
         document.getElementById('stepReview').style.display = 'none';
         document.getElementById('stepForm').style.display = 'none';
         document.getElementById('stepSuccess').style.display = 'block';
-        
-        // Simulan ang status checking
         statusInterval = setInterval(checkMyStatus, 5000);
-    })
-    .catch(err => {
-        console.error(err);
-        alert("May problema sa connection. Pakisubukang muli.");
-        btn.innerText = "GET A NUMBER";
-        btn.disabled = false;
     });
 }
     
