@@ -202,7 +202,7 @@ window.onload = function() {
 };
 
 async function checkMyStatus() {
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPv2LNrdz1NojYc7lbFfiHZNM0tkoP0bBIG0mar6cGrNg6wP_QcVMJSq7_zxVmX8rj/exec";
     
     try {
         const response = await fetch(`${WEB_APP_URL}?checkStatus=${myQueueNumber}`);
@@ -403,7 +403,7 @@ setMode('Cash In');
         receiptFileType: fileData ? fileData.type : null
     };
 
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdL92jEXVhc6hxIIYT-ujfvmQxEVqZaeoMvcJtPE5K4gFuqgymAQVTAYOqNeWiY38/exec"; // SIGURADUHIN NA TAMA ITO
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPv2LNrdz1NojYc7lbFfiHZNM0tkoP0bBIG0mar6cGrNg6wP_QcVMJSq7_zxVmX8rj/exec"; // SIGURADUHIN NA TAMA ITO
 
     // BAGONG FETCH: Inalis ang no-cors para pumasok ang JSON
     fetch(WEB_APP_URL, {
