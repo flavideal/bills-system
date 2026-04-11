@@ -439,14 +439,9 @@ setMode('Cash In');
     })
     .catch(err => {
         console.error(err);
-        // Kahit may error sa response (CORS), ituloy natin ang UI basta alam nating "Success" ang alert
-        alert("Transaction Sent! If data is in Sheets, you are good.");
-        
-        myQueueNumber = formData.queueNo;
-        document.getElementById('numberDisplay').innerText = myQueueNumber;
-        document.getElementById('stepReview').style.display = 'none';
-        document.getElementById('stepForm').style.display = 'none';
-        document.getElementById('stepSuccess').style.display = 'block';
+        alert("May problema sa connection. Pakisubukang muli.");
+        btn.innerText = "GET A NUMBER";
+        btn.disabled = false;
     });
 }
     
