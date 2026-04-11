@@ -211,21 +211,40 @@
     const fee = amt * 0.01;
     const feeOption = document.getElementById('reviewFeeOption').value;
     const total = (feeOption === 'add') ? amt + fee : amt;
+    
+    const isExact = document.getElementById('isExact').checked;
+    const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
     const finalBreakdown = document.getElementById('finalBreakdown');
 
-    finalBreakdown.innerHTML = `
-        <div class="review-item"><span>Service Fee:</span><strong>P${fee.toFixed(2)}</strong></div>
-        <div class="review-item" style="border:none; font-size:18px; margin-top:5px;">
+    // Base Breakdown HTML
+    let breakdownHTML = `
+        <div class="review-item"><span>Service Fee (1%):</span><strong>P${fee.toFixed(2)}</strong></div>
+        <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
             <span>Total to Pay:</span><strong>P${total.toFixed(2)}</strong>
         </div>
     `;
 
-    // I-update din ang QR instruction kung Cash Out
+    // Cash-In Logic (Ipakita ang Sukli sa Review kung hindi Exact)
+    if (currentMode === 'Cash In') {
+        if (isExact) {
+            breakdownHTML += `<div class="review-item" style="color: blue;"><span>Payment Status:</span><strong>EXACT AMOUNT</strong></div>`;
+        } else {
+            const sukli = cashReceived - total;
+            breakdownHTML += `
+                <div class="review-item"><span>Cash Handed:</span><strong>P${cashReceived.toFixed(2)}</strong></div>
+                <div class="review-item" style="color: #d32f2f;"><span>Sukli:</span><strong>P${sukli > 0 ? sukli.toFixed(2) : '0.00'}</strong></div>
+            `;
+        }
+    }
+
+    finalBreakdown.innerHTML = breakdownHTML;
+
+    // QR Logic para sa Cash Out
     if(currentMode === 'Cash Out') {
         document.getElementById('qrReviewArea').style.display = 'block';
         document.getElementById('qrInstructionReview').innerText = (feeOption === 'add') 
-            ? `Paki-send ang P${total.toFixed(2)} (Total with Fee)` 
-            : `Paki-send ang P${amt.toFixed(2)} (Fee will be deducted)`;
+            ? `Paki-send ang P${total.toFixed(2)}` 
+            : `Paki-send ang P${amt.toFixed(2)}`;
     } else {
         document.getElementById('qrReviewArea').style.display = 'none';
     }
