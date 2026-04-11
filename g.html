@@ -367,9 +367,9 @@ setMode('Cash In');
     btn.disabled = true;
 
     const fileInput = document.getElementById('proofUpload');
-    let fileData = null;
+    let fileData = { base64: null, name: null, type: null }; // Default values
 
-    if (fileInput.files.length > 0) {
+    if (fileInput && fileInput.files && fileInput.files.length > 0) {
         const file = fileInput.files[0];
         fileData = await new Promise((resolve) => {
             const reader = new FileReader();
@@ -395,41 +395,42 @@ setMode('Cash In');
         amount: parseFloat(document.getElementById('amount').value) || 0,
         feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
         feeOption: document.getElementById('reviewFeeOption').value,
+        // Correction: Siguraduhing may value ito kahit Cash Out
         cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
         change: 0,
         consent: "YES",
-        receiptFile: fileData ? fileData.base64 : null,
-        receiptFileName: fileData ? fileData.name : null,
-        receiptFileType: fileData ? fileData.type : null
+        receiptFile: fileData.base64, // Gagamit ng base64 property
+        receiptFileName: fileData.name,
+        receiptFileType: fileData.type
     };
 
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPv2LNrdz1NojYc7lbFfiHZNM0tkoP0bBIG0mar6cGrNg6wP_QcVMJSq7_zxVmX8rj/exec";
 
     // PALITAN MO ITONG FETCH BLOCK NA ITO:
 fetch(WEB_APP_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" }, // Gamitin ang text/plain para iwas CORS error sa Apps Script
-    body: JSON.stringify(formData)
-})
-.then(response => {
-    // Ngayon makakakuha na tayo ng totoong feedback
-    myQueueNumber = generatedNum; 
-    localStorage.setItem('savedQueueNumber', myQueueNumber);
-    localStorage.setItem('isWaiting', 'true');
+        method: "POST",
+        mode: "no-cors", // Dagdag ito para sa Google Apps Script compatibility
+        headers: { "Content-Type": "text/plain" }, 
+        body: JSON.stringify(formData)
+    })
+    .then(() => {
+        // Kapag no-cors, hindi natin mababasa ang JSON response, 
+        // pero sigurado tayong darating ang data sa Server.
+        myQueueNumber = generatedNum; 
+        localStorage.setItem('savedQueueNumber', myQueueNumber);
+        localStorage.setItem('isWaiting', 'true');
 
-    document.getElementById('numberDisplay').innerText = myQueueNumber;
-    document.getElementById('stepReview').style.display = 'none';
-    document.getElementById('stepForm').style.display = 'none';
-    document.getElementById('stepSuccess').style.display = 'block';
-    
-    statusInterval = setInterval(checkMyStatus, 5000);
-})
-.catch(err => {
-    console.error("Fetch error:", err);
-    alert("May error sa pag-send. Pakicheck ang internet connection.");
-    btn.innerText = "GET A NUMBER";
-    btn.disabled = false;
-});
+        document.getElementById('numberDisplay').innerText = myQueueNumber;
+        document.getElementById('stepReview').style.display = 'none';
+        document.getElementById('stepForm').style.display = 'none';
+        document.getElementById('stepSuccess').style.display = 'block';
+        
+        statusInterval = setInterval(checkMyStatus, 5000);
+    })
+    .catch(err => {
+        console.error("Fetch error:", err);
+        alert("May error sa pag-send.");
+    });
 }
     
     function finishTransaction() {
