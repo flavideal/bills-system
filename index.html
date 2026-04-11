@@ -99,63 +99,88 @@
 
     // DITO MO I-EEDIT ANG LAMAN NG BAWAT SERVICE PARA HINDI MAHABANG CODE
     const serviceConfig = {
-        'GCASH': {
-            fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
-            terms: "1. 1% service fee applies. 2. Verify GCash Number carefully. 3. No refunds for incorrect details.",
-            accLabel: "GCash Number",
-            nameLabel: "GCash Name (sa App)"
-        },
-        'MAYA': {
-            fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
-            terms: "1. 1% service fee applies. 2. Real-time processing for Maya Cash-In.",
-            accLabel: "Maya Number",
-            nameLabel: "Maya Name"
-        },
-        'ANECO': {
-            fields: ['custName', 'accNo', 'extra', 'amount'],
-            terms: "1. P15 Convenience Fee. 2. Make sure Meter Number is correct. 3. 48-hour posting.",
-            accLabel: "Account Number",
-            extraLabel: "Meter Number"
-        },
-        'PALAWAN': {
-            fields: ['custName', 'accNo', 'extra', 'amount'],
-            terms: "1. Standard Palawan rates apply. 2. Receiver must present valid ID.",
-            accLabel: "Sender Mobile No.",
-            extraLabel: "Receiver Name / Code"
-        }
-    };
+    'GCASH': {
+        mInLabel: "CASH IN",
+        mOutLabel: "CASH OUT",
+        fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
+        terms: "1. 1% fee applies. 2. Verify number carefully.",
+        accLabel: "GCash Number",
+        nameLabel: "GCash Name"
+    },
+    'MAYA': {
+        mInLabel: "CASH IN",
+        mOutLabel: "CASH OUT",
+        fields: ['custName', 'accNo', 'accName', 'amount', 'feeOption', 'cashInExtra'],
+        terms: "1. 1% fee applies. 2. Maya processing rules apply.",
+        accLabel: "Maya Number",
+        nameLabel: "Maya Name"
+    },
+    'PALAWAN': {
+        mInLabel: "PADALA",
+        mOutLabel: "CLAIM",
+        fields: ['custName', 'accNo', 'extra', 'amount'],
+        terms: "1. Standard Palawan rates apply. 2. Present valid ID for claims.",
+        accLabel: "Mobile Number",
+        extraLabel: "Receiver Name / Code"
+    },
+    'ANECO': {
+        fields: ['custName', 'accNo', 'extra', 'amount'],
+        terms: "1. P15 Convenience Fee.",
+        accLabel: "Account Number",
+        extraLabel: "Meter Number"
+    }
+};
 
     function initForm(service) {
-        currentService = service;
-        document.getElementById('menuGrid').style.display = 'none';
-        document.getElementById('mainHeader').style.display = 'none';
-        document.getElementById('formSection').style.display = 'block';
-        document.getElementById('formTitle').innerText = service;
+    currentService = service;
+    const config = serviceConfig[service];
+    
+    document.getElementById('menuGrid').style.display = 'none';
+    document.getElementById('mainHeader').style.display = 'none';
+    document.getElementById('formSection').style.display = 'block';
+    document.getElementById('formTitle').innerText = service;
+    
+    // Check kung may sub-options (In/Out o Padala/Claim)
+    if (config && config.mInLabel) {
+        document.getElementById('modeSelectionArea').style.display = 'grid';
+        document.getElementById('kioskForm').style.display = 'none';
         
-        if (service === 'GCASH' || service === 'MAYA') {
-            document.getElementById('modeSelectionArea').style.display = 'grid';
-            document.getElementById('kioskForm').style.display = 'none';
-        } else {
-            document.getElementById('modeSelectionArea').style.display = 'none';
-            selectMode('Payment'); 
-        }
+        // Palitan ang text ng buttons
+        document.getElementById('mIn').innerText = config.mInLabel;
+        document.getElementById('mOut').innerText = config.mOutLabel;
+    } else {
+        document.getElementById('modeSelectionArea').style.display = 'none';
+        selectMode('Payment'); 
+    }
+}
+
+   function selectMode(mode) {
+    const config = serviceConfig[currentService];
+    
+    // I-set ang currentType base sa label
+    if (mode === 'Cash In') {
+        currentType = config.mInLabel || 'Payment';
+    } else if (mode === 'Cash Out') {
+        currentType = config.mOutLabel || 'Payment';
+    } else {
+        currentType = mode;
     }
 
-    function selectMode(mode) {
-        currentType = mode;
-        document.getElementById('mIn')?.classList.toggle('active', mode === 'Cash In');
-        document.getElementById('mOut')?.classList.toggle('active', mode === 'Cash Out');
-        document.getElementById('kioskForm').style.display = 'block';
-        renderInputs(mode);
-    }
+    document.getElementById('mIn')?.classList.toggle('active', mode === 'Cash In');
+    document.getElementById('mOut')?.classList.toggle('active', mode === 'Cash Out');
+    document.getElementById('kioskForm').style.display = 'block';
+    renderInputs(mode);
+}
 
     function renderInputs(mode) {
-        const container = document.getElementById('dynamicInputs');
-        const config = serviceConfig[currentService] || { fields: ['custName', 'accNo', 'amount'], accLabel: "Account Number" };
-        let html = "";
+    const container = document.getElementById('dynamicInputs');
+    const config = serviceConfig[currentService] || { fields: ['custName', 'accNo', 'amount'], accLabel: "Account Number" };
+    let html = "";
 
-        config.fields.forEach(field => {
-            if (field === 'custName') html += `<div class="field-group"><label>Customer Full Name</label><input type="text" id="custName" required></div>`;
+    config.fields.forEach(field => {
+        if (field === 'custName') {
+            let label = (currentType === 'CLAIM') ? "Receiver Full Name" : "Customer Full Name";
+            html += `<div class="field-group"><label>${label}</label><input type="text" id="custName" required></div>`;
             if (field === 'accNo') html += `<div class="field-group"><label>${config.accLabel}</label><input type="number" id="accNo" required></div>`;
             if (field === 'accName') html += `<div class="field-group"><label>${config.nameLabel}</label><input type="text" id="accName" required></div>`;
             if (field === 'extra') html += `<div class="field-group"><label>${config.extraLabel}</label><input type="text" id="extra" required></div>`;
@@ -181,16 +206,24 @@
                 </div>`;
         });
 
-        if (mode === 'Cash Out') {
-            html += `<div class="field-group"><label>Reference No. (Last 6 digits)</label><input type="text" id="refNoInput" required></div>`;
-        }
-
-        container.innerHTML = html;
-        document.getElementById('qrArea').style.display = (mode === 'Cash Out') ? 'block' : 'none';
-        if(mode === 'Cash Out') document.getElementById('qrImage').src = (currentService === 'GCASH') ? 'GCASH_QR_LINK' : 'MAYA_QR_LINK';
-        
-        updateTotal();
+        // Dagdag Reference No. kapag Cash Out o Claim
+    if (mode === 'Cash Out' || currentType === 'CLAIM') {
+        let refLabel = (currentService === 'PALAWAN') ? "Claim Code (PEP Code)" : "Reference No. (Last 6 digits)";
+        html += `<div class="field-group"><label>${refLabel}</label><input type="text" id="refNoInput" required></div>`;
     }
+
+    container.innerHTML = html;
+    
+    // QR Area: Ipakita lang kung Cash Out (hindi kasama ang Palawan Claim)
+    const showQR = (mode === 'Cash Out' && (currentService === 'GCASH' || currentService === 'MAYA'));
+    document.getElementById('qrArea').style.display = showQR ? 'block' : 'none';
+    
+    if(showQR) {
+        document.getElementById('qrImage').src = (currentService === 'GCASH') ? 'GCASH_QR_LINK' : 'MAYA_QR_LINK';
+    }
+    
+    updateTotal();
+}
 
     function updateTotal() {
         const amt = parseFloat(document.getElementById('amount')?.value) || 0;
