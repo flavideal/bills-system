@@ -423,25 +423,14 @@ setMode('Cash In');
     const accName = document.getElementById('accName').value;
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     
-    // 1. Validation check - Siguraduhing may laman ang fields
+    // 1. Validation check - Siguraduhing may laman ang fields bago mag-review
     if(!name || !accNo || !accName || amt <= 0) { 
         alert("Pakikumpleto ang lahat ng detalye kasama ang Account Name."); 
         return; 
     }
 
-    const fee = amt * 0.01;
-    const totalWithFee = amt + fee;
-
-    // Cash In specific validation
-    if (currentMode === 'Cash In' && !document.getElementById('isExact').checked) {
-        const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
-        if (cashReceived < totalWithFee) {
-            alert("Kulang po ang cash na ininput. Dapat ay hindi bababa sa " + formatPHP(totalWithFee));
-            return;
-        }
-    }
-
-    // 3. Build the Review Content
+    // 2. Build the Review Content 
+    // TANGGALIN NATIN YUNG VALIDATION DITO DAHIL SA NEXT SCREEN PA MAG-IINPUT NG PERA
     let reviewHTML = `
         <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
         <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
@@ -461,11 +450,12 @@ setMode('Cash In');
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
     
-    // 4. Eto ang importante: Gawing visible ang screen
+    // 3. Gawing visible ang screen
     const reviewScreen = document.getElementById('stepReview');
     reviewScreen.style.setProperty('display', 'block', 'important'); 
     reviewScreen.scrollTop = 0;
 
+    // 4. Tawagin ito para lumabas ang logic ng Sukli at Fee sa loob ng Review
     updateReviewTotal();
 }
     
