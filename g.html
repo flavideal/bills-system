@@ -494,6 +494,7 @@ setMode('Cash In');
     
     
     async function generateNumber() {
+    // 1. Check if terms are agreed
     if(!document.getElementById('termsAgree').checked) { 
         alert("Please agree to the terms."); 
         return; 
@@ -501,6 +502,21 @@ setMode('Cash In');
 
     const btn = document.querySelector("#stepReview .btn-main");
     const originalText = btn.innerText;
+
+    // 2. Extra Validation para sa Cash In (Dapat may input na cash kung hindi exact)
+    if (currentMode === 'Cash In') {
+        const isExact = document.getElementById('reviewIsExact').checked;
+        if (!isExact) {
+            const cashHanded = parseFloat(document.getElementById('reviewCashReceived').value) || 0;
+            const amt = parseFloat(document.getElementById('amount').value) || 0;
+            const fee = amt * 0.01;
+            if (cashHanded < (amt + fee)) {
+                alert("Kulang po ang cash na ininput ninyo.");
+                return;
+            }
+        }
+    }
+
     btn.innerText = "SENDING... PLEASE WAIT";
     btn.disabled = true;
 
@@ -529,27 +545,30 @@ setMode('Cash In');
         let fee = baseAmount * 0.01;
         let feeOption = document.getElementById('reviewFeeOption').value;
         
-        let sheetAmount = 0; // Ito ang mapupunta sa Column K
-        let sheetChange = 0; // Ito ang mapupunta sa Column L
+        let sheetAmount = 0; // Column K
+        let sheetChange = 0; // Column L
+        let actualCashHanded = 0; // Para sa record ng physical cash
 
         if (currentMode === 'Cash Out') {
             if (feeOption === 'deduct') {
-                // DEDUCT: Column K (Amount) = Base Amount
-                // Column L (Change) = Net Amount (Amount - Fee) na ibibigay na cash
                 sheetAmount = baseAmount; 
-                sheetChange = baseAmount - fee;
+                sheetChange = baseAmount - fee; // Net cash to give
             } else {
-                // ADD-ON: Column K (Amount) = Total (Amount + Fee)
-                // Column L (Change) = 0
                 sheetAmount = baseAmount + fee;
-                sheetChange = 0;
+                sheetChange = baseAmount; // Cash to give is the base amount
             }
         } else {
-            // CASH IN LOGIC: 
-            // Column K (Amount) = Amount + Fee (Ito ang total na pumasok sa cash box)
+            // CASH IN LOGIC
             sheetAmount = baseAmount + fee;
-            // Column L (Change) = Sukli base sa inabot na cash laban sa (Amount + Fee)
-            sheetChange = parseFloat(document.getElementById('finalBreakdown').getAttribute('data-sukli')) || 0;
+            const isExact = document.getElementById('reviewIsExact').checked;
+            
+            if (isExact) {
+                actualCashHanded = sheetAmount;
+                sheetChange = 0;
+            } else {
+                actualCashHanded = parseFloat(document.getElementById('reviewCashReceived').value) || 0;
+                sheetChange = actualCashHanded - sheetAmount;
+            }
         }
 
         const formData = {
@@ -560,11 +579,11 @@ setMode('Cash In');
             transType: currentMode,
             gcashName: document.getElementById('accName').value,
             gcashNo: document.getElementById('accNo').value,
-            amount: sheetAmount,          // COLUMN K
-            feeAmount: fee,               // COLUMN (FEE)
-            feeOption: feeOption,         // COLUMN (OPTION)
-            cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
-            change: sheetChange,          // COLUMN L
+            amount: sheetAmount,           // COLUMN K
+            feeAmount: fee,                // COLUMN (FEE)
+            feeOption: feeOption,          // COLUMN (OPTION)
+            cashAmount: currentMode === 'Cash In' ? actualCashHanded : 0, 
+            change: sheetChange,           // COLUMN L
             consent: "YES",
             receiptFile: fileData.base64,
             receiptFileName: fileData.name,
@@ -614,6 +633,7 @@ setMode('Cash In');
     const fee = amt * 0.01;
     const feeOptionSelect = document.getElementById('reviewFeeOption');
     
+    // Auto-set sa 'add' pag Cash In
     if (currentMode === 'Cash In') {
         feeOptionSelect.value = 'add'; 
         feeOptionSelect.disabled = true;
@@ -622,80 +642,93 @@ setMode('Cash In');
     }
 
     const feeOption = feeOptionSelect.value;
-    const total = (feeOption === 'add') ? amt + fee : amt;
+    const totalWithFee = amt + fee;
 
-    let totalLabel = "Total to Pay:";
-    if (currentMode === 'Cash Out' && feeOption === 'deduct') {
-        totalLabel = "Total Amount to Send:";
-    }
-
-    // Pansinin: Walang "let" sa simula ng breakdownHTML dito sa baba
     let breakdownHTML = `
         <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>
-        <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
-            <span>${totalLabel}</span><strong>${formatPHP(total)}</strong>
-        </div>
     `;
-    
-    const isExact = document.getElementById('isExact').checked;
-    const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
-    const finalBreakdown = document.getElementById('finalBreakdown');
-    let currentSukli = 0;
 
     if (currentMode === 'Cash In') {
-        if (isExact) {
-            breakdownHTML += `<div class="review-item" style="color: #1b431c; margin-top: 10px;"><span>Status:</span><strong>EXACT AMOUNT</strong></div>`;
-        } else {
-            currentSukli = cashReceived - total;
-            breakdownHTML += `
-                <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-                    <div class="review-item"><span>Cash Handed:</span><strong>${formatPHP(cashReceived)}</strong></div>
-                    <div class="review-item" style="color: #d32f2f; font-size: 16px;">
-                        <span>SUKLI:</span><strong id="finalSukliValue">${formatPHP(currentSukli > 0 ? currentSukli : 0)}</strong>
-                    </div>
-                </div>`;
-        }
-    }
-    
-    finalBreakdown.innerHTML = breakdownHTML;
-    finalBreakdown.setAttribute('data-sukli', currentSukli > 0 ? currentSukli : 0);
-
-    // QR Logic para sa Cash Out
-    if(currentMode === 'Cash Out') {
-    const qrArea = document.getElementById('qrReviewArea');
-    const qrInstruction = document.getElementById('qrInstructionReview');
-    qrArea.style.display = 'block';
-
-    // LOGIC: Amount to Send vs Amount to Receive
-    if (feeOption === 'add') {
-        // Customer sends Amount + Fee, and receives exactly the Amount in cash
-        qrInstruction.innerHTML = `
-            <div style="border-bottom: 1px dashed #ccc; padding-bottom: 8px; margin-bottom: 8px;">
-                DAPAT I-SEND SA GCASH: <br>
-                <b style="font-size: 18px; color: #d32f2f;">${formatPHP(amt + fee)}</b>
+        // --- CASH IN LOGIC: NASA REVIEW NA ANG INPUT NG PERA ---
+        breakdownHTML += `
+            <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
+                <span>Total to Pay:</span><strong>${formatPHP(totalWithFee)}</strong>
             </div>
-            <div>
-                TATANGGAPIN NA CASH: <br>
-                <b style="font-size: 20px; color: #1b431c;">${formatPHP(amt)}</b>
+            <div class="cash-logic-box" style="margin-top:15px; background: #fff9e6; border: 1px solid var(--orange-yellow);">
+                <label class="checkbox-row">
+                    <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" style="width: 18px; height: 18px;"> 
+                    Sakto ang ibabayad ko (Exact)
+                </label>
+                <div id="reviewCashInputGroup">
+                    <label style="font-size:11px;">Magkano ang cash na iaabot mo?</label>
+                    <input type="number" id="reviewCashReceived" placeholder="Amount ng cash" 
+                           oninput="updateReviewTotal()" 
+                           style="background: white; border: 2px solid var(--dark-green);">
+                    <div id="reviewSukliDisplay" class="sukli-display" style="margin-top:10px; font-size:20px;"></div>
+                </div>
             </div>
         `;
     } else {
-        // DEDUCT LOGIC: Customer sends exactly the Amount, and receives Amount - Fee in cash
-        qrInstruction.innerHTML = `
-            <div style="border-bottom: 1px dashed #ccc; padding-bottom: 8px; margin-bottom: 8px;">
-                DAPAT I-SEND SA GCASH: <br>
-                <b style="font-size: 18px; color: #d32f2f;">${formatPHP(amt)}</b>
+        // --- CASH OUT LOGIC ---
+        const amountToReceive = (feeOption === 'deduct') ? (amt - fee) : amt;
+        const amountToSend = (feeOption === 'deduct') ? amt : (amt + fee);
+
+        breakdownHTML += `
+            <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
+                <span>Total to Send via GCash:</span><strong>${formatPHP(amountToSend)}</strong>
             </div>
-            <div style="background: #e8f5e9; padding: 10px; border-radius: 8px;">
-                <span style="font-size: 12px; color: #555;">IBIBIGAY NA CASH SA INYO:</span><br>
-                <b style="font-size: 22px; color: #1b431c;">${formatPHP(amt - fee)}</b><br>
-                <small style="color: #666;">(Bawas na ang ${formatPHP(fee)} service fee)</small>
+            <div style="margin-top:15px; padding:15px; background: #e8f5e9; border-radius:10px; text-align:center;">
+                <span style="font-size:12px; color:#555;">CASH NA MATATANGGAP MO:</span><br>
+                <b style="font-size:24px; color:var(--dark-green);">${formatPHP(amountToReceive)}</b>
+                ${feeOption === 'deduct' ? `<br><small style="color:red;">(Bawas na ang service fee)</small>` : ''}
             </div>
         `;
     }
-} else {
-    document.getElementById('qrReviewArea').style.display = 'none';
+    
+    const finalBreakdown = document.getElementById('finalBreakdown');
+    finalBreakdown.innerHTML = breakdownHTML;
+
+    // Logic para sa Sukli calculation sa loob ng Review
+    if (currentMode === 'Cash In') {
+        const isExact = document.getElementById('reviewIsExact').checked;
+        const cashInputGroup = document.getElementById('reviewCashInputGroup');
+        const sukliDiv = document.getElementById('reviewSukliDisplay');
+        
+        if (isExact) {
+            cashInputGroup.style.display = 'none';
+            finalBreakdown.setAttribute('data-sukli', 0);
+        } else {
+            cashInputGroup.style.display = 'block';
+            const cashHanded = parseFloat(document.getElementById('reviewCashReceived').value) || 0;
+            const computeSukli = cashHanded - totalWithFee;
+            
+            if (cashHanded > 0) {
+                if (computeSukli < 0) {
+                    sukliDiv.style.color = "red";
+                    sukliDiv.innerHTML = "KULANG: " + formatPHP(Math.abs(computeSukli));
+                } else {
+                    sukliDiv.style.color = "green";
+                    sukliDiv.innerHTML = "SUKLI: " + formatPHP(computeSukli);
+                }
+                finalBreakdown.setAttribute('data-sukli', computeSukli > 0 ? computeSukli : 0);
+            }
+        }
+    }
+    
+    // I-update rin ang QR instruction kung Cash Out
+    updateQRInstruction(amt, fee, feeOption);
 }
+
+function updateQRInstruction(amt, fee, feeOption) {
+    const qrArea = document.getElementById('qrReviewArea');
+    if (currentMode === 'Cash Out') {
+        qrArea.style.display = 'block';
+        const qrInstruction = document.getElementById('qrInstructionReview');
+        const sendAmount = (feeOption === 'add') ? (amt + fee) : amt;
+        qrInstruction.innerHTML = `I-SCAN AT I-SEND ANG <br><b style="font-size:20px;">${formatPHP(sendAmount)}</b>`;
+    } else {
+        qrArea.style.display = 'none';
+    }
 }
     
 function adminForceReset() {
