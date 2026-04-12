@@ -481,7 +481,6 @@ setMode('Cash In');
         const fileInput = document.getElementById('proofUpload');
         let fileData = { base64: null, name: null, type: null };
 
-        // Kunin ang photo kung meron (Common ito sa Cash Out)
         if (fileInput && fileInput.files.length > 0) {
             const file = fileInput.files[0];
             fileData = await new Promise((resolve, reject) => {
@@ -498,46 +497,62 @@ setMode('Cash In');
 
         const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
-        // Sa loob ng generateNumber function, palitan ang formData:
+        // --- COMPUTATION LOGIC PARA SA SHEET (K vs L) ---
+        let baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+        let fee = baseAmount * 0.01;
+        let feeOption = document.getElementById('reviewFeeOption').value;
+        
+        let sheetAmount = 0; // Ito ang mapupunta sa Column K
+        let sheetChange = 0; // Ito ang mapupunta sa Column L
 
-const finalSukli = parseFloat(document.getElementById('finalBreakdown').getAttribute('data-sukli')) || 0;
+        if (currentMode === 'Cash Out') {
+            if (feeOption === 'deduct') {
+                // DEDUCT: K = 0, L = Net Amount (Amount - Fee)
+                sheetAmount = 0;
+                sheetChange = baseAmount - fee;
+            } else {
+                // ADD-ON: K = Total (Amount + Fee), L = 0
+                sheetAmount = baseAmount + fee;
+                sheetChange = 0;
+            }
+        } else {
+            // CASH IN LOGIC: K = Amount, L = Sukli sa inabot na cash
+            sheetAmount = baseAmount;
+            sheetChange = parseFloat(document.getElementById('finalBreakdown').getAttribute('data-sukli')) || 0;
+        }
 
-const formData = {
-    customerName: document.getElementById('custName').value,
-    queueNo: generatedNum,
-    timestamp: new Date().toLocaleString(),
-    provider: "GCASH",
-    transType: currentMode,
-    gcashName: document.getElementById('accName').value,
-    gcashNo: document.getElementById('accNo').value,
-    amount: parseFloat(document.getElementById('amount').value) || 0,
-    feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
-    feeOption: document.getElementById('reviewFeeOption').value,
-    cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
-    change: finalSukli, // DITO MAPUPUNTA ANG SUKLI DATA
-    consent: "YES",
-    receiptFile: fileData.base64,
-    receiptFileName: fileData.name,
-    receiptFileType: fileData.type
-};
+        const formData = {
+            customerName: document.getElementById('custName').value,
+            queueNo: generatedNum,
+            timestamp: new Date().toLocaleString(),
+            provider: "GCASH",
+            transType: currentMode,
+            gcashName: document.getElementById('accName').value,
+            gcashNo: document.getElementById('accNo').value,
+            amount: sheetAmount,          // COLUMN K
+            feeAmount: fee,               // COLUMN (FEE)
+            feeOption: feeOption,         // COLUMN (OPTION)
+            cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
+            change: sheetChange,          // COLUMN L
+            consent: "YES",
+            receiptFile: fileData.base64,
+            receiptFileName: fileData.name,
+            receiptFileType: fileData.type
+        };
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
-        // Gagamit tayo ng plain text transfer para iwas CORS pre-flight block
         const response = await fetch(WEB_APP_URL, {
             method: "POST",
             body: JSON.stringify(formData),
-            headers: {
-                "Content-Type": "text/plain;charset=utf-8"
-            }
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
         });
 
-        // I-save ang session
+        // Save session and UI updates
         myQueueNumber = generatedNum; 
         localStorage.setItem('savedQueueNumber', myQueueNumber);
         localStorage.setItem('isWaiting', 'true');
 
-        // UI Update
         document.getElementById('numberDisplay').innerText = myQueueNumber;
         document.getElementById('stepReview').style.display = 'none';
         document.getElementById('stepForm').style.display = 'none';
