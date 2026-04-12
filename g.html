@@ -104,6 +104,23 @@
     #stepReview {
     z-index: 999;
 }
+/* FIX PARA SA CHECKBOX SA REVIEW SCREEN */
+#reviewIsExact, 
+.checkbox-row input[type="checkbox"] {
+    position: relative;
+    z-index: 1010 !important; /* Siguradong nasa ibabaw */
+    cursor: pointer;
+    width: 20px !important;  /* Lakihan konti para madaling tamaan */
+    height: 20px !important;
+    pointer-events: auto !important; /* Siguradong tumatanggap ng click */
+}
+
+/* Para maging clickable din yung mismong label text */
+.checkbox-row label {
+    cursor: pointer;
+    user-select: none;
+    padding: 5px;
+}
     </style>
 </head>
 <body>
@@ -605,46 +622,32 @@ setMode('Cash In');
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     const fee = amt * 0.01;
     const feeOptionSelect = document.getElementById('reviewFeeOption');
-    
-    // PAYO: Sa Cash In, kailangang enabled ang dropdown para makapili sila ng Deduct o Add
-    if (currentMode === 'Cash In') {
-        feeOptionSelect.disabled = false; 
-    } else {
-        feeOptionSelect.disabled = false; // Mananatiling enabled din sa Cash Out
-    }
-
     const feeOption = feeOptionSelect.value;
     const totalWithFee = amt + fee;
 
-    let breakdownHTML = `
-        <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>
-    `;
+    // Kunin muna ang current state ng checkbox bago mag-update ng HTML
+    const exactCheckbox = document.getElementById('reviewIsExact');
+    const isExact = exactCheckbox ? exactCheckbox.checked : false;
+
+    let breakdownHTML = `<div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>`;
 
     if (currentMode === 'Cash In') {
-        // --- CASH IN LOGIC (DEDUCT vs ADD-ON) ---
         if (feeOption === 'add') {
-            // Customer pays: Amount + Fee
             breakdownHTML += `
                 <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
                     <span>Total na ibabayad (Cash):</span><strong>${formatPHP(totalWithFee)}</strong>
                 </div>
-                <div style="font-size:12px; color:#666; margin-bottom:10px;">
-                    (Papasok sa GCash mo: <b>${formatPHP(amt)}</b>)
-                </div>
-                <div class="cash-logic-box" style="background: #fff9e6; border: 1px solid var(--orange-yellow); padding:15px; border-radius:10px;">
+                <div class="cash-logic-box">
                     <label class="checkbox-row">
-                        <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" style="width: 18px; height: 18px;"> 
+                        <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" ${isExact ? 'checked' : ''}> 
                         Sakto ang iaabot ko (Exact)
                     </label>
-                    <div id="reviewCashInputGroup">
-                        <label style="font-size:11px;">Magkano ang cash na iaabot mo?</label>
-                        <input type="number" id="reviewCashReceived" placeholder="Amount ng cash" 
-                               oninput="updateReviewTotal()" 
-                               style="background: white; border: 2px solid var(--dark-green); padding:10px; width:100%; border-radius:8px;">
-                        <div id="reviewSukliDisplay" class="sukli-display" style="margin-top:10px; font-size:20px;"></div>
+                    <div id="reviewCashInputGroup" style="display: ${isExact ? 'none' : 'block'}">
+                        <label>Magkano ang cash na iaabot mo?</label>
+                        <input type="number" id="reviewCashReceived" oninput="updateReviewSukli()" placeholder="0.00">
+                        <div id="reviewSukliDisplay" class="sukli-display"></div>
                     </div>
-                </div>
-            `;
+                </div>`;
         } else {
             // Customer pays: Amount lang (Fee is taken from the amount to be sent)
             const netToReceive = amt - fee;
