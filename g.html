@@ -148,16 +148,16 @@
             </div>
 
             <div id="cashLogicArea" class="cash-logic-box" style="display: none;">
-                <label class="checkbox-row">
-                    <input type="checkbox" id="isExact" onchange="toggleExact()" style="width: 18px; height: 18px;"> 
-                    Sakto ang ibabayad ko (Exact Amount)
-                </label>
-                <div id="cashInputGroup">
-                    <label>Magkano ang cash na iaabot mo?</label>
-                    <input type="number" id="cashReceived" placeholder="Amount ng cash" oninput="calculateFee()">
-                    <div id="sukliDisplay" class="sukli-display"></div>
-                </div>
-            </div>
+    <label class="checkbox-row">
+        <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" style="width: 18px; height: 18px;"> 
+        Sakto ang ibabayad ko (Exact Amount)
+    </label>
+    <div id="reviewCashInputGroup">
+        <label>Magkano ang cash na iaabot mo?</label>
+        <input type="number" id="reviewCashReceived" placeholder="Amount ng cash" oninput="updateReviewTotal()">
+        <div id="reviewSukliDisplay" class="sukli-display"></div>
+    </div>
+</div>
 
             <button onclick="showReview()" class="btn-main">REVIEW DETAILS</button>
         </div>
