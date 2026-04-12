@@ -147,18 +147,6 @@
                 </div>
             </div>
 
-            <div id="cashLogicArea" class="cash-logic-box" style="display: none;">
-    <label class="checkbox-row">
-        <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" style="width: 18px; height: 18px;"> 
-        Sakto ang ibabayad ko (Exact Amount)
-    </label>
-    <div id="reviewCashInputGroup">
-        <label>Magkano ang cash na iaabot mo?</label>
-        <input type="number" id="reviewCashReceived" placeholder="Amount ng cash" oninput="updateReviewTotal()">
-        <div id="reviewSukliDisplay" class="sukli-display"></div>
-    </div>
-</div>
-
             <button onclick="showReview()" class="btn-main">REVIEW DETAILS</button>
         </div>
 
@@ -384,11 +372,6 @@ async function checkMyStatus() {
     
     document.getElementById('btnIn').classList.toggle('active', mode === 'Cash In');
     document.getElementById('btnOut').classList.toggle('active', mode === 'Cash Out');
-    
-    const logicArea = document.getElementById('cashLogicArea');
-    if (logicArea) {
-        logicArea.style.display = (mode === 'Cash In') ? 'block' : 'none';
-    }
     
     calculateFee();
 }
