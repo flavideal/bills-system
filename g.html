@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GCASH Service | FLAVIDEAL</title>
+    <title>GCASH Service | JERRIC Personal Assistance</title>
+
+<h2 style="color: var(--dark-green); margin-top: 0; text-align: center; font-size: 18px;">
+    JERRIC PERSONAL ASSISTANCE SERVICE
+</h2>
+<p style="text-align:center; font-size: 12px; margin-top: -10px; color: #666;">GCash Transaction Support</p>
     <style>
         :root { --dark-green: #1b431c; --orange-yellow: #ffc267; --bg: #f0f2f5; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 15px; display: flex; justify-content: center; }
@@ -269,10 +274,12 @@ async function checkMyStatus() {
 
             // Note sa baba ng slip
             document.getElementById('adminNote').innerHTML = `
-    ${result.adminNote || "Salamat sa pagtitiwala!"}<br>
-    <span style="color: #666; font-size: 11px;">JERRIC Personal Assistance Service</span><br>
-    <b style="color:red; font-size:12px;">Huwag kalimutang i-click ang DONE kung tapos na ito.</b>
-`;
+        <div style="margin-bottom: 10px;">
+            <strong style="color: var(--dark-green);">Salamat sa pagtitiwala!</strong><br>
+            <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
+        </div>
+        <b style="color:red; font-size:12px;">Huwag kalimutang i-click ang DONE kung tapos muna itong nakita.</b>
+    `;
 
             // Buhayin ang DONE button
             const finishBtn = document.getElementById('finishBtn');
