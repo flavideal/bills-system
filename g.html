@@ -305,17 +305,21 @@ async function checkMyStatus() {
             finishBtn.style.opacity = "1";
             finishBtn.style.cursor = "pointer";
 
-            // Receipt Photo Logic
-            const receiptImg = document.getElementById('adminReceipt');
-            if (result.receipt && result.receipt.includes("http")) {
-                let finalLink = result.receipt;
-                if (finalLink.includes("drive.google.com") && finalLink.includes("/file/d/")) {
-                    let fileId = finalLink.split("/file/d/")[1].split("/")[0];
-                    finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
-                }
-                receiptImg.src = finalLink;
-                receiptImg.style.display = "block";
-            }
+            // Sa loob ng checkMyStatus(), sa COMPLETED block:
+
+const receiptImg = document.getElementById('adminReceipt');
+if (result.receipt && result.receipt.includes("http")) {
+    let finalLink = result.receipt;
+    if (finalLink.includes("drive.google.com") && finalLink.includes("/file/d/")) {
+        let fileId = finalLink.split("/file/d/")[1].split("/")[0];
+        finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
+    }
+    receiptImg.src = finalLink;
+    receiptImg.style.setProperty('display', 'block', 'important'); // Force display
+} else {
+    // Kung walang photo, baka gusto mong lagyan ng placeholder o tago
+    receiptImg.style.display = "none";
+}
 
             // AUTO-RESET TIMER: 3 Minutes (180,000 ms)
     // Para kung maiwan nilang nakabukas ang slip, kusa itong mag-re-ready para sa sunod.
@@ -493,24 +497,28 @@ setMode('Cash In');
 
         const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
-        const formData = {
-            customerName: document.getElementById('custName').value,
-            queueNo: generatedNum,
-            timestamp: new Date().toLocaleString(),
-            provider: "GCASH",
-            transType: currentMode,
-            gcashName: document.getElementById('accName').value,
-            gcashNo: document.getElementById('accNo').value,
-            amount: parseFloat(document.getElementById('amount').value) || 0,
-            feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
-            feeOption: document.getElementById('reviewFeeOption').value,
-            cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
-            change: 0,
-            consent: "YES",
-            receiptFile: fileData.base64,
-            receiptFileName: fileData.name,
-            receiptFileType: fileData.type
-        };
+        // Sa loob ng generateNumber function, palitan ang formData:
+
+const finalSukli = parseFloat(document.getElementById('finalBreakdown').getAttribute('data-sukli')) || 0;
+
+const formData = {
+    customerName: document.getElementById('custName').value,
+    queueNo: generatedNum,
+    timestamp: new Date().toLocaleString(),
+    provider: "GCASH",
+    transType: currentMode,
+    gcashName: document.getElementById('accName').value,
+    gcashNo: document.getElementById('accNo').value,
+    amount: parseFloat(document.getElementById('amount').value) || 0,
+    feeAmount: (parseFloat(document.getElementById('amount').value) || 0) * 0.01,
+    feeOption: document.getElementById('reviewFeeOption').value,
+    cashAmount: currentMode === 'Cash In' ? (parseFloat(document.getElementById('cashReceived').value) || 0) : 0,
+    change: finalSukli, // DITO MAPUPUNTA ANG SUKLI DATA
+    consent: "YES",
+    receiptFile: fileData.base64,
+    receiptFileName: fileData.name,
+    receiptFileType: fileData.type
+};
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
@@ -554,14 +562,25 @@ setMode('Cash In');
     function updateReviewTotal() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     const fee = amt * 0.01;
-    const feeOption = document.getElementById('reviewFeeOption').value;
+    const feeOptionSelect = document.getElementById('reviewFeeOption');
+    
+    // DISABLE DEDUCT IF CASH IN
+    if (currentMode === 'Cash In') {
+        feeOptionSelect.value = 'add'; 
+        feeOptionSelect.disabled = true;
+    } else {
+        feeOptionSelect.disabled = false;
+    }
+
+    const feeOption = feeOptionSelect.value;
     const total = (feeOption === 'add') ? amt + fee : amt;
     
     const isExact = document.getElementById('isExact').checked;
     const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
     const finalBreakdown = document.getElementById('finalBreakdown');
 
-    // 1. Standard Breakdown
+    let currentSukli = 0; // Global variable or scoped to pass to generateNumber
+
     let breakdownHTML = `
         <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>
         <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
@@ -569,43 +588,33 @@ setMode('Cash In');
         </div>
     `;
 
-    // 2. Cash In Logic
     if (currentMode === 'Cash In') {
         if (isExact) {
-            breakdownHTML += `
-                <div class="review-item" style="color: #1b431c; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-                    <span>Payment Status:</span><strong>EXACT AMOUNT (SAKTO)</strong>
-                </div>`;
+            breakdownHTML += `<div class="review-item" style="color: #1b431c; margin-top: 10px;"><span>Status:</span><strong>EXACT AMOUNT</strong></div>`;
         } else {
-            const sukli = cashReceived - total;
+            currentSukli = cashReceived - total;
             breakdownHTML += `
                 <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
                     <div class="review-item"><span>Cash Handed:</span><strong>${formatPHP(cashReceived)}</strong></div>
                     <div class="review-item" style="color: #d32f2f; font-size: 16px;">
-                        <span>SUKLI:</span><strong>${formatPHP(sukli > 0 ? sukli : 0)}</strong>
+                        <span>SUKLI:</span><strong id="finalSukliValue">${formatPHP(currentSukli > 0 ? currentSukli : 0)}</strong>
                     </div>
                 </div>`;
         }
     }
-
     finalBreakdown.innerHTML = breakdownHTML;
+    // Store sukli temporarily in a data attribute
+    finalBreakdown.setAttribute('data-sukli', currentSukli > 0 ? currentSukli : 0);
 
-    // 3. QR Update para sa Cash Out
+    // QR Logic remains the same...
     if(currentMode === 'Cash Out') {
         document.getElementById('qrReviewArea').style.display = 'block';
-        if(feeOption === 'add') {
-            document.getElementById('qrInstructionReview').innerHTML = 
-                `Paki-send ang <b>${formatPHP(total)}</b> para makuha ang buong ${formatPHP(amt)}`;
-        } else {
-            const amountToReceive = amt - fee;
-            document.getElementById('qrInstructionReview').innerHTML = 
-                `Paki-send ang <b>${formatPHP(amt)}</b><br><span style="color:blue;">Amount to Receive: ${formatPHP(amountToReceive)}</span>`;
-        }
+        // ... rest of your QR code ...
     } else {
         document.getElementById('qrReviewArea').style.display = 'none';
     }
 }
-
+    
 function adminForceReset() {
     // Ilagay mo dito ang iyong 6-digit PIN
     const ADMIN_PIN = "430456"; 
