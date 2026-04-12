@@ -50,24 +50,27 @@
         }
 
         .number {
-    /* Baguhin ang font-size para mag-fit kahit mahaba ang number */
-    font-size: 20vw; 
+    /* Baguhin ito para mag-fit ang text */
+    font-size: min(25vw, 45vh); /* Pinipili ang mas maliit para hindi lumampas sa height o width */
     font-weight: bold;
     margin: 0;
-    white-space: nowrap; /* Pinipigilan ang pagbaba ng text */
+    white-space: nowrap; 
     overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1; /* Para walang sobrang space sa taas at baba */
-    width: 90%; /* Siguradong may konting padding sa gilid */
+    width: 100%; /* Gamitin ang buong width ng panel */
     display: flex;
     justify-content: center;
     align-items: center;
+    
+    /* Ito ang sikreto para hindi lumabas sa box */
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0 10px;
 }
 
 /* Dagdag na tweak para sa Portrait mode (Mobile/Tablet) */
 @media (orientation: portrait) {
     .number { 
-        font-size: 30vw; /* Konting liit kaysa sa dati para mag-kasya ang "G-001" */
+        font-size: 35vw; /* Binawasan natin mula 40vw para sigurado ang G-001 */
     }
 }
 
