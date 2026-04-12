@@ -60,13 +60,14 @@
 @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
 #adminReceipt {
-    width: 100%;           /* Susunod sa lapad ng card */
-    max-width: 100%;       /* Siguradong hindi lalampas sa screen */
-    height: auto;          /* AUTOMATIC ang haba, hinding-hindi mapuputol */
-    display: none;         /* Lalabas lang pag COMPLETED na */
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: none; /* Hide by default */
     margin: 15px 0;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Konting anino para maganda */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; /* Para makita kung may blank space */
 }
 
 /* Idagdag sa loob ng <style> tag mo */
@@ -288,16 +289,42 @@ async function checkMyStatus() {
             statusBox.className = "status-badge status-completed";
             statusBox.innerText = "✅ TRANSACTION FINISHED";
 
-            instruction.style.display = "none"; // Tago ang instruction
-            completedArea.style.display = "block"; // Labas na ang slip at DONE button
+            instruction.style.display = "none"; 
+            completedArea.style.display = "block"; 
 
             // Note sa baba ng slip
             document.getElementById('adminNote').innerHTML = `
-        <div style="margin-bottom: 10px;">
-            <strong style="color: var(--dark-green);">Salamat sa pagtitiwala!</strong><br>
-            <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
-        </div>
-    `;
+                <div style="margin-bottom: 10px;">
+                    <strong style="color: var(--dark-green);">Salamat sa pagtitiwala!</strong><br>
+                    <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
+                </div>
+            `;
+
+            // Handle Receipt Image Display
+            const receiptImg = document.getElementById('adminReceipt');
+            
+            if (result.receipt && result.receipt.trim() !== "" && result.receipt.includes("http")) {
+                let finalLink = result.receipt;
+                
+                // Convert Google Drive link to Direct View/Thumbnail
+                if (finalLink.includes("drive.google.com")) {
+                    if (finalLink.includes("/file/d/")) {
+                        let fileId = finalLink.split("/file/d/")[1].split("/")[0];
+                        finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
+                    } else if (finalLink.includes("id=")) {
+                        let fileId = finalLink.split("id=")[1].split("&")[0];
+                        finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
+                    }
+                }
+
+                // Force Refresh ang image para iwas "Stale Cache"
+                receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+                receiptImg.style.display = "block";
+                receiptImg.style.width = "100%"; // Siguradong full width sa loob ng card
+            } else {
+                // Tago ang image tag kung talagang walang link na galing sa Google Sheets
+                receiptImg.style.display = "none";
+            }
 
             // Buhayin ang DONE button
             const finishBtn = document.getElementById('finishBtn');
@@ -305,34 +332,17 @@ async function checkMyStatus() {
             finishBtn.style.opacity = "1";
             finishBtn.style.cursor = "pointer";
 
-            // Sa loob ng checkMyStatus(), sa COMPLETED block:
-
-const receiptImg = document.getElementById('adminReceipt');
-if (result.receipt && result.receipt.includes("http")) {
-    let finalLink = result.receipt;
-    if (finalLink.includes("drive.google.com") && finalLink.includes("/file/d/")) {
-        let fileId = finalLink.split("/file/d/")[1].split("/")[0];
-        finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
-    }
-    receiptImg.src = finalLink;
-    receiptImg.style.setProperty('display', 'block', 'important'); // Force display
-} else {
-    // Kung walang photo, baka gusto mong lagyan ng placeholder o tago
-    receiptImg.style.display = "none";
-}
-
-            // AUTO-RESET TIMER: 3 Minutes (180,000 ms)
-    // Para kung maiwan nilang nakabukas ang slip, kusa itong mag-re-ready para sa sunod.
-    setTimeout(() => {
-    if (localStorage.getItem('isWaiting') === 'true') {
-        localStorage.removeItem('savedQueueNumber');
-        localStorage.removeItem('isWaiting');
-        // Palitan ang reload() ng href
-        window.location.href = 'index.html'; 
-    }
-}, 180000);
+            // AUTO-RESET TIMER: 3 Minutes
+            setTimeout(() => {
+                if (localStorage.getItem('isWaiting') === 'true') {
+                    localStorage.removeItem('savedQueueNumber');
+                    localStorage.removeItem('isWaiting');
+                    window.location.href = 'index.html'; 
+                }
+            }, 180000);
             
             clearInterval(statusInterval);
+        }
         }
     } catch (e) {
         console.error("Error checking status:", e);
