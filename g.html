@@ -295,7 +295,6 @@ async function checkMyStatus() {
             instruction.style.display = "none"; 
             completedArea.style.display = "block"; 
 
-            // Note sa baba ng slip
             document.getElementById('adminNote').innerHTML = `
                 <div style="margin-bottom: 10px;">
                     <strong style="color: var(--dark-green);">Salamat sa pagtitiwala!</strong><br>
@@ -303,27 +302,34 @@ async function checkMyStatus() {
                 </div>
             `;
 
-            // ... (loob ng checkMyStatus sa HTML)
-const receiptImg = document.getElementById('adminReceipt');
+            const receiptImg = document.getElementById('adminReceipt');
 
-// DAPAT GANITO ANG CONDITION:
-if (result.receipt && result.receipt.toString().includes("http")) {
-    let finalLink = result.receipt.toString();
-    
-    if (finalLink.includes("drive.google.com")) {
-        // Logic for Drive conversion (yung thumbnail link)
-        let fileId = finalLink.includes("/file/d/") ? finalLink.split("/file/d/")[1].split("/")[0] : finalLink.split("id=")[1].split("&")[0];
-        finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
-    }
+            if (result.receipt && result.receipt.toString().toLowerCase().includes("http")) {
+                let finalLink = result.receipt.toString().trim();
+                
+                // FIX PARA MALINAW: Convert Google Drive link to High-Res Thumbnail
+                if (finalLink.includes("drive.google.com")) {
+                    let fileId = "";
+                    if (finalLink.includes("/file/d/")) {
+                        fileId = finalLink.split("/file/d/")[1].split("/")[0];
+                    } else if (finalLink.includes("id=")) {
+                        fileId = finalLink.split("id=")[1].split("&")[0];
+                    }
+                    
+                    if(fileId) {
+                        // Gagamit tayo ng sz=w1200 para HD ang labas ng screenshot
+                        finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1200";
+                    }
+                }
 
-    receiptImg.src = finalLink + "?t=" + new Date().getTime();
-    receiptImg.style.display = "block";
-} else {
-    // Kapag "No Receipt" pa ang nakalagay sa Column P, itago ang image
-    receiptImg.style.display = "none";
-}
+                receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+                receiptImg.style.display = "block";
+                receiptImg.style.width = "100%"; 
+                receiptImg.style.borderRadius = "12px"; // Para maganda tingnan
+            } else {
+                receiptImg.style.display = "none";
+            }
 
-            // Buhayin ang DONE button
             const finishBtn = document.getElementById('finishBtn');
             finishBtn.disabled = false;
             finishBtn.style.opacity = "1";
