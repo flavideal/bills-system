@@ -462,10 +462,13 @@ setMode('Cash In');
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
     
-    // ITO ANG MAHALAGA: Force display using style.setProperty
+    // Siguraduhin na naka-display ang Review Screen
     const reviewScreen = document.getElementById('stepReview');
-    reviewScreen.style.setProperty('display', 'block', 'important'); 
+    reviewScreen.style.display = 'block'; // Gamitin ang simpleng display: block
     
+    // I-scroll sa taas para makita ang simula ng review
+    reviewScreen.scrollTop = 0;
+
     updateReviewTotal();
 }
 
@@ -620,9 +623,26 @@ const formData = {
     finalBreakdown.setAttribute('data-sukli', currentSukli > 0 ? currentSukli : 0);
 
     // QR Logic remains the same...
+    // QR Logic para sa Cash Out
     if(currentMode === 'Cash Out') {
-        document.getElementById('qrReviewArea').style.display = 'block';
-        // ... rest of your QR code ...
+        const qrArea = document.getElementById('qrReviewArea');
+        const qrInstruction = document.getElementById('qrInstructionReview');
+        qrArea.style.display = 'block';
+
+        // LOGIC: Amount to Send vs Amount to Receive
+        if (feeOption === 'add') {
+            // Customer sends Amount + Fee, and receives exactly the Amount in cash
+            qrInstruction.innerHTML = `
+                DAPAT I-SEND SA GCASH: <b>${formatPHP(amt + fee)}</b><br>
+                TATANGGAPIN NA CASH: <b>${formatPHP(amt)}</b>
+            `;
+        } else {
+            // Customer sends exactly the Amount, and receives Amount - Fee in cash
+            qrInstruction.innerHTML = `
+                DAPAT I-SEND SA GCASH: <b>${formatPHP(amt)}</b><br>
+                TATANGGAPIN NA CASH: <b>${formatPHP(amt - fee)}</b>
+            `;
+        }
     } else {
         document.getElementById('qrReviewArea').style.display = 'none';
     }
