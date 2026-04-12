@@ -484,13 +484,14 @@ setMode('Cash In');
     
     
     async function generateNumber() {
-    // 1. Validation
+    // 1. Validation for Terms
     if(!document.getElementById('termsAgree').checked) { 
-        alert("Please agree to the terms."); 
+        alert("Paki-check ang box para sumang-ayon sa terms."); 
         return; 
     }
 
     const btn = document.querySelector("#stepReview .btn-main");
+    const originalText = "GET A NUMBER";
     btn.innerText = "SENDING... PLEASE WAIT";
     btn.disabled = true;
 
@@ -500,23 +501,35 @@ setMode('Cash In');
         const feeOption = document.getElementById('reviewFeeOption').value;
         const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
-        let finalAmountToGcash = baseAmount; // Column H (Dapat net amount ito)
-        let totalWithFee = baseAmount + fee; // Column K
-        let sheetChange = 0;                 // Column L
+        let finalAmountToGcash = baseAmount; 
+        let totalWithFee = baseAmount + fee; 
+        let sheetChange = 0;                 
         let actualCashHanded = 0;
 
         if (currentMode === 'Cash In') {
-            const isExact = document.getElementById('reviewIsExact').checked;
-            
+            // Check kung existing ang checkbox (para iwas error sa Deduct mode)
+            const exactCheckEl = document.getElementById('reviewIsExact');
+            const isExact = exactCheckEl ? exactCheckEl.checked : true; // Default to true kung wala (Deduct mode)
+
             if (feeOption === 'add') {
-                // Halimbawa: 1000 amount + 10 fee = 1010 total
                 finalAmountToGcash = baseAmount; 
-                actualCashHanded = isExact ? totalWithFee : (parseFloat(document.getElementById('reviewCashReceived').value) || 0);
+                
+                // Kunin ang cash handed input kung hindi exact
+                const cashInputEl = document.getElementById('reviewCashReceived');
+                const cashInputValue = cashInputEl ? parseFloat(cashInputEl.value) : 0;
+                
+                actualCashHanded = isExact ? totalWithFee : cashInputValue;
+                
+                // Validation: Kung hindi exact, dapat sapat ang cash na ininput
+                if (!isExact && actualCashHanded < totalWithFee) {
+                    throw new Error("Kulang ang cash amount na nilagay mo.");
+                }
+
                 sheetChange = isExact ? 0 : (actualCashHanded - totalWithFee);
             } else {
-                // Deduct: 1000 binayad, 990 lang papasok sa GCash
+                // DEDUCT LOGIC: 1000 cash, 990 sa GCash, 10 fee
                 finalAmountToGcash = baseAmount - fee;
-                totalWithFee = baseAmount; // Dahil kinuha ang fee sa loob
+                totalWithFee = baseAmount; 
                 actualCashHanded = baseAmount;
                 sheetChange = 0;
             }
@@ -524,10 +537,12 @@ setMode('Cash In');
             // CASH OUT LOGIC
             if (feeOption === 'deduct') {
                 finalAmountToGcash = baseAmount;
-                sheetChange = baseAmount - fee; // Cash na ibibigay sa customer
+                sheetChange = baseAmount - fee; 
+                actualCashHanded = 0; // Sa Cash out, si admin ang nag-aabot
             } else {
-                finalAmountToGcash = baseAmount + fee; // Amount na dapat i-send ni customer
-                sheetChange = baseAmount; // Cash na ibibigay sa customer
+                finalAmountToGcash = baseAmount + fee; 
+                sheetChange = baseAmount; 
+                actualCashHanded = 0;
             }
         }
 
@@ -539,16 +554,14 @@ setMode('Cash In');
             transType: currentMode,
             gcashName: document.getElementById('accName').value,
             gcashNo: document.getElementById('accNo').value,
-            amount: finalAmountToGcash,        // COLUMN H (Net amount)
-            feeAmount: fee,                   // COLUMN FEE
-            feeOption: feeOption,             // COLUMN OPTION
-            totalAmount: totalWithFee,         // COLUMN K (Gross)
-            cashAmount: actualCashHanded,     // Physical cash record
-            change: sheetChange,              // COLUMN L (Sukli)
+            amount: finalAmountToGcash,        
+            feeAmount: fee,                    
+            feeOption: feeOption,              
+            totalAmount: totalWithFee,          
+            cashAmount: actualCashHanded,      
+            change: sheetChange,               
             consent: "YES"
         };
-
-        // ... rest of your fetch code ...
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
@@ -558,7 +571,7 @@ setMode('Cash In');
             headers: { "Content-Type": "text/plain;charset=utf-8" }
         });
 
-        // Save session and UI updates
+        // UI Updates pagkatapos ng successful fetch
         myQueueNumber = generatedNum; 
         localStorage.setItem('savedQueueNumber', myQueueNumber);
         localStorage.setItem('isWaiting', 'true');
@@ -573,7 +586,7 @@ setMode('Cash In');
 
     } catch (err) {
         console.error("Critical Error:", err);
-        alert("System Error: " + err.message);
+        alert(err.message.includes("Kulang") ? err.message : "System Error: Pakisiguro na tama ang lahat ng fields.");
         btn.innerText = originalText;
         btn.disabled = false;
     }
@@ -591,13 +604,15 @@ setMode('Cash In');
     function updateReviewTotal() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     const fee = amt * 0.01;
-    const feeOptionSelect = document.getElementById('reviewFeeOption');
-    const feeOption = feeOptionSelect.value;
+    const feeOption = document.getElementById('reviewFeeOption').value;
     const totalWithFee = amt + fee;
 
-    // Kunin muna ang current state ng checkbox bago mag-update ng HTML
-    const exactCheckbox = document.getElementById('reviewIsExact');
-    const isExact = exactCheckbox ? exactCheckbox.checked : false;
+    // 1. SAVE CURRENT STATE: Kunin ang values bago mag-update ng HTML
+    const oldCheckbox = document.getElementById('reviewIsExact');
+    const isExact = oldCheckbox ? oldCheckbox.checked : false;
+    
+    const oldCashInput = document.getElementById('reviewCashReceived');
+    const oldCashValue = oldCashInput ? oldCashInput.value : "";
 
     let breakdownHTML = `<div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>`;
 
@@ -609,17 +624,16 @@ setMode('Cash In');
                 </div>
                 <div class="cash-logic-box">
                     <label class="checkbox-row">
-    <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" ${isExact ? 'checked' : ''}> 
-    Sakto ang iaabot ko (Exact)
-</label>
+                        <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" ${isExact ? 'checked' : ''}> 
+                        Sakto ang iaabot ko (Exact)
+                    </label>
                     <div id="reviewCashInputGroup" style="display: ${isExact ? 'none' : 'block'}">
                         <label>Magkano ang cash na iaabot mo?</label>
-                        <input type="number" id="reviewCashReceived" oninput="updateReviewSukli()" placeholder="0.00">
+                        <input type="number" id="reviewCashReceived" oninput="updateReviewSukli()" placeholder="0.00" value="${oldCashValue}">
                         <div id="reviewSukliDisplay" class="sukli-display"></div>
                     </div>
                 </div>`;
         } else {
-            // Customer pays: Amount lang (Fee is taken from the amount to be sent)
             const netToReceive = amt - fee;
             breakdownHTML += `
                 <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
@@ -629,11 +643,9 @@ setMode('Cash In');
                     <span style="font-size:12px; color:#555;">ANG PAPASOK SA GCASH MO:</span><br>
                     <b style="font-size:24px; color:#1565c0;">${formatPHP(netToReceive)}</b><br>
                     <small style="color:red;">(Bawas na ang ${formatPHP(fee)} service fee)</small>
-                </div>
-            `;
+                </div>`;
         }
     } else {
-        // --- CASH OUT LOGIC (HINDI GINALAW) ---
         const amountToReceive = (feeOption === 'deduct') ? (amt - fee) : amt;
         const amountToSend = (feeOption === 'deduct') ? amt : (amt + fee);
 
@@ -645,40 +657,45 @@ setMode('Cash In');
                 <span style="font-size:12px; color:#555;">CASH NA MATATANGGAP MO:</span><br>
                 <b style="font-size:24px; color:var(--dark-green);">${formatPHP(amountToReceive)}</b>
                 ${feeOption === 'deduct' ? `<br><small style="color:red;">(Bawas na ang service fee)</small>` : ''}
-            </div>
-        `;
+            </div>`;
     }
-    
-    const finalBreakdown = document.getElementById('finalBreakdown');
-    finalBreakdown.innerHTML = breakdownHTML;
 
-    // --- SUKLI LOGIC PARA SA CASH IN (LALABAS LANG PAG ADD-ON) ---
+    document.getElementById('finalBreakdown').innerHTML = breakdownHTML;
+
+    // 2. TRIGGER SUKLI UPDATE: Tawagin agad para lumabas ang sukli kung may value na
     if (currentMode === 'Cash In' && feeOption === 'add') {
-        const isExact = document.getElementById('reviewIsExact').checked;
-        const cashInputGroup = document.getElementById('reviewCashInputGroup');
-        const sukliDiv = document.getElementById('reviewSukliDisplay');
-        
-        if (isExact) {
-            cashInputGroup.style.display = 'none';
-        } else {
-            cashInputGroup.style.display = 'block';
-            const cashHanded = parseFloat(document.getElementById('reviewCashReceived').value) || 0;
-            const computeSukli = cashHanded - totalWithFee;
-            
-            if (cashHanded > 0) {
-                if (computeSukli < 0) {
-                    sukliDiv.style.color = "red";
-                    sukliDiv.innerHTML = "KULANG NG: " + formatPHP(Math.abs(computeSukli));
-                } else {
-                    sukliDiv.style.color = "green";
-                    sukliDiv.innerHTML = "SUKLI: " + formatPHP(computeSukli);
-                }
-            }
-        }
+        updateReviewSukli();
     }
     
-    // ORIGINAL CALL PARA SA QR AT CASHOUT LOGIC
     updateQRInstruction(amt, fee, feeOption);
+}
+
+// 3. SEPARATE FUNCTION PARA SA SUKLI (Huwag i-rerender ang HTML dito)
+function updateReviewSukli() {
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const fee = amt * 0.01;
+    const totalWithFee = amt + fee;
+    
+    const cashInput = document.getElementById('reviewCashReceived');
+    const sukliDiv = document.getElementById('reviewSukliDisplay');
+    const isExact = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : false;
+
+    if (!sukliDiv || isExact) return;
+
+    const cashHanded = parseFloat(cashInput.value) || 0;
+    const computeSukli = cashHanded - totalWithFee;
+
+    if (cashHanded > 0) {
+        if (computeSukli < 0) {
+            sukliDiv.style.color = "red";
+            sukliDiv.innerHTML = "KULANG NG: " + formatPHP(Math.abs(computeSukli));
+        } else {
+            sukliDiv.style.color = "green";
+            sukliDiv.innerHTML = "SUKLI: " + formatPHP(computeSukli);
+        }
+    } else {
+        sukliDiv.innerHTML = "";
+    }
 }
 
 function updateQRInstruction(amt, fee, feeOption) {
