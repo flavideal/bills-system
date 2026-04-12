@@ -58,13 +58,13 @@
 @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
 #adminReceipt {
-    display: none; /* Default na tago */
-    width: 100% !important;
-    max-width: 300px;
-    height: auto;
-    margin: 15px auto;
-    border-radius: 10px;
-    border: 2px solid #ddd;
+    width: 100%;           /* Susunod sa lapad ng card */
+    max-width: 100%;       /* Siguradong hindi lalampas sa screen */
+    height: auto;          /* AUTOMATIC ang haba, hinding-hindi mapuputol */
+    display: none;         /* Lalabas lang pag COMPLETED na */
+    margin: 15px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Konting anino para maganda */
 }
     </style>
 </head>
