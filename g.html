@@ -518,17 +518,21 @@ setMode('Cash In');
 
         if (currentMode === 'Cash Out') {
             if (feeOption === 'deduct') {
-                // DEDUCT: K = 0, L = Net Amount (Amount - Fee)
-                sheetAmount = 0;
+                // DEDUCT: Column K (Amount) = Base Amount
+                // Column L (Change) = Net Amount (Amount - Fee) na ibibigay na cash
+                sheetAmount = baseAmount; 
                 sheetChange = baseAmount - fee;
             } else {
-                // ADD-ON: K = Total (Amount + Fee), L = 0
+                // ADD-ON: Column K (Amount) = Total (Amount + Fee)
+                // Column L (Change) = 0
                 sheetAmount = baseAmount + fee;
                 sheetChange = 0;
             }
         } else {
-            // CASH IN LOGIC: K = Amount, L = Sukli sa inabot na cash
-            sheetAmount = baseAmount;
+            // CASH IN LOGIC: 
+            // Column K (Amount) = Amount + Fee (Ito ang total na pumasok sa cash box)
+            sheetAmount = baseAmount + fee;
+            // Column L (Change) = Sukli base sa inabot na cash laban sa (Amount + Fee)
             sheetChange = parseFloat(document.getElementById('finalBreakdown').getAttribute('data-sukli')) || 0;
         }
 
