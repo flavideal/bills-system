@@ -85,6 +85,9 @@
 .force-reset-trigger:hover {
     color: #ccc; /* Lilitaw lang ng bahagya pag tinapatan mo */
 }
+    #stepReview {
+    z-index: 999;
+}
     </style>
 </head>
 <body>
@@ -425,16 +428,19 @@ setMode('Cash In');
 
     function showReview() {
     const name = document.getElementById('custName').value;
-    const acc = document.getElementById('accNo').value;
+    const accNo = document.getElementById('accNo').value;
+    const accName = document.getElementById('accName').value;
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     
-    const fee = amt * 0.01;
-    const totalWithFee = amt + fee;
-
-    if(!name || !acc || amt <= 0) { 
-        alert("Pakikumpleto ang detalye."); 
+    // 1. Validation check
+    if(!name || !accNo || !accName || amt <= 0) { 
+        alert("Pakikumpleto ang lahat ng detalye kasama ang Account Name."); 
         return; 
     }
+
+    // 2. Compute totals for review
+    const fee = amt * 0.01;
+    const totalWithFee = amt + fee;
 
     if (currentMode === 'Cash In' && !document.getElementById('isExact').checked) {
         const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
@@ -444,10 +450,12 @@ setMode('Cash In');
         }
     }
 
+    // 3. Build the Review Content
     let reviewHTML = `
         <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
         <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
-        <div class="review-item"><span>GCash Number:</span><strong>${acc}</strong></div>
+        <div class="review-item"><span>GCash Account:</span><strong>${accName}</strong></div>
+        <div class="review-item"><span>GCash Number:</span><strong>${accNo}</strong></div>
         <div class="review-item"><span>Amount:</span><strong>${formatPHP(amt)}</strong></div>
         
         <div class="field-group" style="margin-top:15px;">
@@ -462,11 +470,9 @@ setMode('Cash In');
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
     
-    // Siguraduhin na naka-display ang Review Screen
+    // 4. Show the Screen
     const reviewScreen = document.getElementById('stepReview');
-    reviewScreen.style.display = 'block'; // Gamitin ang simpleng display: block
-    
-    // I-scroll sa taas para makita ang simula ng review
+    reviewScreen.style.display = 'block'; 
     reviewScreen.scrollTop = 0;
 
     updateReviewTotal();
@@ -474,7 +480,8 @@ setMode('Cash In');
 
     
     function hideReview() { 
-    document.getElementById('stepReview').style.setProperty('display', 'none', 'important'); 
+    // Alisin ang !important para gumana ang pag-switch ng screens
+    document.getElementById('stepReview').style.display = 'none'; 
 }
 
     
