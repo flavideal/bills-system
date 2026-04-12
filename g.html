@@ -241,13 +241,21 @@ async function checkMyStatus() {
             adminNote.innerText = result.adminNote || "Transaction successful.";
             
             // LOGIC PARA SA PHOTO/RECEIPT:
-            if (result.receipt && result.receipt.includes("http")) {
-                // Kung Drive Link ang laman ng Column Q
-                receiptImg.src = result.receipt;
-                receiptImg.style.display = "block";
-                receiptLink.href = result.receipt;
-                receiptLink.style.display = "block";
-            }
+           if (result.receipt && result.receipt.includes("http")) {
+    let finalLink = result.receipt;
+
+    // Convert Drive link to Direct Image link para lumitaw ang photo
+    if (finalLink.includes("drive.google.com") && finalLink.includes("/file/d/")) {
+        let fileId = finalLink.split("/file/d/")[1].split("/")[0];
+        finalLink = "https://drive.google.com/uc?id=" + fileId;
+    }
+
+    receiptImg.src = finalLink;
+    receiptImg.style.display = "block";
+    
+    receiptLink.href = result.receipt; // Original link para sa full view
+    receiptLink.style.display = "inline-block";
+}
             
             // Itigil na ang pag-check ng status dahil tapos na
             clearInterval(statusInterval);
