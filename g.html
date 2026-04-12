@@ -346,7 +346,6 @@ async function checkMyStatus() {
             
             clearInterval(statusInterval);
         }
-        }
     } catch (e) {
         console.error("Error checking status:", e);
     }
@@ -469,9 +468,9 @@ setMode('Cash In');
     updateReviewTotal();
 }
     
-    function hideReview() { 
-    // Alisin ang !important para gumana ang pag-switch ng screens
-    document.getElementById('stepReview').style.display = 'none'; 
+    function hideReview() {
+    document.getElementById('stepReview').style.display = 'none';
+    document.getElementById('stepForm').style.display = 'block'; // Ibalik ang form
 }
 
     
