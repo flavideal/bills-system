@@ -181,9 +181,7 @@
     
     <a id="adminReceiptLink" href="#" target="_blank" style="display:none;">View Link</a>
 
-    <p style="font-size: 12px; color: #888; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
-        Click <b>DONE</b> below to start a new transaction.
-    </p>
+    <button id="finishBtn" onclick="finishTransaction()" class="btn-main" disabled style="opacity: 0.5; cursor: not-allowed;">DONE / NEW TRANSACTION</button>
 </div>
 
     <p id="instructionText" style="font-weight: bold; color: #555; margin-top: 15px; display: none;">
@@ -250,24 +248,31 @@ async function checkMyStatus() {
             statusBox.innerText = "📣 PLEASE GO TO COUNTER NOW!";
             instruction.style.display = "none"; // Itatago na yung loading/instruction
         } 
-        // KUNG COMPLETED NA
-        else if (result.status === "COMPLETED") {
+       // KUNG COMPLETED NA
+else if (result.status === "COMPLETED") {
     statusBox.style.display = "block";
     statusBox.className = "status-badge status-completed";
-    statusBox.innerText = "✅ TRANSACTION FINISHED"; // Badge text
-    
+    statusBox.innerText = "✅ TRANSACTION FINISHED";
+
     document.getElementById('instructionText').style.display = "none";
     
     // Ipakita ang Completed Area
     const completedArea = document.getElementById('completedDetails');
     completedArea.style.display = "block";
-    
-    // Admin Note (Note mo galing sa Column O)
+
+    // --- ETO ANG DAGDAG: Buhayin ang DONE button ---
+    const finishBtn = document.getElementById('finishBtn');
+    finishBtn.disabled = false;
+    finishBtn.style.opacity = "1";
+    finishBtn.style.cursor = "pointer";
+    // --------------------------------------------
+
     document.getElementById('adminNote').innerText = result.adminNote || "Salamat sa pagtitiwala!";
     
-    // PHOTO LOGIC (Thumbnail format)
+    // Photo Logic... (mananatili ang dati mong code dito)
     const receiptImg = document.getElementById('adminReceipt');
     if (result.receipt && result.receipt.includes("http")) {
+        // ... (yung existing code mo para sa image)
         let finalLink = result.receipt;
         if (finalLink.includes("drive.google.com") && finalLink.includes("/file/d/")) {
             let fileId = finalLink.split("/file/d/")[1].split("/")[0];
@@ -277,7 +282,6 @@ async function checkMyStatus() {
         receiptImg.style.display = "block";
     }
     
-    // Ititigil na ang auto-refresh sa background
     clearInterval(statusInterval);
 }
     } catch (e) {
