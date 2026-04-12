@@ -303,34 +303,25 @@ async function checkMyStatus() {
                 </div>
             `;
 
-            const receiptImg = document.getElementById('adminReceipt');
-            
-            // FIX DITO: Siguraduhin na binabasa ang receipt link na galing sa Google Sheets
-            if (result.receipt && result.receipt.toString().toLowerCase().includes("http")) {
-                let finalLink = result.receipt.toString().trim();
-                
-                // Convert Google Drive link to Direct View/Thumbnail
-                if (finalLink.includes("drive.google.com")) {
-                    let fileId = "";
-                    if (finalLink.includes("/file/d/")) {
-                        fileId = finalLink.split("/file/d/")[1].split("/")[0];
-                    } else if (finalLink.includes("id=")) {
-                        fileId = finalLink.split("id=")[1].split("&")[0];
-                    }
-                    
-                    if(fileId) {
-                        finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
-                    }
-                }
+            // ... (loob ng checkMyStatus sa HTML)
+const receiptImg = document.getElementById('adminReceipt');
 
-                // Force Refresh para laging bago ang photo na lilitaw
-                receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
-                receiptImg.style.display = "block";
-                receiptImg.style.width = "100%";
-            } else {
-                // Kung "No Receipt" pa ang laman ng Column P, tago muna ang image
-                receiptImg.style.display = "none";
-            }
+// DAPAT GANITO ANG CONDITION:
+if (result.receipt && result.receipt.toString().includes("http")) {
+    let finalLink = result.receipt.toString();
+    
+    if (finalLink.includes("drive.google.com")) {
+        // Logic for Drive conversion (yung thumbnail link)
+        let fileId = finalLink.includes("/file/d/") ? finalLink.split("/file/d/")[1].split("/")[0] : finalLink.split("id=")[1].split("&")[0];
+        finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
+    }
+
+    receiptImg.src = finalLink + "?t=" + new Date().getTime();
+    receiptImg.style.display = "block";
+} else {
+    // Kapag "No Receipt" pa ang nakalagay sa Column P, itago ang image
+    receiptImg.style.display = "none";
+}
 
             // Buhayin ang DONE button
             const finishBtn = document.getElementById('finishBtn');
