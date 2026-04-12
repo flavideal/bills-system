@@ -234,7 +234,7 @@ async function checkMyStatus() {
         const instruction = document.getElementById('instructionText');
 
         // KUNG WAITING PA LANG (Dito natin ibabalik yung original warning)
-        if (result.status === "WAITING") {
+        if (result.status === "NEW") {
             statusBox.style.display = "block";
             statusBox.className = "status-badge status-waiting";
             statusBox.innerText = "STATUS: WAITING IN QUEUE";
