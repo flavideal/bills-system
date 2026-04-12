@@ -167,12 +167,23 @@
     </div>
     
     <div id="completedDetails" style="display:none; margin-top:15px; text-align:center;">
-    <p style="font-weight:bold; color:var(--dark-green);">TRANSACTION COMPLETED</p>
-    <div id="adminNote" style="font-size: 14px; margin-bottom: 10px;"></div>
+    <p style="font-weight:bold; color:var(--dark-green); font-size: 18px; margin-bottom: 5px;">
+        TRANSACTION COMPLETED
+    </p>
+    
+    <p style="font-size: 13px; color: #555; margin-bottom: 15px;">
+        Please see your transaction slip below.
+    </p>
+
+    <div id="adminNote" style="font-size: 14px; margin-bottom: 10px; font-style: italic; color: #333;"></div>
     
     <img id="adminReceipt" src="" alt="Admin Receipt">
     
     <a id="adminReceiptLink" href="#" target="_blank" style="display:none;">View Link</a>
+
+    <p style="font-size: 12px; color: #888; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+        Click <b>DONE</b> below to start a new transaction.
+    </p>
 </div>
 
     <p id="instructionText" style="font-weight: bold; color: #555; margin-top: 15px; display: none;">
@@ -241,40 +252,32 @@ async function checkMyStatus() {
         } 
         // KUNG COMPLETED NA
         else if (result.status === "COMPLETED") {
-            statusBox.style.display = "block";
-            statusBox.className = "status-badge status-completed";
-            statusBox.innerText = "✅ TRANSACTION FINISHED";
-            instruction.style.display = "none";
+    statusBox.style.display = "block";
+    statusBox.className = "status-badge status-completed";
+    statusBox.innerText = "✅ TRANSACTION FINISHED"; // Badge text
+    
+    document.getElementById('instructionText').style.display = "none";
     
     // Ipakita ang Completed Area
     const completedArea = document.getElementById('completedDetails');
     completedArea.style.display = "block";
     
-    // Admin Note (Note ni Jerric)
-    document.getElementById('adminNote').innerText = result.adminNote || "Transaction successful. Salamat!";
+    // Admin Note (Note mo galing sa Column O)
+    document.getElementById('adminNote').innerText = result.adminNote || "Salamat sa pagtitiwala!";
     
-    // PHOTO LOGIC:
+    // PHOTO LOGIC (Thumbnail format)
     const receiptImg = document.getElementById('adminReceipt');
-    const receiptLink = document.getElementById('adminReceiptLink'); // Itatago natin ito
-
     if (result.receipt && result.receipt.includes("http")) {
         let finalLink = result.receipt;
-
-        // Eto yung binago natin: Thumbnail format para iwas sa "?" na error
         if (finalLink.includes("drive.google.com") && finalLink.includes("/file/d/")) {
             let fileId = finalLink.split("/file/d/")[1].split("/")[0];
-            // Thumbnail link - mas epektibo ito para lumabas agad ang image
             finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
         }
-
         receiptImg.src = finalLink;
-        receiptImg.style.setProperty('display', 'block', 'important');
-        receiptImg.style.maxWidth = "100%";
-        
-        // Siguraduhing tago ang text link pero pwede mo rin gawing fallback
-        if(receiptLink) receiptLink.style.display = "none";
+        receiptImg.style.display = "block";
     }
     
+    // Ititigil na ang auto-refresh sa background
     clearInterval(statusInterval);
 }
     } catch (e) {
