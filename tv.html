@@ -204,20 +204,22 @@ function updateDisplay() {
     fetch(scriptURL + "?getServing=true&t=" + new Date().getTime())
         .then(res => res.json())
         .then(data => {
-            // data.number = Ang queue number (Column B)
-            // data.action = Kung "CALL" o "RECALL"
-            
             let currentNum = data.number ? data.number.toString() : "--";
 
-            // Trigger kung may bagong number o kung pinindot ang "Call Again" (Recall)
+            // 1. Kung may bagong number
+            // 2. O kung inutos ng admin na tumawag ulit (RECALL)
             if (currentNum !== lastNumber || data.action === "RECALL") {
+                
+                // I-update ang text sa screen
                 document.getElementById('serving').innerText = currentNum;
                 
                 if (currentNum !== "--") {
                     playChime();
-                    // May konting delay para matapos ang chime bago magsalita
                     setTimeout(() => speak(currentNum), 1000);
                 }
+                
+                // I-save ang last number para hindi paulit-ulit tumawag 
+                // maliban na lang kung nag-iba ang number o nag-RECALL
                 lastNumber = currentNum;
             }
         })
