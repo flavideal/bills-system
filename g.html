@@ -68,6 +68,21 @@
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Konting anino para maganda */
 }
+
+/* Idagdag sa loob ng <style> tag mo */
+.force-reset-trigger {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: 10px;
+    color: #eee; /* Halos kulay puti para hindi pansinin ng customer */
+    cursor: pointer;
+    z-index: 100;
+    padding: 5px;
+}
+.force-reset-trigger:hover {
+    color: #ccc; /* Lilitaw lang ng bahagya pag tinapatan mo */
+}
     </style>
 </head>
 <body>
@@ -76,6 +91,7 @@
     <button class="back-btn" onclick="window.location.href='index.html'">← BACK TO MENU</button>
     
     <div class="card" id="formCard">
+        <div class="force-reset-trigger" onclick="adminForceReset()">RESET</div>
         <div id="stepForm">
             <h2 style="color: var(--dark-green); margin-top: 0; text-align: center; font-size: 18px;">
             JERRIC PERSONAL ASSISTANCE SERVICE
@@ -299,6 +315,16 @@ async function checkMyStatus() {
                 receiptImg.src = finalLink;
                 receiptImg.style.display = "block";
             }
+
+            // AUTO-RESET TIMER: 3 Minutes (180,000 ms)
+    // Para kung maiwan nilang nakabukas ang slip, kusa itong mag-re-ready para sa sunod.
+    setTimeout(() => {
+        if (localStorage.getItem('isWaiting') === 'true') {
+            localStorage.removeItem('savedQueueNumber');
+            localStorage.removeItem('isWaiting');
+            window.location.reload();
+        }
+    }, 180000);
             
             clearInterval(statusInterval);
         }
@@ -576,6 +602,15 @@ setMode('Cash In');
         }
     } else {
         document.getElementById('qrReviewArea').style.display = 'none';
+    }
+}
+
+function adminForceReset() {
+    if (confirm("Jerric, i-re-reset mo ba itong session para sa susunod na customer?")) {
+        localStorage.removeItem('savedQueueNumber');
+        localStorage.removeItem('isWaiting');
+        if(statusInterval) clearInterval(statusInterval);
+        window.location.reload(); // Babalik sa start ng form
     }
 }
 </script>
