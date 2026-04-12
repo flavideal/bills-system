@@ -269,9 +269,10 @@ async function checkMyStatus() {
 
             // Note sa baba ng slip
             document.getElementById('adminNote').innerHTML = `
-                ${result.adminNote || "Salamat sa pagtitiwala!"}<br>
-                <b style="color:red;">Paalala: Huwag kalimutang i-click ang DONE button kung tapos muna itong makita.</b>
-            `;
+    ${result.adminNote || "Salamat sa pagtitiwala!"}<br>
+    <span style="color: #666; font-size: 11px;">JERRIC Personal Assistance Service</span><br>
+    <b style="color:red; font-size:12px;">Huwag kalimutang i-click ang DONE kung tapos na ito.</b>
+`;
 
             // Buhayin ang DONE button
             const finishBtn = document.getElementById('finishBtn');
