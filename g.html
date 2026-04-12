@@ -590,6 +590,19 @@ const formData = {
 
     const feeOption = feeOptionSelect.value;
     const total = (feeOption === 'add') ? amt + fee : amt;
+
+    // Dagdag na logic para sa label
+let totalLabel = "Total to Pay:";
+if (currentMode === 'Cash Out' && feeOption === 'deduct') {
+    totalLabel = "Total Amount to Send:";
+}
+
+let breakdownHTML = `
+    <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>
+    <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
+        <span>${totalLabel}</span><strong>${formatPHP(total)}</strong>
+    </div>
+`;
     
     const isExact = document.getElementById('isExact').checked;
     const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
@@ -622,30 +635,42 @@ const formData = {
     // Store sukli temporarily in a data attribute
     finalBreakdown.setAttribute('data-sukli', currentSukli > 0 ? currentSukli : 0);
 
-    // QR Logic remains the same...
     // QR Logic para sa Cash Out
     if(currentMode === 'Cash Out') {
-        const qrArea = document.getElementById('qrReviewArea');
-        const qrInstruction = document.getElementById('qrInstructionReview');
-        qrArea.style.display = 'block';
+    const qrArea = document.getElementById('qrReviewArea');
+    const qrInstruction = document.getElementById('qrInstructionReview');
+    qrArea.style.display = 'block';
 
-        // LOGIC: Amount to Send vs Amount to Receive
-        if (feeOption === 'add') {
-            // Customer sends Amount + Fee, and receives exactly the Amount in cash
-            qrInstruction.innerHTML = `
-                DAPAT I-SEND SA GCASH: <b>${formatPHP(amt + fee)}</b><br>
-                TATANGGAPIN NA CASH: <b>${formatPHP(amt)}</b>
-            `;
-        } else {
-            // Customer sends exactly the Amount, and receives Amount - Fee in cash
-            qrInstruction.innerHTML = `
-                DAPAT I-SEND SA GCASH: <b>${formatPHP(amt)}</b><br>
-                TATANGGAPIN NA CASH: <b>${formatPHP(amt - fee)}</b>
-            `;
-        }
+    // LOGIC: Amount to Send vs Amount to Receive
+    if (feeOption === 'add') {
+        // Customer sends Amount + Fee, and receives exactly the Amount in cash
+        qrInstruction.innerHTML = `
+            <div style="border-bottom: 1px dashed #ccc; padding-bottom: 8px; margin-bottom: 8px;">
+                DAPAT I-SEND SA GCASH: <br>
+                <b style="font-size: 18px; color: #d32f2f;">${formatPHP(amt + fee)}</b>
+            </div>
+            <div>
+                TATANGGAPIN NA CASH: <br>
+                <b style="font-size: 20px; color: #1b431c;">${formatPHP(amt)}</b>
+            </div>
+        `;
     } else {
-        document.getElementById('qrReviewArea').style.display = 'none';
+        // DEDUCT LOGIC: Customer sends exactly the Amount, and receives Amount - Fee in cash
+        qrInstruction.innerHTML = `
+            <div style="border-bottom: 1px dashed #ccc; padding-bottom: 8px; margin-bottom: 8px;">
+                DAPAT I-SEND SA GCASH: <br>
+                <b style="font-size: 18px; color: #d32f2f;">${formatPHP(amt)}</b>
+            </div>
+            <div style="background: #e8f5e9; padding: 10px; border-radius: 8px;">
+                <span style="font-size: 12px; color: #555;">IBIBIGAY NA CASH SA INYO:</span><br>
+                <b style="font-size: 22px; color: #1b431c;">${formatPHP(amt - fee)}</b><br>
+                <small style="color: #666;">(Bawas na ang ${formatPHP(fee)} service fee)</small>
+            </div>
+        `;
     }
+} else {
+    document.getElementById('qrReviewArea').style.display = 'none';
+}
 }
     
 function adminForceReset() {
