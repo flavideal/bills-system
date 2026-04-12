@@ -216,7 +216,7 @@
                 <button id="finishBtn" onclick="finishTransaction()" class="btn-main" disabled style="opacity: 0.5; cursor: not-allowed;">DONE / NEW TRANSACTION</button>
             </div>
         </div>
-    </div>
+    </div>aq
 </div>
 
 <script>
@@ -324,12 +324,13 @@ if (result.receipt && result.receipt.includes("http")) {
             // AUTO-RESET TIMER: 3 Minutes (180,000 ms)
     // Para kung maiwan nilang nakabukas ang slip, kusa itong mag-re-ready para sa sunod.
     setTimeout(() => {
-        if (localStorage.getItem('isWaiting') === 'true') {
-            localStorage.removeItem('savedQueueNumber');
-            localStorage.removeItem('isWaiting');
-            window.location.reload();
-        }
-    }, 180000);
+    if (localStorage.getItem('isWaiting') === 'true') {
+        localStorage.removeItem('savedQueueNumber');
+        localStorage.removeItem('isWaiting');
+        // Palitan ang reload() ng href
+        window.location.href = 'index.html'; 
+    }
+}, 180000);
             
             clearInterval(statusInterval);
         }
@@ -556,7 +557,9 @@ const formData = {
     localStorage.removeItem('savedQueueNumber');
     localStorage.removeItem('isWaiting');
     if(statusInterval) clearInterval(statusInterval);
-    window.location.reload();
+    
+    // Papunta sa index.html imbes na mag-reload lang
+    window.location.href = 'index.html'; 
 }
     
     function updateReviewTotal() {
@@ -616,14 +619,10 @@ const formData = {
 }
     
 function adminForceReset() {
-    // Ilagay mo dito ang iyong 6-digit PIN
     const ADMIN_PIN = "430456"; 
-    
-    // Mag-a-ask muna ng PIN
     const enteredPin = prompt("ADMIN ONLY: Enter 6-digit PIN to reset kiosk:");
     
-    // Check kung tama ang PIN
-    if (enteredPin === null) return; // Pag kinancel, walang mangyayari
+    if (enteredPin === null) return; 
     
     if (enteredPin === ADMIN_PIN) {
         localStorage.removeItem('savedQueueNumber');
@@ -631,7 +630,8 @@ function adminForceReset() {
         if(statusInterval) clearInterval(statusInterval);
         
         alert("Session cleared successfully!");
-        window.location.reload();
+        // Papunta sa index.html
+        window.location.href = 'index.html'; 
     } else {
         alert("Maling PIN! Hindi pwedeng i-reset.");
     }
