@@ -230,16 +230,27 @@ let statusInterval;
 window.onload = function() {
     const savedNumber = localStorage.getItem('savedQueueNumber');
     const isWaiting = localStorage.getItem('isWaiting');
+    const sessionTime = localStorage.getItem('sessionStartTime');
+    const currentTime = new Date().getTime();
+    
+    // EXPIRE AFTER 3 MINUTES (180,000 milliseconds)
+    const expiryLimit = 3 * 60 * 1000; 
 
     if (savedNumber && isWaiting === 'true') {
+        // Check kung expire na ang oras
+        if (sessionTime && (currentTime - sessionTime > expiryLimit)) {
+            console.log("Session expired. Clearing...");
+            localStorage.clear(); // Burahin lahat
+            window.location.reload(); // Refresh page para bumalik sa simula
+            return;
+        }
+
         myQueueNumber = savedNumber;
         document.getElementById('numberDisplay').innerText = myQueueNumber;
-        
         document.getElementById('stepForm').style.display = 'none';
         document.getElementById('stepReview').style.display = 'none';
         document.getElementById('stepSuccess').style.display = 'block';
         
-        // Gawing neutral ang kulay habang "Checking status"
         const instruction = document.getElementById('instructionText');
         instruction.style.color = "#888"; 
         instruction.innerText = "Checking status, please wait...";
@@ -552,6 +563,7 @@ setMode('Cash In');
         myQueueNumber = generatedNum; 
         localStorage.setItem('savedQueueNumber', myQueueNumber);
         localStorage.setItem('isWaiting', 'true');
+        localStorage.setItem('sessionStartTime', new Date().getTime());
 
         document.getElementById('numberDisplay').innerText = myQueueNumber;
         document.getElementById('stepReview').style.display = 'none';
@@ -670,18 +682,15 @@ function adminForceReset() {
     const ADMIN_PIN = "430456"; 
     const enteredPin = prompt("ADMIN ONLY: Enter 6-digit PIN to reset kiosk:");
     
-    if (enteredPin === null) return; 
-    
     if (enteredPin === ADMIN_PIN) {
-        localStorage.removeItem('savedQueueNumber');
-        localStorage.removeItem('isWaiting');
+        localStorage.clear(); // Burahin lahat ng data sa storage
         if(statusInterval) clearInterval(statusInterval);
         
-        alert("Session cleared successfully!");
-        // Papunta sa index.html
-        window.location.href = 'index.html'; 
-    } else {
-        alert("Maling PIN! Hindi pwedeng i-reset.");
+        alert("System Reset! Redirecting...");
+        // Gamitin ang replace para burahin ang history entry
+        window.location.replace('index.html'); 
+    } else if (enteredPin !== null) {
+        alert("Maling PIN!");
     }
 }
 </script>
