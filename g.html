@@ -231,35 +231,41 @@ async function checkMyStatus() {
             instruction.style.display = "none"; // Mawawala na yung "Please wait..."
         } 
         else if (result.status === "COMPLETED") {
-            statusBox.style.display = "block";
-            statusBox.className = "status-badge status-completed";
-            statusBox.innerText = "✅ TRANSACTION FINISHED";
-            instruction.style.display = "none";
-            
-            // Ipakita ang Completed Details (Receipt Area)
-            completedArea.style.display = "block";
-            adminNote.innerText = result.adminNote || "Transaction successful.";
-            
-            // LOGIC PARA SA PHOTO/RECEIPT:
-           if (result.receipt && result.receipt.includes("http")) {
-    let finalLink = result.receipt;
-
-    // Convert Drive link to Direct Image link para lumitaw ang photo
-    if (finalLink.includes("drive.google.com") && finalLink.includes("/file/d/")) {
-        let fileId = finalLink.split("/file/d/")[1].split("/")[0];
-        finalLink = "https://drive.google.com/uc?id=" + fileId;
-    }
-
-    receiptImg.src = finalLink;
-    receiptImg.style.display = "block";
+    statusBox.style.display = "block";
+    statusBox.className = "status-badge status-completed";
+    statusBox.innerText = "✅ TRANSACTION FINISHED";
+    instruction.style.display = "none";
     
-    receiptLink.href = result.receipt; // Original link para sa full view
-    receiptLink.style.display = "inline-block";
-}
-            
-            // Itigil na ang pag-check ng status dahil tapos na
-            clearInterval(statusInterval);
+    // Ipakita ang Completed Area
+    const completedArea = document.getElementById('completedDetails');
+    completedArea.style.display = "block";
+    
+    // Admin Note (Note ni Jerric)
+    document.getElementById('adminNote').innerText = result.adminNote || "Transaction successful. Salamat!";
+    
+    // PHOTO LOGIC:
+    const receiptImg = document.getElementById('adminReceipt');
+    const receiptLink = document.getElementById('adminReceiptLink'); // Itatago natin ito
+
+    if (result.receipt && result.receipt.includes("http")) {
+        let finalLink = result.receipt;
+
+        // Auto-convert sa direct image link
+        if (finalLink.includes("drive.google.com") && finalLink.includes("/file/d/")) {
+            let fileId = finalLink.split("/file/d/")[1].split("/")[0];
+            finalLink = "https://drive.google.com/uc?id=" + fileId;
         }
+
+        receiptImg.src = finalLink;
+        receiptImg.style.setProperty('display', 'block', 'important'); // Sapilitang ipakita ang photo
+        receiptImg.style.maxWidth = "100%"; // Para sakto sa screen ng phone
+        
+        // Siguraduhing tago ang text link
+        if(receiptLink) receiptLink.style.display = "none";
+    }
+    
+    clearInterval(statusInterval);
+}
     } catch (e) {
         console.error("Error checking status:", e);
     }
