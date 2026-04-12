@@ -484,80 +484,50 @@ setMode('Cash In');
     
     
     async function generateNumber() {
-    // 1. Check if terms are agreed
+    // 1. Validation
     if(!document.getElementById('termsAgree').checked) { 
         alert("Please agree to the terms."); 
         return; 
     }
 
     const btn = document.querySelector("#stepReview .btn-main");
-    const originalText = btn.innerText;
-
-    // 2. Extra Validation para sa Cash In (Dapat may input na cash kung hindi exact)
-    if (currentMode === 'Cash In') {
-        const isExact = document.getElementById('reviewIsExact').checked;
-        if (!isExact) {
-            const cashHanded = parseFloat(document.getElementById('reviewCashReceived').value) || 0;
-            const amt = parseFloat(document.getElementById('amount').value) || 0;
-            const fee = amt * 0.01;
-            if (cashHanded < (amt + fee)) {
-                alert("Kulang po ang cash na ininput ninyo.");
-                return;
-            }
-        }
-    }
-
     btn.innerText = "SENDING... PLEASE WAIT";
     btn.disabled = true;
 
     try {
-        const fileInput = document.getElementById('proofUpload');
-        let fileData = { base64: null, name: null, type: null };
-
-        if (fileInput && fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            fileData = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve({
-                    base64: e.target.result,
-                    name: file.name,
-                    type: file.type
-                });
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
+        const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+        const fee = baseAmount * 0.01;
+        const feeOption = document.getElementById('reviewFeeOption').value;
         const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
-        // --- COMPUTATION LOGIC PARA SA SHEET (K vs L) ---
-        let baseAmount = parseFloat(document.getElementById('amount').value) || 0;
-        let fee = baseAmount * 0.01;
-        let feeOption = document.getElementById('reviewFeeOption').value;
-        
-        let sheetAmount = 0; // Column K
-        let sheetChange = 0; // Column L
-        let actualCashHanded = 0; // Para sa record ng physical cash
+        let finalAmountToGcash = baseAmount; // Column H (Dapat net amount ito)
+        let totalWithFee = baseAmount + fee; // Column K
+        let sheetChange = 0;                 // Column L
+        let actualCashHanded = 0;
 
-        if (currentMode === 'Cash Out') {
-            if (feeOption === 'deduct') {
-                sheetAmount = baseAmount; 
-                sheetChange = baseAmount - fee; // Net cash to give
-            } else {
-                sheetAmount = baseAmount + fee;
-                sheetChange = baseAmount; // Cash to give is the base amount
-            }
-        } else {
-            // CASH IN LOGIC
-            sheetAmount = baseAmount + fee;
+        if (currentMode === 'Cash In') {
             const isExact = document.getElementById('reviewIsExact').checked;
             
-            if (isExact) {
-                actualCashHanded = sheetAmount;
-                sheetChange = 0;
+            if (feeOption === 'add') {
+                // Halimbawa: 1000 amount + 10 fee = 1010 total
+                finalAmountToGcash = baseAmount; 
+                actualCashHanded = isExact ? totalWithFee : (parseFloat(document.getElementById('reviewCashReceived').value) || 0);
+                sheetChange = isExact ? 0 : (actualCashHanded - totalWithFee);
             } else {
-                actualCashHanded = parseFloat(document.getElementById('reviewCashReceived').value) || 0;
-                sheetChange = actualCashHanded - sheetAmount;
+                // Deduct: 1000 binayad, 990 lang papasok sa GCash
+                finalAmountToGcash = baseAmount - fee;
+                totalWithFee = baseAmount; // Dahil kinuha ang fee sa loob
+                actualCashHanded = baseAmount;
+                sheetChange = 0;
+            }
+        } else {
+            // CASH OUT LOGIC
+            if (feeOption === 'deduct') {
+                finalAmountToGcash = baseAmount;
+                sheetChange = baseAmount - fee; // Cash na ibibigay sa customer
+            } else {
+                finalAmountToGcash = baseAmount + fee; // Amount na dapat i-send ni customer
+                sheetChange = baseAmount; // Cash na ibibigay sa customer
             }
         }
 
@@ -569,16 +539,16 @@ setMode('Cash In');
             transType: currentMode,
             gcashName: document.getElementById('accName').value,
             gcashNo: document.getElementById('accNo').value,
-            amount: sheetAmount,           // COLUMN K
-            feeAmount: fee,                // COLUMN (FEE)
-            feeOption: feeOption,          // COLUMN (OPTION)
-            cashAmount: currentMode === 'Cash In' ? actualCashHanded : 0, 
-            change: sheetChange,           // COLUMN L
-            consent: "YES",
-            receiptFile: fileData.base64,
-            receiptFileName: fileData.name,
-            receiptFileType: fileData.type
+            amount: finalAmountToGcash,        // COLUMN H (Net amount)
+            feeAmount: fee,                   // COLUMN FEE
+            feeOption: feeOption,             // COLUMN OPTION
+            totalAmount: totalWithFee,         // COLUMN K (Gross)
+            cashAmount: actualCashHanded,     // Physical cash record
+            change: sheetChange,              // COLUMN L (Sukli)
+            consent: "YES"
         };
+
+        // ... rest of your fetch code ...
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
