@@ -97,15 +97,53 @@
             height: 100%;
         }
 
-        .info-panel p { 
-    font-size: 1.2vw; 
-    color: #ccc; 
-    margin-top: 8px; 
-    margin-bottom: 8px; 
-    line-height: 1.4;
-}
+        .info-panel {
+            padding: 30px;
+            flex-grow: 1;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+            border-top: 4px solid var(--accent-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
-        .info-panel h2 { color: var(--accent-color); font-size: 2vw; margin: 0; }
+        .info-panel h2 { 
+            color: var(--accent-color); 
+            font-size: 1.8vw; 
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Hahatiin sa dalawang column para hindi mahaba pababa */
+            gap: 15px;
+        }
+
+        .service-card {
+            background: #252525;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .service-card strong {
+            display: block;
+            font-size: 1.2vw;
+            color: var(--accent-color);
+        }
+
+        .service-card span {
+            font-size: 1vw;
+            color: #bbb;
+        }
+
+        .coming-soon {
+            opacity: 0.5;
+            border-left-color: #555;
+        }
         .info-panel p { font-size: 1.2vw; color: #aaa; margin-top: 10px; }
 
         /* PORTRAIT MODE (Tablet/Phone) */
@@ -160,21 +198,35 @@
                 </iframe>
             </div>
             <div class="info-panel">
-                <h2 style="color: var(--accent-color); border-bottom: 2px solid var(--accent-color); padding-bottom: 5px;">
-                    JERRIC PERSONAL ASSISTANCE SERVICE
-                </h2>
-                <div class="services-list">
-                    <p>• <strong>GCASH:</strong> Cash In & Cash Out Available</p>
-                    <p>• <strong>MAYA:</strong> Coming Soon</p>
-                    <p style="color: #777;">• <strong>PALAWAN PADALA:</strong> Coming Soon</p>
-                    <p style="color: #777;">• <strong>ANECO & WATER DISTRICT:</strong> Coming Soon</p>
+                <h2>Jerric Personal Assistance Service</h2>
+                
+                <div class="services-grid">
+                    <div class="service-card">
+                        <strong>GCASH</strong>
+                        <span>Cash In & Cash Out Available</span>
+                    </div>
+                    
+                    <div class="service-card coming-soon">
+                        <strong>MAYA</strong>
+                        <span>Payments & Top-ups Soon</span>
+                    </div>
+
+                    <div class="service-card coming-soon">
+                        <strong>PALAWAN PADALA</strong>
+                        <span>Send & Claim Soon</span>
+                    </div>
+
+                    <div class="service-card coming-soon">
+                        <strong>UTILITIES</strong>
+                        <span>Aneco & Water District Soon</span>
+                    </div>
                 </div>
-                <hr style="border: 0.5px solid #333; margin: 15px 0;">
-                <p>• Smartphones & Home Appliances Available (Installment)<br>
-                   • Visit <strong>flavideal.com</strong> for more details.</p>
+
+                <div style="margin-top: 25px; text-align: center; border-top: 1px solid #333; padding-top: 15px;">
+                    <p style="font-size: 1.1vw; margin: 5px 0;">📱 Smartphones & Home Appliances on Installment</p>
+                    <p style="font-size: 1.1vw; color: var(--accent-color); font-weight: bold;">www.flavideal.com</p>
+                </div>
             </div>
-        </div>
-    </div>
 
     <div class="footer">
         <div class="brand">JERRIC PERSONAL ASSISTANCE SERVICE | BUTUAN HUB</div>
