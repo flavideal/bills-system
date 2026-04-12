@@ -253,17 +253,18 @@ async function checkMyStatus() {
     if (result.receipt && result.receipt.includes("http")) {
         let finalLink = result.receipt;
 
-        // Auto-convert sa direct image link
+        // Eto yung binago natin: Thumbnail format para iwas sa "?" na error
         if (finalLink.includes("drive.google.com") && finalLink.includes("/file/d/")) {
             let fileId = finalLink.split("/file/d/")[1].split("/")[0];
-            finalLink = "https://drive.google.com/uc?id=" + fileId;
+            // Thumbnail link - mas epektibo ito para lumabas agad ang image
+            finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
         }
 
         receiptImg.src = finalLink;
-        receiptImg.style.setProperty('display', 'block', 'important'); // Sapilitang ipakita ang photo
-        receiptImg.style.maxWidth = "100%"; // Para sakto sa screen ng phone
+        receiptImg.style.setProperty('display', 'block', 'important');
+        receiptImg.style.maxWidth = "100%";
         
-        // Siguraduhing tago ang text link
+        // Siguraduhing tago ang text link pero pwede mo rin gawing fallback
         if(receiptLink) receiptLink.style.display = "none";
     }
     
