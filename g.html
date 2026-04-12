@@ -172,7 +172,7 @@
         <a id="adminReceiptLink" href="#" target="_blank" style="display:none; color: blue;">View Full Receipt</a>
     </div>
 
-    <p id="instructionText" style="font-weight: bold; color: #d32f2f; margin-top: 15px;">Please wait for your number to be called.</p>
+    <p id="instructionText" style="font-weight: bold; color: #d32f2f; margin-top: 15px; display: none;">Please wait for your number to be called.</p>
     
     <button onclick="finishTransaction()" class="btn-main">DONE / NEW TRANSACTION</button>
 </div>
@@ -196,9 +196,18 @@ window.onload = function() {
         document.getElementById('stepReview').style.display = 'none';
         document.getElementById('stepSuccess').style.display = 'block';
         
+        // Papalitawin ang instruction text habang naghihintay
+        document.getElementById('instructionText').style.display = 'block'; 
+        
+        // Simulan ang pag-check ng status tuwing 5 segundo
         statusInterval = setInterval(checkMyStatus, 5000);
+        
+        // I-run agad ang checkStatus para hindi maghintay ng 5 seconds sa simula
+        checkMyStatus(); 
     }
-    setMode('Cash In'); // Existing call mo ito
+    
+    // Default mode
+    setMode('Cash In');
 };
 
 async function checkMyStatus() {
@@ -207,22 +216,41 @@ async function checkMyStatus() {
     try {
         const response = await fetch(`${WEB_APP_URL}?checkStatus=${myQueueNumber}`);
         const result = await response.json();
-        console.log("Status Check Result:", result); // Dagdag ito para sa debugging
-
+        
         const statusBox = document.getElementById('liveStatusBox');
         const instruction = document.getElementById('instructionText');
+        const completedArea = document.getElementById('completedDetails');
+        const adminNote = document.getElementById('adminNote');
+        const receiptImg = document.getElementById('adminReceipt');
+        const receiptLink = document.getElementById('adminReceiptLink');
 
-        // Force UI update
         if (result.status === "CALLING") {
             statusBox.style.display = "block";
             statusBox.className = "status-badge status-calling";
             statusBox.innerText = "📣 PLEASE GO TO COUNTER NOW!";
-            instruction.style.display = "none";
-        } else if (result.status === "COMPLETED") {
+            instruction.style.display = "none"; // Mawawala na yung "Please wait..."
+        } 
+        else if (result.status === "COMPLETED") {
             statusBox.style.display = "block";
             statusBox.className = "status-badge status-completed";
             statusBox.innerText = "✅ TRANSACTION FINISHED";
-            // ... (rest of your completed logic)
+            instruction.style.display = "none";
+            
+            // Ipakita ang Completed Details (Receipt Area)
+            completedArea.style.display = "block";
+            adminNote.innerText = result.adminNote || "Transaction successful.";
+            
+            // LOGIC PARA SA PHOTO/RECEIPT:
+            if (result.receipt && result.receipt.includes("http")) {
+                // Kung Drive Link ang laman ng Column Q
+                receiptImg.src = result.receipt;
+                receiptImg.style.display = "block";
+                receiptLink.href = result.receipt;
+                receiptLink.style.display = "block";
+            }
+            
+            // Itigil na ang pag-check ng status dahil tapos na
+            clearInterval(statusInterval);
         }
     } catch (e) {
         console.error("Error checking status:", e);
