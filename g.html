@@ -303,29 +303,32 @@ async function checkMyStatus() {
                 </div>
             `;
 
-            // Handle Receipt Image Display
             const receiptImg = document.getElementById('adminReceipt');
             
-            if (result.receipt && result.receipt.trim() !== "" && result.receipt.includes("http")) {
-                let finalLink = result.receipt;
+            // FIX DITO: Siguraduhin na binabasa ang receipt link na galing sa Google Sheets
+            if (result.receipt && result.receipt.toString().toLowerCase().includes("http")) {
+                let finalLink = result.receipt.toString().trim();
                 
                 // Convert Google Drive link to Direct View/Thumbnail
                 if (finalLink.includes("drive.google.com")) {
+                    let fileId = "";
                     if (finalLink.includes("/file/d/")) {
-                        let fileId = finalLink.split("/file/d/")[1].split("/")[0];
-                        finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
+                        fileId = finalLink.split("/file/d/")[1].split("/")[0];
                     } else if (finalLink.includes("id=")) {
-                        let fileId = finalLink.split("id=")[1].split("&")[0];
+                        fileId = finalLink.split("id=")[1].split("&")[0];
+                    }
+                    
+                    if(fileId) {
                         finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
                     }
                 }
 
-                // Force Refresh ang image para iwas "Stale Cache"
+                // Force Refresh para laging bago ang photo na lilitaw
                 receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
                 receiptImg.style.display = "block";
-                receiptImg.style.width = "100%"; // Siguradong full width sa loob ng card
+                receiptImg.style.width = "100%";
             } else {
-                // Tago ang image tag kung talagang walang link na galing sa Google Sheets
+                // Kung "No Receipt" pa ang laman ng Column P, tago muna ang image
                 receiptImg.style.display = "none";
             }
 
@@ -335,15 +338,6 @@ async function checkMyStatus() {
             finishBtn.style.opacity = "1";
             finishBtn.style.cursor = "pointer";
 
-            // AUTO-RESET TIMER: 3 Minutes
-            setTimeout(() => {
-                if (localStorage.getItem('isWaiting') === 'true') {
-                    localStorage.removeItem('savedQueueNumber');
-                    localStorage.removeItem('isWaiting');
-                    window.location.href = 'index.html'; 
-                }
-            }, 180000);
-            
             clearInterval(statusInterval);
         }
     } catch (e) {
