@@ -199,22 +199,30 @@
             osc.start(); osc.stop(audioCtx.currentTime + 1);
         }
 
-        function updateDisplay() {
-            fetch(scriptURL + "?t=" + new Date().getTime())
-                .then(res => res.json())
-                .then(data => {
-                    let currentNum = data.nowServing.toString();
-                    if (currentNum !== lastNumber && currentNum !== "") {
-                        document.getElementById('serving').innerText = currentNum;
-                        if (lastNumber !== "--") {
-                            playChime();
-                            setTimeout(() => speak(currentNum), 1000);
-                        }
-                        lastNumber = currentNum;
-                    }
-                })
-                .catch(err => console.log("Updating..."));
-        }
+        // Palitan ang iyong updateDisplay function sa tv.html
+function updateDisplay() {
+    fetch(scriptURL + "?getServing=true&t=" + new Date().getTime())
+        .then(res => res.json())
+        .then(data => {
+            // data.number = Ang queue number (Column B)
+            // data.action = Kung "CALL" o "RECALL"
+            
+            let currentNum = data.number ? data.number.toString() : "--";
+
+            // Trigger kung may bagong number o kung pinindot ang "Call Again" (Recall)
+            if (currentNum !== lastNumber || data.action === "RECALL") {
+                document.getElementById('serving').innerText = currentNum;
+                
+                if (currentNum !== "--") {
+                    playChime();
+                    // May konting delay para matapos ang chime bago magsalita
+                    setTimeout(() => speak(currentNum), 1000);
+                }
+                lastNumber = currentNum;
+            }
+        })
+        .catch(err => console.log("Updating..."));
+}
 
         window.onclick = function() {
             audioEnabled = true;
