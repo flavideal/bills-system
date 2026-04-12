@@ -8,9 +8,25 @@
 
     <style>
         :root { --dark-green: #1b431c; --orange-yellow: #ffc267; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 15px; display: flex; justify-content: center; }
+        body { 
+        font-family: 'Segoe UI', sans-serif; 
+        background: var(--bg); 
+        padding: 15px; 
+        display: flex; 
+        justify-content: center; 
+        min-height: 100vh;
+        overflow-x: hidden; 
+    }
         .kiosk-container { width: 100%; max-width: 500px; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--dark-green); position: relative; }
+        .card { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 20px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+    border-top: 8px solid var(--dark-green); 
+    position: relative;
+    /* Siguraduhin na WALANG overflow: hidden dito */
+}
         .field-group { margin-bottom: 15px; }
         label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-transform: uppercase; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
@@ -24,19 +40,19 @@
         .sukli-display { font-size: 18px; font-weight: 900; color: #d32f2f; margin-top: 5px; }
         
         /* Review & Success Screens */
-        .overlay-screen { 
-    display: none; 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100dvh; /* Gamitin ang height: 100% imbes na min-height */
-    background: white; 
-    border-radius: 20px; 
-    padding: 25px; 
-    box-sizing: border-box; 
-    z-index: 1000; /* Taasan ang z-index */
-    overflow-y: auto;
+       .overlay-screen {  
+    display: none;  
+    position: absolute;  
+    top: 0;  
+    left: 0;  
+    width: 100%;  
+    min-height: 100%; /* Gamitin ang min-height imbes na fixed height */
+    background: white;  
+    border-radius: 20px;  
+    padding: 25px;  
+    box-sizing: border-box;  
+    z-index: 1000; 
+    overflow-y: visible; /* Gawing visible para hindi magka-scroll sa loob */
 }
         #stepSuccess {
     padding-bottom: 40px;
