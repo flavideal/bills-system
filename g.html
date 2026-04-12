@@ -580,7 +580,6 @@ const formData = {
     const fee = amt * 0.01;
     const feeOptionSelect = document.getElementById('reviewFeeOption');
     
-    // DISABLE DEDUCT IF CASH IN
     if (currentMode === 'Cash In') {
         feeOptionSelect.value = 'add'; 
         feeOptionSelect.disabled = true;
@@ -591,31 +590,23 @@ const formData = {
     const feeOption = feeOptionSelect.value;
     const total = (feeOption === 'add') ? amt + fee : amt;
 
-    // Dagdag na logic para sa label
-let totalLabel = "Total to Pay:";
-if (currentMode === 'Cash Out' && feeOption === 'deduct') {
-    totalLabel = "Total Amount to Send:";
-}
+    let totalLabel = "Total to Pay:";
+    if (currentMode === 'Cash Out' && feeOption === 'deduct') {
+        totalLabel = "Total Amount to Send:";
+    }
 
-let breakdownHTML = `
-    <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>
-    <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
-        <span>${totalLabel}</span><strong>${formatPHP(total)}</strong>
-    </div>
-`;
+    // Pansinin: Walang "let" sa simula ng breakdownHTML dito sa baba
+    let breakdownHTML = `
+        <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>
+        <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
+            <span>${totalLabel}</span><strong>${formatPHP(total)}</strong>
+        </div>
+    `;
     
     const isExact = document.getElementById('isExact').checked;
     const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
     const finalBreakdown = document.getElementById('finalBreakdown');
-
-    let currentSukli = 0; // Global variable or scoped to pass to generateNumber
-
-    let breakdownHTML = `
-        <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>
-        <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
-            <span>Total to Pay:</span><strong>${formatPHP(total)}</strong>
-        </div>
-    `;
+    let currentSukli = 0;
 
     if (currentMode === 'Cash In') {
         if (isExact) {
@@ -631,8 +622,8 @@ let breakdownHTML = `
                 </div>`;
         }
     }
+    
     finalBreakdown.innerHTML = breakdownHTML;
-    // Store sukli temporarily in a data attribute
     finalBreakdown.setAttribute('data-sukli', currentSukli > 0 ? currentSukli : 0);
 
     // QR Logic para sa Cash Out
