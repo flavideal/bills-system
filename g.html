@@ -25,17 +25,17 @@
         
         /* Review & Success Screens */
         .overlay-screen { 
-    display: none; /* Walang !important dapat dito */
+    display: none; 
     position: absolute; 
     top: 0; 
     left: 0; 
     width: 100%; 
-    min-height: 100%;
+    height: 100%; /* Gamitin ang height: 100% imbes na min-height */
     background: white; 
     border-radius: 20px; 
     padding: 25px; 
     box-sizing: border-box; 
-    z-index: 10; 
+    z-index: 1000; /* Taasan ang z-index */
     overflow-y: auto;
 }
         #stepSuccess {
@@ -365,22 +365,13 @@ async function checkMyStatus() {
     function setMode(mode) {
     currentMode = mode;
     
-    // UI Buttons
     document.getElementById('btnIn').classList.toggle('active', mode === 'Cash In');
     document.getElementById('btnOut').classList.toggle('active', mode === 'Cash Out');
     
-    // Labels
-    const nameLabel = document.getElementById('nameLabel');
-    if (mode === 'Cash Out') {
-        nameLabel.innerText = "Customer Name (Personally Transacting)";
-    } else {
-        nameLabel.innerText = "Customer Name (Personally Transacting)";
-    }
-    
-    // Visibility of Cash Logic Area
-    // Dito natin sinisiguro na lilitaw ang box pag "Cash In"
     const logicArea = document.getElementById('cashLogicArea');
-    logicArea.style.display = (mode === 'Cash In') ? 'block' : 'none';
+    if (logicArea) {
+        logicArea.style.display = (mode === 'Cash In') ? 'block' : 'none';
+    }
     
     calculateFee();
 }
@@ -432,16 +423,16 @@ setMode('Cash In');
     const accName = document.getElementById('accName').value;
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     
-    // 1. Validation check
+    // 1. Validation check - Siguraduhing may laman ang fields
     if(!name || !accNo || !accName || amt <= 0) { 
         alert("Pakikumpleto ang lahat ng detalye kasama ang Account Name."); 
         return; 
     }
 
-    // 2. Compute totals for review
     const fee = amt * 0.01;
     const totalWithFee = amt + fee;
 
+    // Cash In specific validation
     if (currentMode === 'Cash In' && !document.getElementById('isExact').checked) {
         const cashReceived = parseFloat(document.getElementById('cashReceived').value) || 0;
         if (cashReceived < totalWithFee) {
@@ -470,14 +461,13 @@ setMode('Cash In');
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
     
-    // 4. Show the Screen
+    // 4. Eto ang importante: Gawing visible ang screen
     const reviewScreen = document.getElementById('stepReview');
-    reviewScreen.style.display = 'block'; 
+    reviewScreen.style.setProperty('display', 'block', 'important'); 
     reviewScreen.scrollTop = 0;
 
     updateReviewTotal();
 }
-
     
     function hideReview() { 
     // Alisin ang !important para gumana ang pag-switch ng screens
