@@ -550,10 +550,6 @@ function setMode(mode) {
     }
 }
 
-// Mahalaga: Tawagin ito pag-load ng script
-setMode('Cash In');
-
-
 function formatPHP(number) {
 return new Intl.NumberFormat('en-PH', {
         style: 'currency',
@@ -927,18 +923,6 @@ function updateReviewSukli() {
         sukliDiv.innerHTML = "";
     }
 }
-
-function updateQRInstruction(amt, fee, feeOption) {
-    const qrArea = document.getElementById('qrReviewArea');
-    if (currentMode === 'Cash Out') {
-        qrArea.style.display = 'block';
-        const qrInstruction = document.getElementById('qrInstructionReview');
-        const sendAmount = (feeOption === 'add') ? (amt + fee) : amt;
-        qrInstruction.innerHTML = `I-SCAN AT I-SEND ANG <br><b style="font-size:20px;">${formatPHP(sendAmount)}</b>`;
-    } else {
-        qrArea.style.display = 'none';
-    }
-}
     
 function adminForceReset() {
     const ADMIN_PIN = "430456"; 
@@ -987,8 +971,10 @@ async function processFinalDone() {
         const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
         const fee = rawAmount * 0.01;
         
-        // I-check kung "deduct" ang pinili sa review
-        const isDeducted = document.getElementById('reviewContent').innerText.toLowerCase().includes("deduct");
+        // --- ITO ANG PAGBABAGO ---
+        const savedFeeOption = localStorage.getItem('feeOption') || "add";
+        const isDeducted = (savedFeeOption === "deduct");
+        // -------------------------
         
         let finalCashToGive = isDeducted ? (rawAmount - fee) : rawAmount;
         let feeNote = isDeducted ? `Fee Deducted: -${formatPHP(fee)}` : "Fee Paid Separately";
