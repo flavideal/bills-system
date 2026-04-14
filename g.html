@@ -543,14 +543,13 @@ setMode('Cash In');
                 if (feeOption === 'add') {
                     // --- CASH IN: ADD-ON ---
                     if (isExact) {
-                        finalAmountToGcash = 0; 
-                        actualCashHanded = baseAmount - fee; // Base sa gusto mo: 990.00
+                        finalAmountToGcash = baseAmount + fee; // "baseAmount + fee sa K" (1010)
+                        actualCashHanded = baseAmount;         // "sa Column L ang base amount lang" (1000)
                         sheetChange = 0;
                     } else {
-                        // "K: amount galing sa Magkano ang cash na iaabot ko?"
+                        // Not Exact Logic
                         finalAmountToGcash = cashInputValue; 
                         actualCashHanded = cashInputValue; 
-                        // "M: Cash na inabot - amount - fee = sukli"
                         sheetChange = cashInputValue - baseAmount - fee; 
                     }
                 } else {
@@ -563,10 +562,10 @@ setMode('Cash In');
                 // --- CASH OUT LOGIC ---
                 if (feeOption === 'add') {
                     finalAmountToGcash = 0; 
-                    actualCashHanded = baseAmount; // "L: amount lang dito galing sa H"
+                    actualCashHanded = baseAmount; 
                 } else {
                     finalAmountToGcash = 0; 
-                    actualCashHanded = baseAmount - fee; // "L: 990.00"
+                    actualCashHanded = baseAmount - fee; 
                 }
                 sheetChange = 0;
             }
