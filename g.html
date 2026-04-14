@@ -301,45 +301,39 @@ let currentMode = "Cash In"; // Siguraduhing nasa taas ito ng script
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
 window.onload = function() {
-    // 1. Restore Mode
-    const savedMode = localStorage.getItem('savedMode') || 'Cash In';
-    currentMode = savedMode;
-    setMode(savedMode); 
+    // 1. Restore Mode Agad
+    currentMode = localStorage.getItem('savedMode') || 'Cash In';
+    setMode(currentMode); 
 
     // 2. Restore Inputs
-    const inputs = ['custName', 'accNo', 'accName', 'amount'];
-    inputs.forEach(id => {
+    ['custName', 'accNo', 'accName', 'amount'].forEach(id => {
         const val = localStorage.getItem('input_' + id);
         const el = document.getElementById(id);
-        if (val && el) {
-            el.value = val;
-        }
+        if (val && el) el.value = val;
     });
 
-    // 3. Logic para sa Steps
-    const currentStep = localStorage.getItem('currentStep');
+    // 3. MATATAG NA ROUTING
     const savedNumber = localStorage.getItem('savedQueueNumber');
     const isWaiting = localStorage.getItem('isWaiting');
+    const lastStep = localStorage.getItem('currentStep'); // Kinukuha ang huling step
 
     if (savedNumber && isWaiting === 'true') {
         myQueueNumber = savedNumber;
         document.getElementById('numberDisplay').innerText = myQueueNumber;
-        showStep('stepSuccess');
+        showStep('stepSuccess'); // Dito muna bago interval
         statusInterval = setInterval(checkMyStatus, 5000);
         checkMyStatus(); 
     } 
-    else if (currentStep === 'stepReview') {
-        // Importante: Re-run showReview para lumabas ang breakdown items
+    else if (lastStep === 'stepReview') {
+        // Importante: Kung review ang last step, kailangan i-re-render ang data
         showReview(); 
     } 
     else {
+        // Default: Step Form
         showStep('stepForm');
     }
 
-    // DAGDAG MO ITO SA DULO NG ONLOAD:
-    if (document.getElementById('amount').value > 0) {
-        calculateFee();
-    }
+    if (document.getElementById('amount').value > 0) calculateFee();
 };
     
 
@@ -604,16 +598,18 @@ return new Intl.NumberFormat('en-PH', {
 }
 
 function showStep(stepId) {
-    // Itago lahat ng main steps
+    // Itago lahat
     document.getElementById('stepForm').style.display = 'none';
     document.getElementById('stepReview').style.display = 'none';
     document.getElementById('stepSuccess').style.display = 'none';
 
-    // Ipakita ang target step
+    // Ipakita ang target
     const target = document.getElementById(stepId);
     if (target) {
         target.style.display = 'block';
-        localStorage.setItem('currentStep', stepId); // I-save sa storage
+        
+        // ETO ANG PINAKA-IMPORTANTENG LINYA:
+        localStorage.setItem('currentStep', stepId); 
     }
 }
 
