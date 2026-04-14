@@ -679,12 +679,20 @@ setMode('Cash In');
 
     document.getElementById('finalBreakdown').innerHTML = breakdownHTML;
 
-    // 2. TRIGGER SUKLI UPDATE: Tawagin agad para lumabas ang sukli kung may value na
+    // --- ETO ANG DAGDAG/FIX ---
+    // Siguraduhin na laging labas ang QR/Upload area para sa Cash Out at Cash In
+    const qrArea = document.getElementById('qrReviewArea');
+    if (currentMode === 'Cash Out') {
+        qrArea.style.display = 'block';
+        document.getElementById('qrInstructionReview').innerText = "PAALALA: I-upload ang screenshot ng iyong Send Money confirmation.";
+    } else if (currentMode === 'Cash In') {
+        qrArea.style.display = 'block';
+        document.getElementById('qrInstructionReview').innerText = "PAALALA: I-upload ang screenshot ng GCash receipt pagkatapos mag-scan.";
+    }
+
     if (currentMode === 'Cash In' && feeOption === 'add') {
         updateReviewSukli();
     }
-    
-    updateQRInstruction(amt, fee, feeOption);
 }
 
 // 3. SEPARATE FUNCTION PARA SA SUKLI (Huwag i-rerender ang HTML dito)
