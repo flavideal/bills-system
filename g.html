@@ -285,32 +285,31 @@ window.onload = function() {
     const sessionTime = localStorage.getItem('sessionStartTime');
     const currentTime = new Date().getTime();
     
-    // EXPIRE AFTER 3 MINUTES (180,000 milliseconds)
-    const expiryLimit = 3 * 60 * 1000; 
+    const expiryLimit = 3 * 60 * 1000; // 3 Minutes
 
-    if (savedNumber && isWaiting === 'true') {
-        // Check kung expire na ang oras
-        if (sessionTime && (currentTime - sessionTime > expiryLimit)) {
-            console.log("Session expired. Clearing...");
-            localStorage.clear(); // Burahin lahat
-            window.location.reload(); // Refresh page para bumalik sa simula
-            return;
+    // LOGIC: Kung tapos na ang transaction (may sessionTime), i-check kung expired na
+    if (sessionTime) {
+        if (currentTime - sessionTime > expiryLimit) {
+            console.log("Transaction finished 3 mins ago. Clearing...");
+            localStorage.clear();
+            window.location.reload();
+            return; // Stop execution dito
         }
+    }
 
+    // Kung waiting pa (at wala pang sessionTime o hindi pa expired)
+    if (savedNumber && isWaiting === 'true') {
         myQueueNumber = savedNumber;
         document.getElementById('numberDisplay').innerText = myQueueNumber;
         document.getElementById('stepForm').style.display = 'none';
         document.getElementById('stepReview').style.display = 'none';
         document.getElementById('stepSuccess').style.display = 'block';
         
-        const instruction = document.getElementById('instructionText');
-        instruction.style.color = "#888"; 
-        instruction.innerText = "Checking status, please wait...";
-        instruction.style.display = 'block'; 
-        
+        // Ipagpatuloy ang pag-check ng status
         statusInterval = setInterval(checkMyStatus, 5000);
         checkMyStatus(); 
     }
+    
     setMode('Cash In');
 };
 
@@ -351,6 +350,11 @@ async function checkMyStatus() {
         
         // --- STATUS: COMPLETED (Tapos na) ---
         else if (result.status === "COMPLETED") {
+            // [FIX 1] START 3-MINUTE TIMER ONLY NOW
+            if (!localStorage.getItem('sessionStartTime')) {
+                localStorage.setItem('sessionStartTime', new Date().getTime());
+            }
+
             statusBox.style.display = "block";
             statusBox.className = "status-badge status-completed";
             statusBox.innerText = "✅ TRANSACTION FINISHED";
@@ -358,26 +362,35 @@ async function checkMyStatus() {
             completedArea.style.display = "block"; 
 
             if (currentMode === "Cash Out") {
-                // Ipakita ang Signature Pad
                 document.getElementById('cashOutVerify').style.display = "block";
                 document.getElementById('cashInVerify').style.display = "none";
+                
+                // [FIX 2] CORRECT AMOUNT DISPLAY (LESS FEE IF DEDUCT)
+                const rawAmt = parseFloat(document.getElementById('amount').value) || 0;
+                const fee = rawAmt * 0.01;
+                const feeOption = document.getElementById('reviewFeeOption').value;
+                const finalToReceive = (feeOption === 'deduct') ? (rawAmt - fee) : rawAmt;
+
                 document.getElementById('sigCustName').innerText = document.getElementById('custName').value;
-                document.getElementById('sigAmt').innerText = formatPHP(parseFloat(document.getElementById('amount').value));
+                document.getElementById('sigAmt').innerText = formatPHP(finalToReceive); // Tamang computation
                 document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
                 
-                initSignaturePad(); // Start signature logic
+                initSignaturePad(); 
+                
+                // Note: Huwag muna i-enable ang finishBtn hangga't walang pirma. 
+                // Ito ay handled dapat sa loob ng checkSig() function ng signature pad.
             } else {
-                // Ipakita ang Resibo (Dating Logic)
+                // CASH IN LOGIC
                 document.getElementById('cashOutVerify').style.display = "none";
                 document.getElementById('cashInVerify').style.display = "block";
                 
-                // ... (Dito yung dati mong logic para sa adminReceipt.src)
                 const receiptImg = document.getElementById('adminReceipt');
                 if (result.receipt) {
-                    receiptImg.src = result.receipt; // Gamitin ang link mula sa Apps Script
+                    receiptImg.src = result.receipt; 
                     receiptImg.style.display = "block";
                 }
                 
+                // Sa Cash In, pwedeng i-enable agad ang button
                 document.getElementById('finishBtn').disabled = false;
                 document.getElementById('finishBtn').style.opacity = "1";
                 document.getElementById('finishBtn').style.cursor = "pointer";
