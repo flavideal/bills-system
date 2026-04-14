@@ -292,8 +292,14 @@
 </div>
 
 <script>
+ 
 let myQueueNumber = "";
 let statusInterval;
+let canvas;
+let ctx;
+let drawing = false;
+let currentMode = "Cash In"; // Siguraduhing nasa taas ito ng script
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
 window.onload = function() {
     // 1. Restore Mode muna (Pinaka-importante)
@@ -463,16 +469,70 @@ else if (result.status === "COMPLETED") {
         console.error("Error checking status:", e);
     }
 }
+
+function initSignaturePad() {
+    canvas = document.getElementById('signature-pad');
+    if (!canvas) return;
     
-    function formatPHP(number) {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP',
-        minimumFractionDigits: 2
-    }).format(number);
+    ctx = canvas.getContext('2d');
+    canvas.width = canvas.parentElement.offsetWidth;
+    canvas.height = 180; 
+
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+
+    // Mouse
+    canvas.onmousedown = startDraw;
+    canvas.onmousemove = moveDraw;
+    window.onmouseup = stopDraw;
+
+    // Touch - Mas matatag na paraan para sa mobile refresh
+    canvas.addEventListener("touchstart", function (e) {
+        if (e.target == canvas) e.preventDefault();
+        startDraw(e);
+    }, { passive: false });
+
+    canvas.addEventListener("touchmove", function (e) {
+        if (e.target == canvas) e.preventDefault();
+        moveDraw(e);
+    }, { passive: false });
+
+    canvas.addEventListener("touchend", function (e) {
+        stopDraw();
+    }, { passive: false });
 }
     
-    let currentMode = "Cash In"; // Siguraduhing nasa taas ito ng script
+function startDraw(e) {
+    drawing = true;
+    ctx.beginPath();
+    const pos = getMousePos(canvas, e);
+    ctx.moveTo(pos.x, pos.y);
+}
+
+function moveDraw(e) {
+    if (!drawing) return;
+    const pos = getMousePos(canvas, e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    checkSig(); // Binubuhay ang DONE button kapag may guhit na
+}
+
+function stopDraw() {
+    drawing = false;
+}
+
+function getMousePos(canvasDom, event) {
+    const rect = canvasDom.getBoundingClientRect();
+    // Support para sa mouse at touch
+    const clientX = event.clientX || (event.touches && event.touches[0].clientX);
+    const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+    
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
 
 function setMode(mode) {
     currentMode = mode;
@@ -492,6 +552,15 @@ function setMode(mode) {
 
 // Mahalaga: Tawagin ito pag-load ng script
 setMode('Cash In');
+
+
+function formatPHP(number) {
+return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 2
+    }).format(number);
+}
 
     function toggleExact() {
         const isExact = document.getElementById('isExact').checked;
@@ -885,38 +954,8 @@ function adminForceReset() {
     }
 }
 
-let canvas;
-let ctx;
-let drawing = false;
 
-// --- INITIALIZE SIGNATURE PAD ---
-function initSignaturePad() {
-    canvas = document.getElementById('signature-pad');
-    if (!canvas) return;
-    
-    ctx = canvas.getContext('2d');
 
-    // [FIX] Kunin ang aktwal na sukat ng container paglabas nito
-    const container = canvas.parentElement;
-    canvas.width = container.offsetWidth;
-    canvas.height = 180; 
-
-    // Reset settings ng brush pagkatapos i-resize
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 3;
-    ctx.lineCap = "round";
-
-    // Re-attach events
-    canvas.onmousedown = startDraw;
-    canvas.onmousemove = moveDraw;
-    window.onmouseup = stopDraw;
-
-    canvas.ontouchstart = (e) => { e.preventDefault(); startDraw(e); };
-    canvas.ontouchmove = (e) => { e.preventDefault(); moveDraw(e); };
-    canvas.ontouchend = stopDraw;
-    
-    console.log("Signature Pad Ready: " + canvas.width + "x" + canvas.height);
-}
     
 // --- BUTTON CONTROLS ---
 function clearSignature() {
@@ -1000,34 +1039,6 @@ async function processFinalDone() {
     finishTransaction(); 
 }
 
-function startDraw(e) {
-    drawing = true;
-    ctx.beginPath();
-    const pos = getMousePos(canvas, e);
-    ctx.moveTo(pos.x, pos.y);
-}
-
-function moveDraw(e) {
-    if (!drawing) return;
-    const pos = getMousePos(canvas, e);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-    checkSig(); // Binubuhay ang DONE button kapag may guhit na
-}
-
-function stopDraw() {
-    drawing = false;
-}
-
-function getMousePos(canvasDom, event) {
-    const rect = canvasDom.getBoundingClientRect();
-    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
-    return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
-    };
-}
 
 // 2. I-bind ang window.saveInput (Double check)
 window.saveInput = function(id) {
@@ -1035,8 +1046,6 @@ window.saveInput = function(id) {
     localStorage.setItem('input_' + id, val);
 }
 
-// 3. Web App URL Constant (Siguraduhing globally accessible)
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 </script>
 
 </body>
