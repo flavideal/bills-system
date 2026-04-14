@@ -193,16 +193,16 @@
             <div id="reviewContent"></div>
 
             <div id="qrReviewArea" style="display:none;">
-                <div class="qr-box">
-                    <p style="font-weight: bold; color: var(--dark-green); margin: 0;">STEP 1: SCAN TO PAY VIA GCASH</p>
-                    <img src="https://bills.flavideal.com/qr/gc.png" style="width: 180px; margin-top: 10px; border-radius: 10px;">
-                    <p id="qrInstructionReview" style="font-size: 11px; margin-top: 5px; color: #d32f2f; font-weight: bold;"></p>
-                </div>
-                <div class="field-group">
-                    <label>Step 2: Upload Proof of Receipt</label>
-                    <input type="file" id="proofUpload" accept="image/*" style="padding: 5px; font-size: 12px;">
-                </div>
-            </div>
+    <div class="qr-box">
+        <p style="font-weight: bold; color: var(--dark-green); margin: 0;">STEP 1: SCAN TO PAY VIA GCASH</p>
+        <img src="https://bills.flavideal.com/qr/gc.png" style="width: 180px; margin-top: 10px; border-radius: 10px;">
+        <p id="qrInstructionReview" style="font-size: 11px; margin-top: 5px; color: #d32f2f; font-weight: bold;"></p>
+    </div>
+    <div class="field-group">
+        <label>Step 2: Upload Proof of Receipt</label>
+        <input type="file" id="proofUpload" accept="image/*" style="padding: 5px; font-size: 12px;">
+    </div>
+</div>
 
             <div id="termsContainer" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
                 <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY POLICY</h4>
@@ -463,19 +463,17 @@ setMode('Cash In');
     }
 }
 
-    function showReview() {
+   function showReview() {
     const name = document.getElementById('custName').value;
     const accNo = document.getElementById('accNo').value;
     const accName = document.getElementById('accName').value;
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     
-    // 1. Validation check
     if(!name || !accNo || !accName || amt <= 0) { 
         alert("Pakikumpleto ang lahat ng detalye kasama ang Account Name."); 
         return; 
     }
 
-    // 2. Build the Review Content (WALANG BINAGO DITO)
     let reviewHTML = `
         <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
         <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
@@ -495,24 +493,24 @@ setMode('Cash In');
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
     
-    // --- [DAGDAG NA LOGIC PARA SA QR AREA] ---
-    // Ito lang ang idadagdag natin para hindi lumabas ang QR sa Cash Out
+    // --- ITO ANG CORRECT LOGIC ---
     const qrArea = document.getElementById('qrReviewArea');
     if (qrArea) {
-        if (currentMode === 'Cash In') {
-            qrArea.style.display = 'block'; // Pakita kung Cash In
+        if (currentMode === 'Cash Out') {
+            qrArea.style.setProperty('display', 'block', 'important'); // Pakita sa Cash Out
         } else {
-            qrArea.style.display = 'none';  // Tago kung Cash Out
+            qrArea.style.setProperty('display', 'none', 'important');  // Tago sa Cash In
+            // Linisin ang input para sigurado
+            const fileInput = document.getElementById('proofUpload');
+            if(fileInput) fileInput.value = "";
         }
     }
-    // -----------------------------------------
+    // ------------------------------
 
-    // 3. Gawing visible ang screen
     const reviewScreen = document.getElementById('stepReview');
     reviewScreen.style.setProperty('display', 'block', 'important'); 
     reviewScreen.scrollTop = 0;
 
-    // 4. Tawagin ito para lumabas ang logic ng Sukli at Fee sa loob ng Review
     updateReviewTotal();
 }
     
@@ -677,10 +675,8 @@ setMode('Cash In');
     const feeOption = document.getElementById('reviewFeeOption').value;
     const totalWithFee = amt + fee;
 
-    // 1. SAVE CURRENT STATE: Kunin ang values bago mag-update ng HTML
     const oldCheckbox = document.getElementById('reviewIsExact');
     const isExact = oldCheckbox ? oldCheckbox.checked : true;
-    
     const oldCashInput = document.getElementById('reviewCashReceived');
     const oldCashValue = oldCashInput ? oldCashInput.value : "";
 
@@ -716,6 +712,7 @@ setMode('Cash In');
                 </div>`;
         }
     } else {
+        // CASH OUT DISPLAY
         const amountToReceive = (feeOption === 'deduct') ? (amt - fee) : amt;
         const amountToSend = (feeOption === 'deduct') ? amt : (amt + fee);
 
@@ -732,15 +729,12 @@ setMode('Cash In');
 
     document.getElementById('finalBreakdown').innerHTML = breakdownHTML;
 
-    // --- ETO ANG DAGDAG/FIX ---
-    // Siguraduhin na laging labas ang QR/Upload area para sa Cash Out at Cash In
-    const qrArea = document.getElementById('qrReviewArea');
+    // --- PAALALA: WALANG DISPLAY:BLOCK NG QR DITO PARA SA CASH IN ---
     if (currentMode === 'Cash Out') {
-        qrArea.style.display = 'block';
-        document.getElementById('qrInstructionReview').innerText = "PAALALA: I-upload ang screenshot ng iyong Send Money confirmation.";
-    } else if (currentMode === 'Cash In') {
-        qrArea.style.display = 'block';
-        document.getElementById('qrInstructionReview').innerText = "PAALALA: I-upload ang screenshot ng GCash receipt pagkatapos mag-scan.";
+        const qrInstruction = document.getElementById('qrInstructionReview');
+        if (qrInstruction) {
+            qrInstruction.innerText = "PAALALA: I-upload ang screenshot ng iyong Send Money confirmation.";
+        }
     }
 
     if (currentMode === 'Cash In' && feeOption === 'add') {
