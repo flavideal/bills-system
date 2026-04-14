@@ -172,27 +172,30 @@
                 <div id="btnOut" class="mode-btn" onclick="setMode('Cash Out')">CASH OUT</div>
             </div>
 
-            <div class="field-group">
-                <label id="nameLabel">Customer Name (Personally Transacting)</label>
-                <input type="text" id="custName" placeholder="Pangalan ng nag-transact personally" oninput="saveInput(this.id)">
-            </div>
+            <div id="stepForm">
+    
+    <div class="field-group">
+        <label id="nameLabel">Customer Name (Personally Transacting)</label>
+        <input type="text" id="custName" placeholder="Pangalan ng nag-transact personally" oninput="saveInput(this.id)">
+    </div>
 
-            <div class="field-group">
-                <label id="accLabel">GCash Account Name</label>
-                <input type="text" id="accName" placeholder="Juan Dela Cruz o J***N D. C**Z" oninput="saveInput(this.id)">
-            </div>
+    <div class="field-group">
+        <label id="accLabel">GCash Account Name</label>
+        <input type="text" id="accName" placeholder="Juan Dela Cruz o J***N D. C**Z" oninput="saveInput(this.id)">
+    </div>
 
-            <div class="field-group">
-                <label>GCash Number</label>
-                <input type="number" id="accNo" placeholder="09123456789" oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11); saveInput(this.id);">
-            </div>
+    <div class="field-group">
+        <label>GCash Number</label>
+        <input type="number" id="accNo" placeholder="09123456789" 
+               oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11); saveInput(this.id);">
+    </div>
 
-            <div class="field-group">
-                <label>Amount</label>
-                <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput(this.id);">
-                <div id="liveBreakdown" style="font-size: 13px; margin-top: 8px; color: #555; display: none; background: #f9f9f9; padding: 10px; border-radius: 8px;">
-                </div>
-            </div>
+    <div class="field-group">
+        <label>Amount</label>
+        <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput(this.id);">
+        <div id="liveBreakdown" style="font-size: 13px; margin-top: 8px; color: #555; display: none; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+        </div>
+    </div>
 
             <button onclick="showReview()" class="btn-main">REVIEW DETAILS</button>
         </div>
@@ -306,19 +309,18 @@ window.onload = function() {
     const inputs = ['custName', 'accNo', 'accName', 'amount'];
     inputs.forEach(id => {
         const val = localStorage.getItem('input_' + id);
-        if (val) {
-            const el = document.getElementById(id);
-            if(el) el.value = val;
+        const el = document.getElementById(id);
+        if (val && el) {
+            el.value = val;
         }
     });
 
-    // 3. CHECK KUNG NASAAN NA SIYANG STEP (STRICT LOGIC)
+    // 3. Logic para sa Steps
     const currentStep = localStorage.getItem('currentStep');
     const savedNumber = localStorage.getItem('savedQueueNumber');
     const isWaiting = localStorage.getItem('isWaiting');
 
     if (savedNumber && isWaiting === 'true') {
-        // Step 3: Success/Waiting Screen
         myQueueNumber = savedNumber;
         document.getElementById('numberDisplay').innerText = myQueueNumber;
         showStep('stepSuccess');
@@ -326,12 +328,16 @@ window.onload = function() {
         checkMyStatus(); 
     } 
     else if (currentStep === 'stepReview') {
-        // Step 2: Review Screen (Bago mag-refresh ay nasa Review siya)
+        // Importante: Re-run showReview para lumabas ang breakdown items
         showReview(); 
     } 
     else {
-        // Step 1: Form Screen (Default)
         showStep('stepForm');
+    }
+
+    // DAGDAG MO ITO SA DULO NG ONLOAD:
+    if (document.getElementById('amount').value > 0) {
+        calculateFee();
     }
 };
     
@@ -1060,12 +1066,15 @@ async function processFinalDone() {
 }
 
 
-// 2. I-bind ang window.saveInput (Double check)
-window.saveInput = function(id) {
-    const val = document.getElementById(id).value;
-    localStorage.setItem('input_' + id, val);
+function saveInput(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        localStorage.setItem('input_' + id, el.value);
+    }
 }
-
+// I-expose sa window para sigurado
+window.saveInput = saveInput;
+    
 </script>
 
 </body>
