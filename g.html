@@ -524,83 +524,69 @@ setMode('Cash In');
     btn.innerText = "SENDING... PLEASE WAIT";
     btn.disabled = true;
 
-    try {
-        const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
-        const fee = baseAmount * 0.01;
-        const feeOption = document.getElementById('reviewFeeOption').value;
-        const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
+   try {
+            const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+            const fee = baseAmount * 0.01;
+            const feeOption = document.getElementById('reviewFeeOption').value;
+            const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
-        let finalAmountToGcash = baseAmount; 
-        let totalWithFee = baseAmount + fee; 
-        let sheetChange = 0;                 
-        let actualCashHanded = 0;
+            let finalAmountToGcash = 0; // Column K
+            let actualCashHanded = 0;   // Column L
+            let sheetChange = 0;        // Column M
 
-        if (currentMode === 'Cash In') {
-            // Check kung existing ang checkbox (para iwas error sa Deduct mode)
-            const exactCheckEl = document.getElementById('reviewIsExact');
-            const isExact = exactCheckEl ? exactCheckEl.checked : true; // Default to true kung wala (Deduct mode)
-
-            if (feeOption === 'add') {
-                finalAmountToGcash = baseAmount; 
-                
-                // Kunin ang cash handed input kung hindi exact
+            if (currentMode === 'Cash In') {
+                const exactCheckEl = document.getElementById('reviewIsExact');
+                const isExact = exactCheckEl ? exactCheckEl.checked : true;
                 const cashInputEl = document.getElementById('reviewCashReceived');
                 const cashInputValue = cashInputEl ? parseFloat(cashInputEl.value) : 0;
-                
-                actualCashHanded = isExact ? totalWithFee : cashInputValue;
-                
-                // Validation: Kung hindi exact, dapat sapat ang cash na ininput
-                if (!isExact && actualCashHanded < totalWithFee) {
-                    throw new Error("Kulang ang cash amount na nilagay mo.");
-                }
 
-                sheetChange = isExact ? 0 : (actualCashHanded - totalWithFee);
+                if (feeOption === 'add') {
+                    // CASH IN: ADD-ON
+                    if (isExact) {
+                        finalAmountToGcash = 0; // Base sa gusto mo: "kung add on na sakto zero sa k"
+                        actualCashHanded = baseAmount + fee; // "Amount + fee sa L" (Inabot na cash)
+                        sheetChange = 0;
+                    } else {
+                        finalAmountToGcash = baseAmount; // "ilagay sa amount sa K"
+                        actualCashHanded = cashInputValue; 
+                        sheetChange = cashInputValue - (baseAmount + fee); // "sukli sa L" (M sa sheet)
+                    }
+                } else {
+                    // CASH IN: DEDUCT
+                    finalAmountToGcash = 0; // "kapag dedect naman sa k ZERO"
+                    actualCashHanded = baseAmount - fee; // "sa L ang Amount - fee"
+                    sheetChange = 0;
+                }
             } else {
-                // DEDUCT LOGIC: 1000 cash, 990 sa GCash, 10 fee
-                finalAmountToGcash = baseAmount - fee;
-                totalWithFee = baseAmount; 
-                actualCashHanded = baseAmount;
+                // CASH OUT LOGIC
+                if (feeOption === 'add') {
+                    // CASH OUT: ADD-ON
+                    finalAmountToGcash = baseAmount + fee; // "sa K ang Amount + fee" (Note: Nalito ka siguro sa L, pero K ito sa system)
+                    actualCashHanded = baseAmount - fee;   // "sa L ang Amount - fee"
+                } else {
+                    // CASH OUT: DEDUCT
+                    finalAmountToGcash = 0;                // "kapag deduct zero sa k"
+                    actualCashHanded = baseAmount - fee;   // "Amount - Fee sa L"
+                }
                 sheetChange = 0;
             }
-        } else {
-            // CASH OUT LOGIC
-            if (feeOption === 'deduct') {
-                finalAmountToGcash = baseAmount;
-                sheetChange = baseAmount - fee; 
-                actualCashHanded = 0; // Sa Cash out, si admin ang nag-aabot
-            } else {
-                finalAmountToGcash = baseAmount + fee; 
-                sheetChange = baseAmount; 
-                actualCashHanded = 0;
-            }
-        }
 
-        const formData = {
-    customerName: document.getElementById('custName').value,
-    queueNo: generatedNum,
-    timestamp: new Date().toLocaleString(),
-    provider: "GCASH",
-    transType: currentMode,
-    gcashName: document.getElementById('accName').value,
-    gcashNo: document.getElementById('accNo').value,
-    
-    // COLUMN H: Dito dapat ang laging "BUO" o base input ng user
-    amount: baseAmount, 
-    
-    // COLUMN I: Ang 1% fee
-    feeAmount: fee,
-    
-    // COLUMN J: Add-on o Deduct
-    feeOption: feeOption,
-    
-    // COLUMN K: Dito dapat ang may logic (May bawas o may dagdag)
-    totalAmount: finalAmountToGcash, 
-    
-    // COLUMN L at M: Cash received at Sukli/Ibinigay na cash
-    cashAmount: actualCashHanded,
-    change: sheetChange,
-    consent: "YES"
-};
+            const formData = {
+                customerName: document.getElementById('custName').value,
+                queueNo: generatedNum,
+                timestamp: new Date().toLocaleString(),
+                provider: "GCASH",
+                transType: currentMode,
+                gcashName: document.getElementById('accName').value,
+                gcashNo: document.getElementById('accNo').value,
+                amount: baseAmount,      // Column H
+                feeAmount: fee,          // Column I
+                feeOption: feeOption,    // Column J
+                totalAmount: finalAmountToGcash, // Column K
+                cashAmount: actualCashHanded,    // Column L
+                change: sheetChange,             // Column M
+                consent: "YES"
+            };
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
