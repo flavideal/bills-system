@@ -243,9 +243,9 @@
                 STATUS: WAITING IN QUEUE
             </div>
             
-            <p id="instructionText" style="font-weight: bold; color: #555; margin-top: 15px; display: none; padding: 10px; border-radius: 10px; background: #f9f9f9;">
-                Checking status, please wait...
-            </p>
+            <p id="instructionText" style="font-weight: bold; color: #555; margin-top: 15px; padding: 10px; border-radius: 10px; background: #f9f9f9;">
+    Checking status, please wait...
+</p>
 
             <div id="completedDetails" style="display:none; margin-top:15px; text-align:center;">
     <p style="font-weight:bold; color:var(--dark-green); font-size: 18px; margin-bottom: 5px;">
@@ -296,20 +296,36 @@ window.onload = function() {
     
     const expiryLimit = 3 * 60 * 1000; // 3 Minutes
 
-    // LOGIC: Kung tapos na ang transaction (may sessionTime), i-check kung expired na
+    // 1. Check for Expiry
     if (sessionTime) {
         if (currentTime - sessionTime > expiryLimit) {
             console.log("Transaction finished 3 mins ago. Clearing...");
             localStorage.clear();
             window.location.reload();
-            return; // Stop execution dito
+            return; 
         }
     }
 
-    // Kung waiting pa (at wala pang sessionTime o hindi pa expired)
+    // 2. Ibalik ang Mode (Cash In/Out) bago ang lahat
+    const savedMode = localStorage.getItem('savedMode');
+    if (savedMode) {
+        setMode(savedMode);
+    } else {
+        setMode('Cash In');
+    }
+
+    // 3. Kung may active queue number, i-setup ang Success Screen
     if (savedNumber && isWaiting === 'true') {
         myQueueNumber = savedNumber;
         document.getElementById('numberDisplay').innerText = myQueueNumber;
+        
+        // --- FIX: Pakitain ang instruction text agad ---
+        const inst = document.getElementById('instructionText');
+        if (inst) {
+            inst.style.display = 'block';
+            inst.innerHTML = "<b>Checking status, please wait...</b>";
+        }
+
         document.getElementById('stepForm').style.display = 'none';
         document.getElementById('stepReview').style.display = 'none';
         document.getElementById('stepSuccess').style.display = 'block';
@@ -318,8 +334,6 @@ window.onload = function() {
         statusInterval = setInterval(checkMyStatus, 5000);
         checkMyStatus(); 
     }
-    
-    setMode('Cash In');
 };
 
 async function checkMyStatus() {
@@ -386,8 +400,8 @@ async function checkMyStatus() {
                 
                 // [FIX] Delay ng konti para ma-recognize ang canvas size bago pirmahan
                 setTimeout(() => {
-                    initSignaturePad(); 
-                }, 100);
+        initSignaturePad(); 
+    }, 500); // Bigyan ng sapat na oras ang browser
                 
             } else {
                 // --- BACKUP LOGIC PARA SA CASH IN (COLUMN Q) ---
@@ -454,6 +468,7 @@ async function checkMyStatus() {
 
     function setMode(mode) {
     currentMode = mode;
+    localStorage.setItem('savedMode', mode); // <--- IDAGDAG ITONG LINYA NA ITO
     
     document.getElementById('btnIn').classList.toggle('active', mode === 'Cash In');
     document.getElementById('btnOut').classList.toggle('active', mode === 'Cash Out');
@@ -893,27 +908,6 @@ function initSignaturePad() {
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); }, { passive: false });
     canvas.addEventListener('touchend', stopDraw);
     canvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveDraw(e); }, { passive: false });
-}
-// --- DRAWING LOGIC ---
-function draw(e) {
-    if (!drawing) return;
-    const rect = canvas.getBoundingClientRect();
-    
-    // Support para sa Mouse at Touch
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
-
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#000';
-    
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x, y);
 }
 
 // --- BUTTON CONTROLS ---
