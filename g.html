@@ -249,6 +249,11 @@
                 Checking status, please wait...
             </p>
 
+            <div id="customerProofPreview" style="display:none; margin-top:10px;">
+    <p style="font-size:10px; color:#888;">Your uploaded proof:</p>
+    <img id="myProofImg" src="" style="width: 100px; border-radius: 5px; border: 1px solid #ddd;">
+</div>
+
             <div id="completedDetails" style="display:none; margin-top:15px; text-align:center;">
                 <p style="font-weight:bold; color:var(--dark-green); font-size: 18px; margin-bottom: 5px;">
                     TRANSACTION COMPLETED
@@ -352,87 +357,92 @@ async function checkMyStatus() {
             completedArea.style.display = "none"; // Tago pa rin ang button
         } 
         
-      // --- STATUS: COMPLETED (Tapos na) ---
-        else if (result.status === "COMPLETED") {
-            statusBox.style.display = "block";
-            statusBox.className = "status-badge status-completed";
-            statusBox.innerText = "✅ TRANSACTION FINISHED";
+     // --- STATUS: COMPLETED (Tapos na) ---
+else if (result.status === "COMPLETED") {
+    statusBox.style.display = "block";
+    statusBox.className = "status-badge status-completed";
+    statusBox.innerText = "✅ TRANSACTION FINISHED";
 
-            instruction.style.display = "none"; 
-            completedArea.style.display = "block"; 
+    instruction.style.display = "none"; 
+    completedArea.style.display = "block"; 
 
-            // [FIX] I-set lang ang session start time kapag tapos na talaga ang transaction
-            // Para hindi mag-expire ang 3 mins habang naghihintay sa queue
-            if (!localStorage.getItem('sessionStartTime')) {
-                localStorage.setItem('sessionStartTime', new Date().getTime());
-            }
+    if (!localStorage.getItem('sessionStartTime')) {
+        localStorage.setItem('sessionStartTime', new Date().getTime());
+    }
 
-            const finishBtn = document.getElementById('finishBtn');
+    const finishBtn = document.getElementById('finishBtn');
 
-            if (currentMode === "Cash Out") {
-                // --- SIGNATURE LOGIC PARA SA CASHOUT ---
-                document.getElementById('cashOutVerify').style.display = "block";
-                document.getElementById('cashInVerify').style.display = "none";
-                
-                // [PROTECTION] Siguraduhing NAKA-DISABLE ang Done button kung Cash Out
-                // Mabubuhay lang ito kapag gumalaw na ang kamay sa signature pad via checkSig()
-                finishBtn.disabled = true;
-                finishBtn.style.opacity = "0.5";
-                finishBtn.style.cursor = "not-allowed";
+    if (currentMode === "Cash Out") {
+        // --- SIGNATURE LOGIC PARA SA CASHOUT ---
+        document.getElementById('cashOutVerify').style.display = "block";
+        document.getElementById('cashInVerify').style.display = "none";
+        
+        finishBtn.disabled = true;
+        finishBtn.style.opacity = "0.5";
+        finishBtn.style.cursor = "not-allowed";
 
-                const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
-                const fee = rawAmount * 0.01;
-                const reviewText = document.getElementById('reviewContent').innerText.toLowerCase();
-                const isDeducted = reviewText.includes("deduct") || reviewText.includes("bawasan");
-                
-                let finalCash = isDeducted ? (rawAmount - fee) : rawAmount;
+        const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
+        const fee = rawAmount * 0.01;
+        const reviewText = document.getElementById('reviewContent').innerText.toLowerCase();
+        const isDeducted = reviewText.includes("deduct") || reviewText.includes("bawasan");
+        
+        let finalCash = isDeducted ? (rawAmount - fee) : rawAmount;
 
-                document.getElementById('sigCustName').innerText = document.getElementById('custName').value.toUpperCase();
-                document.getElementById('sigAmt').innerText = "₱" + finalCash.toLocaleString(); 
-                document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
-                
-                setTimeout(() => {
-                    initSignaturePad(); 
-                }, 500); 
-                
-            } else {
-                // --- CASH IN LOGIC ---
-                document.getElementById('cashOutVerify').style.display = "none";
-                document.getElementById('cashInVerify').style.display = "block";
-
-                // [PROTECTION] Kung Cash In, okay lang i-enable agad ang button
-                finishBtn.disabled = false;
-                finishBtn.style.opacity = "1";
-                finishBtn.style.cursor = "pointer";
-
-                document.getElementById('adminNote').innerHTML = `
-                    <div style="margin-bottom: 10px;">
-                        <strong style="color: var(--dark-green);">Salamat sa pagtitiwala!</strong><br>
-                        <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
-                    </div>
-                `;
-
-                const receiptImg = document.getElementById('adminReceipt');
-                if (result.receipt && result.receipt.toString().toLowerCase().includes("http")) {
-                    let finalLink = result.receipt.toString().trim();
-                    if (finalLink.includes("drive.google.com")) {
-                        let fileId = "";
-                        if (finalLink.includes("/file/d/")) {
-                            fileId = finalLink.split("/file/d/")[1].split("/")[0];
-                        } else if (finalLink.includes("id=")) {
-                            fileId = finalLink.split("id=")[1].split("&")[0];
-                        }
-                        if(fileId) finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1200";
-                    }
-                    receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
-                    receiptImg.style.display = "block";
-                } else {
-                    receiptImg.style.display = "none";
+        document.getElementById('sigCustName').innerText = document.getElementById('custName').value.toUpperCase();
+        document.getElementById('sigAmt').innerText = "₱" + finalCash.toLocaleString(); 
+        document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
+        
+        // [FIX] Mas siguradong initialization ng Signature Pad
+        // Gumamit ng 800ms para siguradong tapos na ang lahat ng CSS transitions
+        setTimeout(() => {
+            if (typeof initSignaturePad === "function") {
+                initSignaturePad();
+                // Force refresh ng canvas size paglabas
+                const canvas = document.getElementById('signature-pad');
+                if(canvas) {
+                    canvas.width = canvas.parentElement.offsetWidth;
+                    canvas.height = 180;
                 }
             }
+        }, 800); 
+        
+    } else {
+        // --- CASH IN LOGIC (NO CHANGES) ---
+        document.getElementById('cashOutVerify').style.display = "none";
+        document.getElementById('cashInVerify').style.display = "block";
 
-            clearInterval(statusInterval);
+        finishBtn.disabled = false;
+        finishBtn.style.opacity = "1";
+        finishBtn.style.cursor = "pointer";
+
+        document.getElementById('adminNote').innerHTML = `
+            <div style="margin-bottom: 10px;">
+                <strong style="color: var(--dark-green);">Salamat sa pagtitiwala!</strong><br>
+                <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
+            </div>
+        `;
+
+        const receiptImg = document.getElementById('adminReceipt');
+        if (result.receipt && result.receipt.toString().toLowerCase().includes("http")) {
+            let finalLink = result.receipt.toString().trim();
+            if (finalLink.includes("drive.google.com")) {
+                let fileId = "";
+                if (finalLink.includes("/file/d/")) {
+                    fileId = finalLink.split("/file/d/")[1].split("/")[0];
+                } else if (finalLink.includes("id=")) {
+                    fileId = finalLink.split("id=")[1].split("&")[0];
+                }
+                if(fileId) finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1200";
+            }
+            receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+            receiptImg.style.display = "block";
+        } else {
+            receiptImg.style.display = "none";
         }
+    }
+
+    clearInterval(statusInterval);
+}
     } catch (e) {
         console.error("Error checking status:", e);
     }
@@ -564,7 +574,7 @@ setMode('Cash In');
         return; 
     }
 
-    // --- [DAGDAG: FILE UPLOAD LOGIC] ---
+    // --- [FILE UPLOAD LOGIC] ---
     const fileInput = document.getElementById('proofUpload');
     let base64File = "";
     let fileName = "";
@@ -617,27 +627,28 @@ setMode('Cash In');
         let finalL = 0;
 
         if (currentMode === 'Cash In') {
-            const isExact = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
-            const cashInput = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
+            const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+            const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
 
             if (feeOption === 'add') {
-                if (isExact) {
+                if (isExactVal) {
                     finalK = baseAmount + fee; 
                     finalL = baseAmount;       
                 } else {
-                    finalK = cashInput;        
-                    finalL = cashInput - baseAmount - fee; 
+                    finalK = cashInputVal;        
+                    finalL = cashInputVal - baseAmount - fee; 
                 }
             } else {
-                finalK = baseAmount;           
+                finalK = baseAmount;            
                 finalL = baseAmount - fee;     
             }
         } else {
+            // Logic para sa Cash Out
             if (feeOption === 'add') {
                 finalK = baseAmount + fee;     
                 finalL = baseAmount;           
             } else {
-                finalK = baseAmount;           
+                finalK = baseAmount;            
                 finalL = baseAmount - fee;     
             }
         }
@@ -656,7 +667,7 @@ setMode('Cash In');
             totalAmount: finalK,
             cashAmount: finalL,
             consent: "YES",
-            // --- [DAGDAG DITO PARA SA RECEIPT] ---
+            // Ipinapasa ang file data sa Google Apps Script
             receiptFile: base64File,
             receiptFileName: fileName,
             receiptFileType: fileType
@@ -677,6 +688,16 @@ setMode('Cash In');
             localStorage.setItem('savedQueueNumber', myQueueNumber);
             localStorage.setItem('isWaiting', 'true');
             localStorage.setItem('sessionStartTime', new Date().getTime());
+
+            // --- [DAGDAG: PHOTO PREVIEW SA SUCCESS SCREEN] ---
+            if (base64File) {
+                const previewImg = document.getElementById('myProofImg');
+                const previewContainer = document.getElementById('customerProofPreview');
+                if (previewImg && previewContainer) {
+                    previewImg.src = base64File;
+                    previewContainer.style.display = 'block';
+                }
+            }
 
             document.getElementById('numberDisplay').innerText = myQueueNumber;
             document.getElementById('stepReview').style.display = 'none';
@@ -850,26 +871,29 @@ let drawing = false;
 function initSignaturePad() {
     canvas = document.getElementById('signature-pad');
     if (!canvas) return;
+    
     ctx = canvas.getContext('2d');
 
-    // [FIX] Mas siguradong sukat
+    // [FIX] Kunin ang aktwal na sukat ng container paglabas nito
     const container = canvas.parentElement;
-    canvas.width = container.clientWidth;
+    canvas.width = container.offsetWidth;
     canvas.height = 180; 
-    
+
+    // Reset settings ng brush pagkatapos i-resize
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 3;
     ctx.lineCap = "round";
 
-    // Re-bind events para sigurado
-    canvas.removeEventListener('mousedown', startDraw); // Iwas double bind
-    canvas.addEventListener('mousedown', startDraw);
-    canvas.addEventListener('mousemove', moveDraw);
-    window.addEventListener('mouseup', stopDraw);
+    // Re-attach events
+    canvas.onmousedown = startDraw;
+    canvas.onmousemove = moveDraw;
+    window.onmouseup = stopDraw;
 
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); }, { passive: false });
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveDraw(e); }, { passive: false });
-    canvas.addEventListener('touchend', stopDraw);
+    canvas.ontouchstart = (e) => { e.preventDefault(); startDraw(e); };
+    canvas.ontouchmove = (e) => { e.preventDefault(); moveDraw(e); };
+    canvas.ontouchend = stopDraw;
+    
+    console.log("Signature Pad Ready: " + canvas.width + "x" + canvas.height);
 }
     
 // --- BUTTON CONTROLS ---
