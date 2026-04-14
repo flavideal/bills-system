@@ -188,9 +188,9 @@
             <div id="stepForm">
     
     <div class="field-group">
-        <label id="nameLabel">Customer Name (Personally Transacting)</label>
-        <input type="text" id="custName" placeholder="Pangalan ng nag-transact personally" oninput="saveInput('custName')">
-    </div>
+    <label id="nameLabel">Customer Name (Personally Transacting)</label>
+<input type="text" id="custName" oninput="saveInput('custName')">
+</div>
 
     <div class="field-group">
         <label id="accLabel">GCash Account Name</label>
@@ -567,14 +567,29 @@ function setMode(mode) {
     const btnIn = document.getElementById('btnIn');
     const btnOut = document.getElementById('btnOut');
     
+    // --- DAGDAG NA LOGIC DITO ---
+    const nameLabel = document.getElementById('nameLabel');
+    const custInput = document.getElementById('custName');
+    
+    if (nameLabel && custInput) {
+        if (mode === 'Cash In') {
+            nameLabel.innerText = "Customer Name (Personally Transacting)";
+            custInput.placeholder = "Pangalan ng nag-transact personally";
+        } else {
+            nameLabel.innerText = "FULL NAME (KUKUHA NG CASH)";
+            custInput.placeholder = "Buong Pangalan niyo po na tatanggap";
+        }
+    }
+    // ----------------------------
+    
     if(btnIn) btnIn.classList.toggle('active', mode === 'Cash In');
     if(btnOut) btnOut.classList.toggle('active', mode === 'Cash Out');
     
-    // Huwag mag-calculate fee kung wala sa form step para iwas error
     if(document.getElementById('stepForm').style.display !== 'none') {
         calculateFee();
     }
 }
+    
 
 function formatPHP(number) {
 return new Intl.NumberFormat('en-PH', {
