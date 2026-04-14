@@ -297,9 +297,9 @@ let currentMode = "Cash In"; // Siguraduhing nasa taas ito ng script
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
 window.onload = function() {
-    // 1. Restore Mode muna (Pinaka-importante)
+    // 1. Restore Mode
     const savedMode = localStorage.getItem('savedMode') || 'Cash In';
-    currentMode = savedMode; // I-set ang global variable agad
+    currentMode = savedMode;
     setMode(savedMode); 
 
     // 2. Restore Inputs
@@ -312,23 +312,29 @@ window.onload = function() {
         }
     });
 
-    // 3. Check Queue Status
+    // 3. CHECK KUNG NASAAN NA SIYANG STEP (STRICT LOGIC)
+    const currentStep = localStorage.getItem('currentStep');
     const savedNumber = localStorage.getItem('savedQueueNumber');
     const isWaiting = localStorage.getItem('isWaiting');
 
     if (savedNumber && isWaiting === 'true') {
+        // Step 3: Success/Waiting Screen
         myQueueNumber = savedNumber;
         document.getElementById('numberDisplay').innerText = myQueueNumber;
-        
-        document.getElementById('stepForm').style.display = 'none';
-        document.getElementById('stepReview').style.display = 'none';
-        document.getElementById('stepSuccess').style.display = 'block';
-        
-        // Simulan ang polling
+        showStep('stepSuccess');
         statusInterval = setInterval(checkMyStatus, 5000);
         checkMyStatus(); 
+    } 
+    else if (currentStep === 'stepReview') {
+        // Step 2: Review Screen (Bago mag-refresh ay nasa Review siya)
+        showReview(); 
+    } 
+    else {
+        // Step 1: Form Screen (Default)
+        showStep('stepForm');
     }
 };
+    
 
 async function checkMyStatus() {
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
@@ -590,6 +596,20 @@ return new Intl.NumberFormat('en-PH', {
     }
 }
 
+function showStep(stepId) {
+    // Itago lahat ng main steps
+    document.getElementById('stepForm').style.display = 'none';
+    document.getElementById('stepReview').style.display = 'none';
+    document.getElementById('stepSuccess').style.display = 'none';
+
+    // Ipakita ang target step
+    const target = document.getElementById(stepId);
+    if (target) {
+        target.style.display = 'block';
+        localStorage.setItem('currentStep', stepId); // I-save sa storage
+    }
+}
+
    function showReview() {
     const name = document.getElementById('custName').value;
     const accNo = document.getElementById('accNo').value;
@@ -634,17 +654,14 @@ return new Intl.NumberFormat('en-PH', {
     }
     // ------------------------------
 
-    const reviewScreen = document.getElementById('stepReview');
-    reviewScreen.style.setProperty('display', 'block', 'important'); 
+    showStep('stepReview'); // Ito na lang ang ititira mo 
     reviewScreen.scrollTop = 0;
 
     updateReviewTotal();
 }
     
     function hideReview() {
-    document.getElementById('stepReview').style.display = 'none';
-    document.getElementById('stepForm').style.display = 'block'; // Ibalik ang form
-}
+    showStep('stepForm');
 
     
     
@@ -783,9 +800,7 @@ return new Intl.NumberFormat('en-PH', {
             }
 
             document.getElementById('numberDisplay').innerText = myQueueNumber;
-            document.getElementById('stepReview').style.display = 'none';
-            document.getElementById('stepForm').style.display = 'none';
-            document.getElementById('stepSuccess').style.display = 'block';
+            showStep('stepSuccess');
             
             statusInterval = setInterval(checkMyStatus, 5000);
         } else {
@@ -801,6 +816,7 @@ return new Intl.NumberFormat('en-PH', {
 }
     
     function finishTransaction() {
+    localStorage.removeItem('currentStep');
     // 1. Burahin ang personal data ng customer
     const inputs = ['custName', 'accNo', 'accName', 'amount'];
     inputs.forEach(id => localStorage.removeItem('input_' + id));
