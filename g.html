@@ -863,9 +863,19 @@ function initSignaturePad() {
 function draw(e) {
     if (!drawing) return;
     const rect = canvas.getBoundingClientRect();
-    // Accurate positioning
-    const x = (e.clientX || e.pageX) - rect.left;
-    const y = (e.clientY || e.pageY) - rect.top;
+    
+    // [FIX] Kunin ang tamang X at Y mapa-Mouse o Touch man
+    let clientX, clientY;
+    if (e.touches && e.touches[0]) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+    } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    }
+
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
 
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
@@ -900,72 +910,60 @@ async function processFinalDone() {
         btn.innerText = "SAVING VOUCHER...";
         btn.disabled = true;
 
-        // Kuhanin ang values
+        // [FIX] Kuhanin ang amount at fee logic
         const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
         const fee = rawAmount * 0.01;
         
-        // Siguraduhin na may fallback kung sakaling hindi mahanap ang element
-        const feeOptionEl = document.getElementById('reviewFeeOption');
-        const feeOption = feeOptionEl ? feeOptionEl.value : 'add'; // default to add
-
-        let finalCashToGive = (feeOption === 'deduct') ? (rawAmount - fee) : rawAmount;
-        let feeNote = (feeOption === 'deduct') ? `Fee Deducted: -${formatPHP(fee)}` : "Fee Paid Separately";
+        // Hanapin natin sa reviewContent kung 'deduct' ba ang pinili
+        const isDeducted = document.getElementById('reviewContent').innerText.toLowerCase().includes("deduct");
+        
+        let finalCashToGive = isDeducted ? (rawAmount - fee) : rawAmount;
+        let feeNote = isDeducted ? `Fee Deducted: -${formatPHP(fee)}` : "Fee Paid Separately";
 
         const vCanvas = document.createElement('canvas');
         vCanvas.width = 400; vCanvas.height = 500;
         const vCtx = vCanvas.getContext('2d');
         
-        // background
         vCtx.fillStyle = "white"; vCtx.fillRect(0,0,400,500);
+        vCtx.fillStyle = "black"; vCtx.font = "bold 20px Arial";
+        vCtx.fillText("FLAVI DEAL CASH-OUT", 40, 50);
         
-        // header
-        vCtx.fillStyle = "black"; vCtx.font = "bold 18px Arial";
-        vCtx.fillText("CASH-OUT RECEIPT", 40, 50);
-        
-        // details
         vCtx.font = "14px Arial";
-        vCtx.fillText("Customer: " + document.getElementById('custName').value, 40, 90);
-        vCtx.fillText("Gross Amount: " + formatPHP(rawAmount), 40, 115);
+        vCtx.fillText("Date: " + new Date().toLocaleString(), 40, 80);
+        vCtx.fillText("Customer: " + document.getElementById('custName').value, 40, 110);
+        vCtx.fillText("Gross Amount: " + formatPHP(rawAmount), 40, 135);
         
-        // Fee line
         vCtx.fillStyle = "#666";
-        vCtx.fillText(feeNote, 40, 135);
+        vCtx.fillText(feeNote, 40, 155);
         
-        // Final Amount
         vCtx.fillStyle = "red";
-        vCtx.font = "bold 18px Arial";
-        vCtx.fillText("CASH TO RECEIVE: " + formatPHP(finalCashToGive), 40, 170);
+        vCtx.font = "bold 22px Arial";
+        vCtx.fillText("CASH RECEIVED: " + formatPHP(finalCashToGive), 40, 195);
 
-        // Signature Area
         const sigPad = document.getElementById('signature-pad');
-        // I-check kung may laman ang signature pad bago i-draw
         if (sigPad) {
-            vCtx.drawImage(sigPad, 40, 210, 320, 150);
-            vCtx.strokeStyle = "#ccc"; 
-            vCtx.strokeRect(40, 210, 320, 150);
+            vCtx.drawImage(sigPad, 40, 230, 320, 150);
+            vCtx.strokeStyle = "#000"; 
+            vCtx.strokeRect(40, 230, 320, 150);
         }
         
         vCtx.fillStyle = "black"; 
         vCtx.font = "bold 12px Arial";
-        vCtx.fillText("CUSTOMER SIGNATURE", 40, 375);
+        vCtx.fillText("CUSTOMER SIGNATURE", 130, 395);
 
-        // Send to Google Sheets
         try {
-            const response = await fetch(WEB_APP_URL, {
+            await fetch(WEB_APP_URL, {
                 method: "POST",
                 body: JSON.stringify({
                     action: "saveSignature",
                     queueNo: myQueueNumber,
                     signature: vCanvas.toDataURL("image/png"),
-                    finalCash: finalCashToGive // Isama mo na rin ito para sa record mo
+                    finalCash: finalCashToGive 
                 }),
                 headers: { "Content-Type": "text/plain;charset=utf-8" }
             });
-        } catch (e) { 
-            console.error("Voucher error:", e); 
-        }
+        } catch (e) { console.error("Voucher error:", e); }
     }
-    
     finishTransaction(); 
 }
 </script>
