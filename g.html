@@ -56,7 +56,9 @@
 }
         #stepSuccess {
     padding-bottom: 40px;
-    }
+    z-index: 1100 !important; /* Dapat mas mataas ito sa Review Screen (999) */
+    background: white;
+}
             
         .review-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
         .review-item strong { color: var(--dark-green); }
@@ -129,14 +131,16 @@
 }
 
 #signature-pad {
-    border: 2px dashed #1b431c; /* Gawing dark green para kita agad */
+    border: 2px dashed var(--dark-green);
     border-radius: 10px;
-    background: #fff;
+    background: #ffffff;
     cursor: crosshair;
     touch-action: none; 
     display: block;
-    width: 100%; /* Siguradong sakop ang container */
-    height: 150px;
+    width: 100% !important; /* Siguradong sasakop sa box */
+    height: 180px !important; /* Bigyan natin ng saktong height */
+    position: relative;
+    z-index: 1200; /* Pinakamataas para laging clickable */
 }
         
 .sig-container {
@@ -249,17 +253,19 @@
         TRANSACTION COMPLETED
     </p>
 
-    <div id="cashOutVerify" style="display:none; background: #fff9e6; padding: 15px; border-radius: 12px; border: 1px solid #ffc267; margin-bottom: 15px;">
-        <p style="font-size: 13px; font-weight: bold; color: #1b431c; margin-bottom: 8px; text-transform: uppercase;">Acknowledgement Receipt</p>
-        <div style="text-align: left; font-size: 12px; color: #333; line-height: 1.4; margin-bottom: 10px;">
-            I, <strong id="sigCustName"></strong>, confirm that I have received the full cash amount of 
-            <strong id="sigAmt"></strong> for my GCash Cash-Out transaction today, <span id="sigDate"></span>.
-        </div>
-        
-        <canvas id="signature-pad" width="300" height="150" style="border: 2px dashed #aaa; background: white; border-radius: 8px; width: 100%; cursor: crosshair; touch-action: none;"></canvas>
-        
-        <button onclick="clearSignature()" style="background:none; border:none; color:#d32f2f; font-size:11px; margin-top:5px; cursor:pointer;">[ CLEAR SIGNATURE ]</button>
+    <div id="cashOutVerify" style="display:none; background: #fff9e6; padding: 15px; border-radius: 12px; border: 1px solid #ffc267; margin-bottom: 15px; position: relative; z-index: 1100;">
+    <p style="font-size: 13px; font-weight: bold; color: #1b431c; margin-bottom: 8px; text-transform: uppercase;">Acknowledgement Receipt</p>
+    <div style="text-align: left; font-size: 12px; color: #333; line-height: 1.4; margin-bottom: 10px;">
+        I, <strong id="sigCustName"></strong>, confirm that I have received the full cash amount of 
+        <strong id="sigAmt"></strong> for my GCash Cash-Out transaction today, <span id="sigDate"></span>.
     </div>
+    
+    <div style="position: relative; width: 100%; height: 160px; background: white; border-radius: 8px; border: 2px dashed #1b431c; overflow: hidden;">
+        <canvas id="signature-pad" style="display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; position: relative; z-index: 1200;"></canvas>
+    </div>
+    
+    <button onclick="clearSignature()" style="background:none; border:none; color:#d32f2f; font-size:11px; margin-top:10px; cursor:pointer;">[ CLEAR SIGNATURE ]</button>
+</div>
 
     <div id="cashInVerify">
         <p style="font-size: 13px; color: #555; margin-bottom: 15px;">
