@@ -349,13 +349,10 @@ async function checkMyStatus() {
         } 
         
         // --- STATUS: COMPLETED (Base sa iyong Apps Script row[16]) ---
+// --- HANAPIN ITO SA LOOB NG checkMyStatus MO ---
 else if (result.status === "COMPLETED") {
     
-    // Timer para sa 3-minute auto reset
-    if (!localStorage.getItem('sessionStartTime')) {
-        localStorage.setItem('sessionStartTime', new Date().getTime());
-    }
-
+    // 1. Standard UI updates
     statusBox.style.display = "block";
     statusBox.className = "status-badge status-completed";
     statusBox.innerText = "✅ TRANSACTION FINISHED";
@@ -363,45 +360,35 @@ else if (result.status === "COMPLETED") {
     completedArea.style.display = "block"; 
 
     if (currentMode === "Cash Out") {
-        // --- CASH OUT: PIRMA ANG LALABAS ---
         document.getElementById('cashOutVerify').style.display = "block";
         document.getElementById('cashInVerify').style.display = "none";
-        
-        // Computation ng amount para sa Acknowledgement
-        const rawAmt = parseFloat(document.getElementById('amount').value) || 0;
-        const fee = rawAmt * 0.01;
-        const feeOption = document.getElementById('reviewFeeOption').value;
-        const finalToReceive = (feeOption === 'deduct') ? (rawAmt - fee) : rawAmt;
-
-        document.getElementById('sigCustName').innerText = document.getElementById('custName').value;
-        document.getElementById('sigAmt').innerText = formatPHP(finalToReceive);
-        document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
-        
-        initSignaturePad(); // Initialize ang canvas para sa pirma
-        
+        // ... (yung signature logic mo dito)
     } else {
-        // --- CASH IN: ADMIN RECEIPT MULA SA COLUMN Q ---
+        // --- ITO ANG CRITICAL PART PARA SA CASH IN ---
         document.getElementById('cashOutVerify').style.display = "none";
         document.getElementById('cashInVerify').style.display = "block";
         
         const receiptImg = document.getElementById('adminReceipt');
         const adminNoteEl = document.getElementById('adminNote');
 
-        // result.receipt ang binalik ng function mo sa Apps Script
+        // Kung may nahanap na resibo sa Column Q
         if (result.receipt && result.receipt.trim() !== "") {
             receiptImg.src = result.receipt; 
+            
+            // [FIX] FORCE DISPLAY BLOCK PARA MA-OVERRIDE ANG CSS display:none
             receiptImg.style.setProperty('display', 'block', 'important');
-            adminNoteEl.innerText = "Heto ang iyong transaction slip mula sa Column Q:";
+            
+            adminNoteEl.innerText = "Heto ang iyong transaction slip:";
         } else {
-            // Kung COMPLETED na pero wala pang link sa Column Q
             receiptImg.style.display = "none";
-            adminNoteEl.innerHTML = "<span style='color:orange;'>Processing digital receipt... <br>Mangyaring maghintay sandali.</span>";
+            adminNoteEl.innerHTML = "<span style='color:orange;'>Processing digital receipt... <br>Pakihintay i-upload ni Jerric sa Column Q.</span>";
         }
         
-        // Sa Cash In, pwedeng i-click ang DONE agad
-        document.getElementById('finishBtn').disabled = false;
-        document.getElementById('finishBtn').style.opacity = "1";
-        document.getElementById('finishBtn').style.cursor = "pointer";
+        // Enable DONE button
+        const fBtn = document.getElementById('finishBtn');
+        fBtn.disabled = false;
+        fBtn.style.opacity = "1";
+        fBtn.style.cursor = "pointer";
     }
 
     clearInterval(statusInterval);
