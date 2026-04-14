@@ -350,7 +350,6 @@ async function checkMyStatus() {
         
         // --- STATUS: COMPLETED (Tapos na) ---
         else if (result.status === "COMPLETED") {
-            // [FIX 1] START 3-MINUTE TIMER ONLY NOW
             if (!localStorage.getItem('sessionStartTime')) {
                 localStorage.setItem('sessionStartTime', new Date().getTime());
             }
@@ -362,35 +361,41 @@ async function checkMyStatus() {
             completedArea.style.display = "block"; 
 
             if (currentMode === "Cash Out") {
+                // --- CASH OUT: SIGNATURE LOGIC ---
                 document.getElementById('cashOutVerify').style.display = "block";
                 document.getElementById('cashInVerify').style.display = "none";
                 
-                // [FIX 2] CORRECT AMOUNT DISPLAY (LESS FEE IF DEDUCT)
                 const rawAmt = parseFloat(document.getElementById('amount').value) || 0;
                 const fee = rawAmt * 0.01;
                 const feeOption = document.getElementById('reviewFeeOption').value;
                 const finalToReceive = (feeOption === 'deduct') ? (rawAmt - fee) : rawAmt;
 
                 document.getElementById('sigCustName').innerText = document.getElementById('custName').value;
-                document.getElementById('sigAmt').innerText = formatPHP(finalToReceive); // Tamang computation
+                document.getElementById('sigAmt').innerText = formatPHP(finalToReceive);
                 document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
                 
                 initSignaturePad(); 
                 
-                // Note: Huwag muna i-enable ang finishBtn hangga't walang pirma. 
-                // Ito ay handled dapat sa loob ng checkSig() function ng signature pad.
             } else {
-                // CASH IN LOGIC
+                // --- CASH IN: ADMIN RECEIPT LOGIC (Column Q) ---
                 document.getElementById('cashOutVerify').style.display = "none";
                 document.getElementById('cashInVerify').style.display = "block";
                 
                 const receiptImg = document.getElementById('adminReceipt');
-                if (result.receipt) {
+                
+                // [FIX] Tinitingnan kung may laman ang Column Q (result.receipt)
+                if (result.receipt && result.receipt !== "") {
                     receiptImg.src = result.receipt; 
                     receiptImg.style.display = "block";
+                    // Para sigurado, force show ang container
+                    document.getElementById('cashInVerify').style.display = "block";
+                } else {
+                    // Kung wala pang resibong inupload si Admin
+                    receiptImg.style.display = "none";
+                    document.getElementById('adminNote').innerText = "Processing your digital receipt...";
                 }
                 
-                // Sa Cash In, pwedeng i-enable agad ang button
+                // Enable finish button for Cash In
                 document.getElementById('finishBtn').disabled = false;
                 document.getElementById('finishBtn').style.opacity = "1";
                 document.getElementById('finishBtn').style.cursor = "pointer";
