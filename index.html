@@ -3,36 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FLAVIDEAL | Smart Kiosk</title>
+    <title>JERRIC | Personal Service Kiosk</title>
     <style>
-        :root { --dark-green: #1b431c; --orange-yellow: #ffc267; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .kiosk-container { width: 100%; max-width: 500px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-        .menu-item { 
-            background: white; padding: 15px 5px; border-radius: 15px; text-align: center; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; text-decoration: none; display: block;
+        :root { 
+            --premium-green: #1b431c; 
+            --gold: #ffc267; 
+            --bg: #f4f7f6; 
+            --white: #ffffff;
         }
-        .menu-item img { width: 45px; height: 45px; object-fit: contain; margin-bottom: 8px; }
-        .menu-item span { display: block; font-size: 11px; font-weight: bold; color: var(--dark-green); }
+        
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            color: #333;
+        }
+
+        .kiosk-container { 
+            width: 100%; 
+            max-width: 600px; 
+        }
+
+        /* PREMIUM LOGO STYLE */
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            padding: 20px;
+            background: var(--premium-green);
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(27, 67, 28, 0.2);
+        }
+
+        .header h1 { 
+            color: var(--gold); 
+            margin: 0; 
+            font-size: 28px; 
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .header p { 
+            color: white; 
+            margin-top: 5px; 
+            font-size: 14px; 
+            opacity: 0.9;
+        }
+
+        /* MENU GRID */
+        .menu-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; /* Ginawa nating 2 columns para mas premium ang laki */
+            gap: 15px; 
+        }
+
+        .menu-item { 
+            background: var(--white); 
+            padding: 25px 15px; 
+            border-radius: 20px; 
+            text-align: center; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            cursor: pointer; 
+            text-decoration: none; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        /* HOVER EFFECT PARA SA PREMIUM FEEL */
+        .menu-item:active {
+            transform: scale(0.95);
+            background: #fdfdfd;
+        }
+
+        .menu-item.active-link {
+            border-color: var(--gold);
+        }
+
+        /* TEXT STYLES */
+        .menu-item .service-name { 
+            display: block; 
+            font-size: 18px; 
+            font-weight: 800; 
+            color: var(--premium-green);
+            letter-spacing: 1px;
+        }
+
+        .menu-item .fee-note {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+            font-weight: normal;
+        }
+
+        /* COMING SOON STYLE */
+        .menu-item.coming-soon {
+            background: #ececec;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .menu-item.coming-soon .service-name {
+            color: #999;
+        }
+
+        .status-tag {
+            font-size: 9px;
+            background: #ddd;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 10px;
+            color: #777;
+        }
     </style>
 </head>
 <body>
     <div class="kiosk-container">
         <div class="header">
-            <h1 style="color: var(--dark-green); margin:0;">FLAVIDEAL</h1>
-            <p>Choose a service to continue</p>
+            <h1>JERRIC</h1>
+            <p>Personal Service Kiosk</p>
         </div>
 
         <div class="menu-grid">
-            <a href="g.html" class="menu-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/GCash_logo.svg/1200px-GCash_logo.svg.png">
-                <span>GCASH</span>
+            <a href="gc.html" class="menu-item active-link">
+                <span class="service-name">GCASH</span>
+                <span class="fee-note">As low as 1% Service Fee</span>
             </a>
             
-            <div class="menu-item"><span>MAYA</span></div>
-            <div class="menu-item"><span>PALAWAN</span></div>
+            <a href="my.html" class="menu-item active-link">
+                <span class="service-name">MAYA</span>
+                <span class="fee-note">As low as 1% Service Fee</span>
+            </a>
+
+            <div class="menu-item coming-soon">
+                <span class="service-name">ANECO</span>
+                <span class="status-tag">COMING SOON</span>
+            </div>
+
+            <div class="menu-item coming-soon">
+                <span class="service-name">PALAWAN</span>
+                <span class="status-tag">COMING SOON</span>
+            </div>
+
+            <div class="menu-item coming-soon">
+                <span class="service-name">WATER DISTRICT</span>
+                <span class="status-tag">COMING SOON</span>
+            </div>
+
+            <div class="menu-item coming-soon">
+                <span class="service-name">BILLS PAYMENT</span>
+                <span class="status-tag">COMING SOON</span>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; color: #999; font-size: 11px;">
+            &copy; 2026 JERRIC PERSONAL SERVICE | BUTUAN HUB
         </div>
     </div>
 </body>
