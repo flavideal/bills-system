@@ -397,14 +397,14 @@ else if (result.status === "COMPLETED") {
 
         const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
         const fee = rawAmount * 0.01;
-        
-        // [IMPORTANT] I-check kung "deduct" base sa saved feeOption para hindi mag-error sa refresh
         const savedFeeOption = localStorage.getItem('feeOption') || "add";
+
         let finalCash = (savedFeeOption === "deduct") ? (rawAmount - fee) : rawAmount;
 
         document.getElementById('sigCustName').innerText = document.getElementById('custName').value.toUpperCase();
-        document.getElementById('sigAmt').innerText = "₱" + finalCash.toLocaleString(); 
+        document.getElementById('sigAmt').innerText = formatPHP(finalCash); // Ginamit ang formatPHP function
         document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
+        // ---------------------------------
         
         // [FIX] Mas siguradong initialization ng Signature Pad
         setTimeout(() => {
@@ -766,6 +766,8 @@ return new Intl.NumberFormat('en-PH', {
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
+        localStorage.setItem('feeOption', feeOption);
+        
         const response = await fetch(WEB_APP_URL, {
             method: "POST",
             body: JSON.stringify(formData),
