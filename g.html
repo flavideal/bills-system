@@ -35,24 +35,29 @@
         .mode-btn.active { background: var(--dark-green); color: white; border-color: var(--dark-green); }
         .qr-box { background: #fff9e6; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; border: 2px solid var(--dark-green); }
         .back-btn { background: none; border: none; color: var(--dark-green); font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-        .cash-logic-box { background: #fdfdfd; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-top: 10px; }
+        /* Siguradong clickable ang mga checkbox na nililikha ng Script */
+.cash-logic-box input[type="checkbox"] {
+    width: 25px;
+    height: 25px;
+    vertical-align: middle;
+    cursor: pointer;
+}
         .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 10px; font-weight: bold; color: var(--dark-green); }
         .sukli-display { font-size: 18px; font-weight: 900; color: #d32f2f; margin-top: 5px; }
         
         /* Review & Success Screens */
       .overlay-screen {  
     display: none;  
-    position: fixed; /* Palitan ng fixed para hindi gumagalaw sa scroll */
+    position: fixed; 
     top: 0;  
     left: 0;  
     width: 100%;  
     height: 100%; 
     background: white;  
-    padding: 25px;  
+    padding: 20px;  
     box-sizing: border-box;  
-    z-index: 1000; 
-    overflow-y: auto; /* Dito ang scroll kung mahaba ang content */
-    pointer-events: auto; /* Siguradong clickable */
+    z-index: 2000; /* Taasan natin para laging nasa ibabaw */
+    overflow-y: auto;
 }
         #stepSuccess {
     padding-bottom: 40px;
@@ -130,17 +135,16 @@
     cursor: pointer;
 }
 
+/* Fix para sa Signature Pad */
 #signature-pad {
+    display: block;
+    width: 100% !important; 
+    height: 180px !important; 
+    background: #ffffff;
     border: 2px dashed var(--dark-green);
     border-radius: 10px;
-    background: #ffffff;
     cursor: crosshair;
     touch-action: none; 
-    display: block;
-    width: 100% !important; /* Siguradong sasakop sa box */
-    height: 180px !important; /* Bigyan natin ng saktong height */
-    position: relative;
-    z-index: 1200; /* Pinakamataas para laging clickable */
 }
         
 .sig-container {
@@ -848,40 +852,53 @@ function initSignaturePad() {
     if (!canvas) return;
     ctx = canvas.getContext('2d');
 
-    // I-set ang sukat ng canvas base sa display size
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    // FIX: Siguradong may sukat ang canvas kahit kaka-display lang
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = canvas.offsetWidth || rect.width || 300;
+    canvas.height = canvas.offsetHeight || rect.height || 180;
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Drawing Logic Functions
+    const getCoords = (e) => {
+        const r = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - r.left,
+            y: clientY - r.top
+        };
+    };
+
     const startDraw = (e) => { 
         drawing = true; 
         ctx.beginPath();
-        draw(e); 
+        const {x, y} = getCoords(e);
+        ctx.moveTo(x, y);
     };
+
     const stopDraw = () => { 
         drawing = false; 
-        checkSig(); // I-enable ang DONE button pag may guhit na
+        checkSig(); 
     };
 
-    // Mouse Events
+    const moveDraw = (e) => {
+        if (!drawing) return;
+        const {x, y} = getCoords(e);
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#000';
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    };
+
+    // Events
     canvas.addEventListener('mousedown', startDraw);
     canvas.addEventListener('mouseup', stopDraw);
-    canvas.addEventListener('mousemove', draw);
-    
-    // Touch Events para sa Kiosk/Mobile
-    canvas.addEventListener('touchstart', (e) => { 
-        e.preventDefault(); 
-        startDraw(e);
-    }, { passive: false });
+    canvas.addEventListener('mousemove', moveDraw);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); }, { passive: false });
     canvas.addEventListener('touchend', stopDraw);
-    canvas.addEventListener('touchmove', (e) => { 
-        e.preventDefault(); 
-        draw(e);
-    }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveDraw(e); }, { passive: false });
 }
-
 // --- DRAWING LOGIC ---
 function draw(e) {
     if (!drawing) return;
