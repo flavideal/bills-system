@@ -291,50 +291,34 @@ let statusInterval;
 window.onload = function() {
     const savedNumber = localStorage.getItem('savedQueueNumber');
     const isWaiting = localStorage.getItem('isWaiting');
-    const sessionTime = localStorage.getItem('sessionStartTime');
-    const currentTime = new Date().getTime();
     
-    const expiryLimit = 3 * 60 * 1000; // 3 Minutes
+    // [FIX] I-restore ang lahat ng inputs
+    const inputs = ['custName', 'accNo', 'accName', 'amount'];
+    inputs.forEach(id => {
+        const val = localStorage.getItem('input_' + id);
+        if (val) document.getElementById(id).value = val;
+    });
 
-    // 1. Check for Expiry
-    if (sessionTime) {
-        if (currentTime - sessionTime > expiryLimit) {
-            console.log("Transaction finished 3 mins ago. Clearing...");
-            localStorage.clear();
-            window.location.reload();
-            return; 
-        }
-    }
+    const savedMode = localStorage.getItem('savedMode') || 'Cash In';
+    setMode(savedMode);
 
-    // 2. Ibalik ang Mode (Cash In/Out) bago ang lahat
-    const savedMode = localStorage.getItem('savedMode');
-    if (savedMode) {
-        setMode(savedMode);
-    } else {
-        setMode('Cash In');
-    }
-
-    // 3. Kung may active queue number, i-setup ang Success Screen
     if (savedNumber && isWaiting === 'true') {
         myQueueNumber = savedNumber;
         document.getElementById('numberDisplay').innerText = myQueueNumber;
         
-        // --- FIX: Pakitain ang instruction text agad ---
-        const inst = document.getElementById('instructionText');
-        if (inst) {
-            inst.style.display = 'block';
-            inst.innerHTML = "<b>Checking status, please wait...</b>";
-        }
-
         document.getElementById('stepForm').style.display = 'none';
         document.getElementById('stepReview').style.display = 'none';
         document.getElementById('stepSuccess').style.display = 'block';
         
-        // Ipagpatuloy ang pag-check ng status
         statusInterval = setInterval(checkMyStatus, 5000);
         checkMyStatus(); 
     }
 };
+
+// [FIX] Idagdag ito para mag-save habang nagta-type ang customer
+function saveInput(id) {
+    localStorage.setItem('input_' + id, document.getElementById(id).value);
+}
 
 async function checkMyStatus() {
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
@@ -716,11 +700,15 @@ setMode('Cash In');
 }
     
     function finishTransaction() {
+    // Burahin lahat ng records ng previous customer
+    const inputs = ['custName', 'accNo', 'accName', 'amount'];
+    inputs.forEach(id => localStorage.removeItem('input_' + id));
+    
     localStorage.removeItem('savedQueueNumber');
     localStorage.removeItem('isWaiting');
-    if(statusInterval) clearInterval(statusInterval);
+    localStorage.removeItem('sessionStartTime');
     
-    // Papunta sa index.html imbes na mag-reload lang
+    if(statusInterval) clearInterval(statusInterval);
     window.location.href = 'index.html'; 
 }
     
@@ -863,54 +851,26 @@ function initSignaturePad() {
     if (!canvas) return;
     ctx = canvas.getContext('2d');
 
-    // FIX: Siguradong may sukat ang canvas kahit kaka-display lang
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = canvas.offsetWidth || rect.width || 300;
-    canvas.height = canvas.offsetHeight || rect.height || 180;
+    // [FIX] Mas siguradong sukat
+    const container = canvas.parentElement;
+    canvas.width = container.clientWidth;
+    canvas.height = 180; 
     
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
 
-    const getCoords = (e) => {
-        const r = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return {
-            x: clientX - r.left,
-            y: clientY - r.top
-        };
-    };
-
-    const startDraw = (e) => { 
-        drawing = true; 
-        ctx.beginPath();
-        const {x, y} = getCoords(e);
-        ctx.moveTo(x, y);
-    };
-
-    const stopDraw = () => { 
-        drawing = false; 
-        checkSig(); 
-    };
-
-    const moveDraw = (e) => {
-        if (!drawing) return;
-        const {x, y} = getCoords(e);
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = '#000';
-        ctx.lineTo(x, y);
-        ctx.stroke();
-    };
-
-    // Events
+    // Re-bind events para sigurado
+    canvas.removeEventListener('mousedown', startDraw); // Iwas double bind
     canvas.addEventListener('mousedown', startDraw);
-    canvas.addEventListener('mouseup', stopDraw);
     canvas.addEventListener('mousemove', moveDraw);
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); }, { passive: false });
-    canvas.addEventListener('touchend', stopDraw);
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveDraw(e); }, { passive: false });
-}
+    window.addEventListener('mouseup', stopDraw);
 
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveDraw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDraw);
+}
+    
 // --- BUTTON CONTROLS ---
 function clearSignature() {
     if(!ctx) return;
