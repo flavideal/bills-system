@@ -176,23 +176,23 @@
     
     <div class="field-group">
         <label id="nameLabel">Customer Name (Personally Transacting)</label>
-        <input type="text" id="custName" placeholder="Pangalan ng nag-transact personally" oninput="saveInput(this.id)">
+        <input type="text" id="custName" placeholder="Pangalan ng nag-transact personally" oninput="saveInput('custName')">
     </div>
 
     <div class="field-group">
         <label id="accLabel">GCash Account Name</label>
-        <input type="text" id="accName" placeholder="Juan Dela Cruz o J***N D. C**Z" oninput="saveInput(this.id)">
+        <input type="text" id="accName" placeholder="Juan Dela Cruz o J***N D. C**Z" oninput="saveInput('accName')">
     </div>
 
     <div class="field-group">
         <label>GCash Number</label>
         <input type="number" id="accNo" placeholder="09123456789" 
-               oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11); saveInput(this.id);">
+               oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11); saveInput('accNo');">
     </div>
 
     <div class="field-group">
         <label>Amount</label>
-        <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput(this.id);">
+        <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
         <div id="liveBreakdown" style="font-size: 13px; margin-top: 8px; color: #555; display: none; background: #f9f9f9; padding: 10px; border-radius: 8px;">
         </div>
     </div>
@@ -291,6 +291,14 @@
 </div>
 
 <script>
+window.addEventListener('beforeunload', function (e) {
+    const isWaiting = localStorage.getItem('isWaiting');
+    // Kung isWaiting ay true, lalabas ang "Confirm Navigation" pop-up
+    if (isWaiting === 'true') {
+        e.preventDefault();
+        e.returnValue = ''; // Standard ito para lumabas ang warning sa browser
+    }
+});    
  
 let myQueueNumber = "";
 let statusInterval;
@@ -301,39 +309,37 @@ let currentMode = "Cash In"; // Siguraduhing nasa taas ito ng script
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
 window.onload = function() {
-    // 1. Restore Mode Agad
+    // I-restore ang Mode (Cash In/Cash Out)
     currentMode = localStorage.getItem('savedMode') || 'Cash In';
     setMode(currentMode); 
 
-    // 2. Restore Inputs
-    ['custName', 'accNo', 'accName', 'amount'].forEach(id => {
-        const val = localStorage.getItem('input_' + id);
-        const el = document.getElementById(id);
-        if (val && el) el.value = val;
+    // ETO YUNG MAGBABALIK NG DATA SA MGA INPUT BOXES
+    const inputsToRestore = ['custName', 'accNo', 'accName', 'amount'];
+    inputsToRestore.forEach(id => {
+        const savedValue = localStorage.getItem('input_' + id);
+        const inputElement = document.getElementById(id);
+        if (savedValue !== null && inputElement) {
+            inputElement.value = savedValue;
+        }
     });
 
-    // 3. MATATAG NA ROUTING
+    // Ituloy ang dating logic (Routing)
     const savedNumber = localStorage.getItem('savedQueueNumber');
     const isWaiting = localStorage.getItem('isWaiting');
-    const lastStep = localStorage.getItem('currentStep'); // Kinukuha ang huling step
-
     if (savedNumber && isWaiting === 'true') {
         myQueueNumber = savedNumber;
         document.getElementById('numberDisplay').innerText = myQueueNumber;
-        showStep('stepSuccess'); // Dito muna bago interval
+        showStep('stepSuccess');
         statusInterval = setInterval(checkMyStatus, 5000);
         checkMyStatus(); 
-    } 
-    else if (lastStep === 'stepReview') {
-        // Importante: Kung review ang last step, kailangan i-re-render ang data
-        showReview(); 
-    } 
-    else {
-        // Default: Step Form
+    } else {
         showStep('stepForm');
     }
 
-    if (document.getElementById('amount').value > 0) calculateFee();
+    // I-recompute ang fee kung may laman na ang amount
+    if (document.getElementById('amount').value > 0) {
+        calculateFee();
+    }
 };
     
 
@@ -818,21 +824,15 @@ function showStep(stepId) {
 }
     
     function finishTransaction() {
-    localStorage.removeItem('currentStep');
-    // 1. Burahin ang personal data ng customer
-    const inputs = ['custName', 'accNo', 'accName', 'amount'];
-    inputs.forEach(id => localStorage.removeItem('input_' + id));
-    
-    // 2. Burahin ang queue status
+    // Burahin ang mga sinave na input
+    ['custName', 'accNo', 'accName', 'amount'].forEach(id => {
+        localStorage.removeItem('input_' + id);
+    });
+    // Burahin din ang queue status
     localStorage.removeItem('savedQueueNumber');
     localStorage.removeItem('isWaiting');
-    localStorage.removeItem('sessionStartTime');
-    
-    // 3. I-stop ang auto-refresh/check status
-    if(statusInterval) clearInterval(statusInterval);
 
-    // 4. Ibalik sa simula (index.html)
-    window.location.href = 'index.html'; 
+    window.location.reload(); // Refresh para malinis lahat
 }
     
     function updateReviewTotal() {
@@ -1106,10 +1106,11 @@ async function processFinalDone() {
 function saveInput(id) {
     const el = document.getElementById(id);
     if (el) {
+        // Sine-save nito ang value sa browser memory (localStorage)
         localStorage.setItem('input_' + id, el.value);
     }
 }
-// I-expose sa window para sigurado
+// I-expose sa window para kahit nasa loob ng ibang function, mababasa pa rin
 window.saveInput = saveInput;
     
 </script>
