@@ -249,11 +249,6 @@
                 Checking status, please wait...
             </p>
 
-            <div id="customerProofPreview" style="display:none; margin-top:10px;">
-    <p style="font-size:10px; color:#888;">Your uploaded proof:</p>
-    <img id="myProofImg" src="" style="width: 100px; border-radius: 5px; border: 1px solid #ddd;">
-</div>
-
             <div id="completedDetails" style="display:none; margin-top:15px; text-align:center;">
                 <p style="font-weight:bold; color:var(--dark-green); font-size: 18px; margin-bottom: 5px;">
                     TRANSACTION COMPLETED
@@ -370,7 +365,6 @@ async function checkMyStatus() {
             completedArea.style.display = "none"; // Tago pa rin ang button
         } 
         
-     // --- STATUS: COMPLETED (Tapos na) ---
 // --- STATUS: COMPLETED (Tapos na) ---
 else if (result.status === "COMPLETED") {
     statusBox.style.display = "block";
@@ -971,15 +965,13 @@ async function processFinalDone() {
         const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
         const fee = rawAmount * 0.01;
         
-        // --- ITO ANG PAGBABAGO ---
         const savedFeeOption = localStorage.getItem('feeOption') || "add";
         const isDeducted = (savedFeeOption === "deduct");
-        // -------------------------
         
         let finalCashToGive = isDeducted ? (rawAmount - fee) : rawAmount;
         let feeNote = isDeducted ? `Fee Deducted: -${formatPHP(fee)}` : "Fee Paid Separately";
 
-        // Create Voucher Canvas for Google Drive
+        // Create Voucher Canvas
         const vCanvas = document.createElement('canvas');
         vCanvas.width = 400; vCanvas.height = 500;
         const vCtx = vCanvas.getContext('2d');
@@ -992,8 +984,6 @@ async function processFinalDone() {
         vCtx.fillText("Date: " + new Date().toLocaleString(), 40, 80);
         vCtx.fillText("Customer: " + document.getElementById('custName').value, 40, 110);
         vCtx.fillText("Gross Amount: " + formatPHP(rawAmount), 40, 135);
-        
-        vCtx.fillStyle = "#666";
         vCtx.fillText(feeNote, 40, 155);
         
         vCtx.fillStyle = "red";
@@ -1011,20 +1001,47 @@ async function processFinalDone() {
         vCtx.font = "bold 12px Arial";
         vCtx.fillText("CUSTOMER SIGNATURE", 130, 395);
 
+        const voucherDataURL = vCanvas.toDataURL("image/png");
+
+        // --- DITO ANG PAGBABAGO ---
+        // 1. Ipakita ang voucher sa screen bago mag-redirect
+        const voucherPreview = document.getElementById('myProofImg'); 
+        const previewContainer = document.getElementById('customerProofPreview');
+        if (voucherPreview && previewContainer) {
+            voucherPreview.src = voucherDataURL; // Ilagay ang picture ng voucher
+            previewContainer.style.display = 'block'; // Ipakita ang container
+            const label = previewContainer.querySelector('p');
+            if(label) label.innerText = "Your Cash-out Voucher:";
+        }
+
+        // 2. I-save sa Drive
         try {
             await fetch(WEB_APP_URL, {
                 method: "POST",
                 body: JSON.stringify({
                     action: "saveSignature",
                     queueNo: myQueueNumber,
-                    signature: vCanvas.toDataURL("image/png"),
+                    signature: voucherDataURL,
                     finalCash: finalCashToGive 
                 }),
                 headers: { "Content-Type": "text/plain;charset=utf-8" }
             });
-        } catch (e) { console.error("Voucher error:", e); }
+
+            // 3. Imbes na window.location.href, palitan lang ang button
+            btn.innerText = "CLOSE & GO HOME";
+            btn.disabled = false;
+            btn.style.background = "#666"; // Gawing gray para alam na tapos na
+            btn.onclick = finishTransaction; // Kapag clinick ulit, doon pa lang babalik sa index
+
+        } catch (e) { 
+            console.error("Voucher error:", e);
+            alert("Error saving voucher, but transaction is recorded.");
+            finishTransaction();
+        }
+    } else {
+        // Kapag Cash In, diretso na
+        finishTransaction();
     }
-    finishTransaction(); 
 }
 
 
