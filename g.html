@@ -541,32 +541,32 @@ setMode('Cash In');
                 const cashInputValue = cashInputEl ? parseFloat(cashInputEl.value) : 0;
 
                 if (feeOption === 'add') {
-                    // CASH IN: ADD-ON
+                    // --- CASH IN: ADD-ON ---
                     if (isExact) {
-                        finalAmountToGcash = 0; // Base sa gusto mo: "kung add on na sakto zero sa k"
-                        actualCashHanded = baseAmount + fee; // "Amount + fee sa L" (Inabot na cash)
+                        finalAmountToGcash = 0; 
+                        actualCashHanded = baseAmount - fee; // Base sa gusto mo: 990.00
                         sheetChange = 0;
                     } else {
-                        finalAmountToGcash = baseAmount; // "ilagay sa amount sa K"
+                        // "K: amount galing sa Magkano ang cash na iaabot ko?"
+                        finalAmountToGcash = cashInputValue; 
                         actualCashHanded = cashInputValue; 
-                        sheetChange = cashInputValue - (baseAmount + fee); // "sukli sa L" (M sa sheet)
+                        // "M: Cash na inabot - amount - fee = sukli"
+                        sheetChange = cashInputValue - baseAmount - fee; 
                     }
                 } else {
-                    // CASH IN: DEDUCT
-                    finalAmountToGcash = 0; // "kapag dedect naman sa k ZERO"
-                    actualCashHanded = baseAmount - fee; // "sa L ang Amount - fee"
+                    // --- CASH IN: DEDUCT ---
+                    finalAmountToGcash = 0; 
+                    actualCashHanded = baseAmount - fee; // 990.00
                     sheetChange = 0;
                 }
             } else {
-                // CASH OUT LOGIC
+                // --- CASH OUT LOGIC ---
                 if (feeOption === 'add') {
-                    // CASH OUT: ADD-ON
-                    finalAmountToGcash = baseAmount + fee; // "sa K ang Amount + fee" (Note: Nalito ka siguro sa L, pero K ito sa system)
-                    actualCashHanded = baseAmount - fee;   // "sa L ang Amount - fee"
+                    finalAmountToGcash = 0; 
+                    actualCashHanded = baseAmount; // "L: amount lang dito galing sa H"
                 } else {
-                    // CASH OUT: DEDUCT
-                    finalAmountToGcash = 0;                // "kapag deduct zero sa k"
-                    actualCashHanded = baseAmount - fee;   // "Amount - Fee sa L"
+                    finalAmountToGcash = 0; 
+                    actualCashHanded = baseAmount - fee; // "L: 990.00"
                 }
                 sheetChange = 0;
             }
@@ -579,14 +579,16 @@ setMode('Cash In');
                 transType: currentMode,
                 gcashName: document.getElementById('accName').value,
                 gcashNo: document.getElementById('accNo').value,
-                amount: baseAmount,      // Column H
-                feeAmount: fee,          // Column I
-                feeOption: feeOption,    // Column J
+                amount: baseAmount,             // Column H
+                feeAmount: fee,                 // Column I
+                feeOption: feeOption,           // Column J
                 totalAmount: finalAmountToGcash, // Column K
                 cashAmount: actualCashHanded,    // Column L
                 change: sheetChange,             // Column M
                 consent: "YES"
             };
+            
+            // ... rest of your code (fetch/sending)
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
