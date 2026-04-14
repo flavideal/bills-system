@@ -181,6 +181,49 @@
             margin-top: 10px;
             color: #777;
         }
+        /* FAQ & LEGAL ACCORDION */
+.accordion-item {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+}
+
+.accordion-header {
+    width: 100%;
+    background: none;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    color: var(--premium-green);
+    font-weight: bold;
+    font-size: 14px;
+    padding: 10px 0;
+    text-align: left;
+}
+
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.accordion-content p {
+    padding-bottom: 10px;
+    margin: 0;
+}
+
+.arrow {
+    transition: transform 0.3s;
+    font-size: 12px;
+}
+
+.active .arrow {
+    transform: rotate(180deg);
+}
     </style>
 </head>
 <body>
@@ -236,6 +279,63 @@
             </div>
         </div>
 
+      <div class="faq-section" style="background: white; border-radius: 20px; padding: 20px; margin-top: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+    <h3 style="color: var(--premium-green); text-align: center; margin-bottom: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Information Hub</h3>
+
+    <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+            Frequently Asked Questions (FAQ) <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-content">
+            <div style="padding: 10px 0;">
+                <p><b>1. Ano ang JERRIC Personal Service Kiosk?</b><br>
+                Ito ay isang digital portal para mapabilis ang inyong transactions sa Butuan Hub. Gamit ito, maaari kayong mag-generate ng digital voucher para sa Cash In, Cash Out, at Bills Payment nang hindi na kailangang sumulat sa papel.</p>
+
+                <p><b>2. Paano gumagana ang 1% Service Fee?</b><br>
+                Napakababa ng aming singil. Halimbawa, sa bawat ₱1,000 transaction, ang service fee ay ₱10 lamang (1%). Awtomatikong kinukwenta ng system ang fee para sa transparency.</p>
+
+                <p><b>3. Bakit kailangang ilagay ang aking pangalan?</b><br>
+                Ang inyong pangalan ay kailangan para sa digital record at para lumabas ito sa inyong transaction voucher at signature area. Ito ay proteksyon niyo rin bilang proof of transaction.</p>
+
+                <p><b>4. Ano ang gagawin matapos mag-fill up?</b><br>
+                Ipakita ang inyong digital voucher o reference number sa aming hub personnel (Jerric Jhon / Mary Grace) para sa kumpirmasyon at turnover ng cash.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+            Privacy Policy <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-content">
+            <div style="padding: 10px 0;">
+                <p><b>Ang Iyong Seguridad ang Mahalaga:</b><br>
+                Sineseryoso namin ang inyong privacy. Ang mga impormasyong kinokolekta (Pangalan at Transaction Details) ay ginagamit lamang para sa:</p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Pag-verify ng inyong transaksyon sa Butuan Hub.</li>
+                    <li>Pag-record ng inyong payment history sa aming secure na database.</li>
+                    <li>Pag-generate ng inyong digital signature at voucher.</li>
+                </ul>
+                <p><b>Confidentiality:</b> Hindi namin ibinabahagi ang inyong detalye sa ibang kumpanya. Ang inyong data ay mananatiling safe sa loob ng aming hub operations.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+            Terms of Service <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-content">
+            <div style="padding: 10px 0;">
+                <p><b>Sa paggamit ng system na ito, sumasang-ayon kayo sa mga sumusunod:</b></p>
+                <p><b>1. Accuracy:</b> Tungkulin ng customer na siguraduhing tama ang Mobile Number at Pangalan na inilagay. Hindi pananagutan ng JERRIC Personal Service ang pagkakamali sa input ng customer.</p>
+                <p><b>2. Service Fee:</b> Ang 1% fee (o minimum rate) ay non-refundable matapos makumpleto ang transaksyon.</p>
+                <p><b>3. Authorization:</b> Ang bawat transaksyon ay dadaan sa final verification ng aming authorized agents sa Butuan Hub bago i-process.</p>
+                <p><b>4. System:</b> Ang kiosk ay facilitator lamang. Ang bilis ng pag-pasok ng pera ay nakadepende rin sa network availability ng GCash/Maya.</p>
+            </div>
+        </div>
+    </div>
+</div>
         <div style="text-align: center; margin-top: 30px; color: #999; font-size: 11px;">
             &copy; 2026 JERRIC PERSONAL SERVICE | BUTUAN HUB
         </div>
@@ -255,6 +355,22 @@
             }, 50);
         }
         setInterval(showNextSlide, 3500); // 3.5 seconds kada slide
+
+        function toggleAccordion(button) {
+    const content = button.nextElementSibling;
+    button.parentElement.classList.toggle('active');
+
+    if (content.style.maxHeight) {
+        content.style.maxHeight = null;
+    } else {
+        // Isasara muna ang iba bago buksan ang isa (Optional)
+        document.querySelectorAll('.accordion-content').forEach(el => el.style.maxHeight = null);
+        document.querySelectorAll('.accordion-item').forEach(el => el.classList.remove('active'));
+        
+        button.parentElement.classList.add('active');
+        content.style.maxHeight = content.scrollHeight + "px";
+    }
+}
     </script>
 </body>
 </html>
