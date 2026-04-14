@@ -655,15 +655,14 @@ function showStep(stepId) {
     // ------------------------------
 
     showStep('stepReview'); // Ito na lang ang ititira mo 
-    reviewScreen.scrollTop = 0;
-
+   document.getElementById('stepReview').scrollTop = 0;
+    
     updateReviewTotal();
 }
     
     function hideReview() {
     showStep('stepForm');
-
-    
+}
     
     async function generateNumber() {
     // 1. Validation for Terms
