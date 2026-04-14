@@ -172,22 +172,22 @@
 
             <div class="field-group">
                 <label id="nameLabel">Customer Name (Personally Transacting)</label>
-                <input type="text" id="custName" placeholder="Pangalan ng nag-transact personally">
+                <input type="text" id="custName" placeholder="Pangalan ng nag-transact personally" oninput="saveInput(this.id)">
             </div>
 
             <div class="field-group">
                 <label id="accLabel">GCash Account Name</label>
-                <input type="text" id="accName" placeholder="Juan Dela Cruz o J***N D. C**Z">
+                <input type="text" id="accName" placeholder="Juan Dela Cruz o J***N D. C**Z" oninput="saveInput(this.id)">
             </div>
 
             <div class="field-group">
                 <label>GCash Number</label>
-                <input type="number" id="accNo" placeholder="09123456789" oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11);">
+                <input type="number" id="accNo" placeholder="09123456789" oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11); saveInput(this.id);">
             </div>
 
             <div class="field-group">
                 <label>Amount</label>
-                <input type="number" id="amount" placeholder="0.00" oninput="calculateFee()">
+                <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput(this.id);">
                 <div id="liveBreakdown" style="font-size: 13px; margin-top: 8px; color: #555; display: none; background: #f9f9f9; padding: 10px; border-radius: 8px;">
                 </div>
             </div>
@@ -260,7 +260,7 @@
     </div>
     
     <div class="sig-wrapper" style="width: 100%; height: 180px; background: white; border-radius: 8px; border: 2px dashed #1b431c;">
-        <canvas id="signature-pad"></canvas> 
+        <canvas id="signature-pad" style="touch-action: none;"></canvas> 
     </div>
     
     <button type="button" onclick="clearSignature()" style="background:none; border:none; color:#d32f2f; font-size:11px; margin-top:10px; cursor:pointer;">[ CLEAR SIGNATURE ]</button>
@@ -314,11 +314,6 @@ window.onload = function() {
         checkMyStatus(); 
     }
 };
-
-// [FIX] Idagdag ito para mag-save habang nagta-type ang customer
-function saveInput(id) {
-    localStorage.setItem('input_' + id, document.getElementById(id).value);
-}
 
 async function checkMyStatus() {
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
@@ -700,15 +695,19 @@ setMode('Cash In');
 }
     
     function finishTransaction() {
-    // Burahin lahat ng records ng previous customer
+    // 1. Burahin ang personal data ng customer
     const inputs = ['custName', 'accNo', 'accName', 'amount'];
     inputs.forEach(id => localStorage.removeItem('input_' + id));
     
+    // 2. Burahin ang queue status
     localStorage.removeItem('savedQueueNumber');
     localStorage.removeItem('isWaiting');
     localStorage.removeItem('sessionStartTime');
     
+    // 3. I-stop ang auto-refresh/check status
     if(statusInterval) clearInterval(statusInterval);
+
+    // 4. Ibalik sa simula (index.html)
     window.location.href = 'index.html'; 
 }
     
@@ -952,6 +951,44 @@ async function processFinalDone() {
     }
     finishTransaction(); 
 }
+
+function startDraw(e) {
+    drawing = true;
+    ctx.beginPath();
+    const pos = getMousePos(canvas, e);
+    ctx.moveTo(pos.x, pos.y);
+}
+
+function moveDraw(e) {
+    if (!drawing) return;
+    const pos = getMousePos(canvas, e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    checkSig(); // Binubuhay ang DONE button kapag may guhit na
+}
+
+function stopDraw() {
+    drawing = false;
+}
+
+function getMousePos(canvasDom, event) {
+    const rect = canvasDom.getBoundingClientRect();
+    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
+// 2. I-bind ang window.saveInput (Double check)
+window.saveInput = function(id) {
+    const val = document.getElementById(id).value;
+    localStorage.setItem('input_' + id, val);
+}
+
+// 3. Web App URL Constant (Siguraduhing globally accessible)
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 </script>
 
 </body>
