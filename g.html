@@ -127,6 +127,21 @@
     accent-color: var(--dark-green);
     cursor: pointer;
 }
+
+#signature-pad {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    background: #fff;
+    cursor: crosshair;
+    touch-action: none; /* Mahalaga para sa mobile/tablet touch */
+}
+.sig-container {
+    background: #fdfdfd;
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid #ddd;
+    margin-top: 10px;
+}
     </style>
 </head>
 <body>
@@ -226,26 +241,36 @@
             </p>
 
             <div id="completedDetails" style="display:none; margin-top:15px; text-align:center;">
-                <p style="font-weight:bold; color:var(--dark-green); font-size: 18px; margin-bottom: 5px;">
-                    TRANSACTION COMPLETED
-                </p>
-                
-                <p style="font-size: 13px; color: #555; margin-bottom: 15px;">
-                    Please see your transaction slip below.
-                </p>
+    <p style="font-weight:bold; color:var(--dark-green); font-size: 18px; margin-bottom: 5px;">
+        TRANSACTION COMPLETED
+    </p>
 
-                <div id="adminNote" style="font-size: 14px; margin-bottom: 10px; font-style: italic; color: #333;"></div>
-                
-                <img id="adminReceipt" src="" alt="Admin Receipt">
-                
-                <a id="adminReceiptLink" href="#" target="_blank" style="display:none;">View Link</a>
+    <div id="cashOutVerify" style="display:none; background: #fff9e6; padding: 15px; border-radius: 12px; border: 1px solid #ffc267; margin-bottom: 15px;">
+        <p style="font-size: 13px; font-weight: bold; color: #1b431c; margin-bottom: 8px; text-transform: uppercase;">Acknowledgement Receipt</p>
+        <div style="text-align: left; font-size: 12px; color: #333; line-height: 1.4; margin-bottom: 10px;">
+            I, <strong id="sigCustName"></strong>, confirm that I have received the full cash amount of 
+            <strong id="sigAmt"></strong> for my GCash Cash-Out transaction today, <span id="sigDate"></span>.
+        </div>
+        
+        <canvas id="signature-pad" width="300" height="150" style="border: 2px dashed #aaa; background: white; border-radius: 8px; width: 100%; cursor: crosshair; touch-action: none;"></canvas>
+        
+        <button onclick="clearSignature()" style="background:none; border:none; color:#d32f2f; font-size:11px; margin-top:5px; cursor:pointer;">[ CLEAR SIGNATURE ]</button>
+    </div>
 
-                <p style="color: red; font-weight: bold; font-size: 12px; margin-top: 10px;">
-                    Paalala: Huwag kalimutang i-click ang DONE button kung tapos muna itong makita.
-                </p>
+    <div id="cashInVerify">
+        <p style="font-size: 13px; color: #555; margin-bottom: 15px;">
+            Please see your transaction slip below.
+        </p>
+        <div id="adminNote" style="font-size: 14px; margin-bottom: 10px; font-style: italic; color: #333;"></div>
+        <img id="adminReceipt" src="" alt="Admin Receipt" style="width: 100%; border-radius: 12px; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    </div>
 
-                <button id="finishBtn" onclick="finishTransaction()" class="btn-main" disabled style="opacity: 0.5; cursor: not-allowed;">DONE / NEW TRANSACTION</button>
-            </div>
+    <p style="color: red; font-weight: bold; font-size: 12px; margin-top: 10px;">
+        Paalala: Huwag kalimutang i-click ang DONE button kung tapos muna ito.
+    </p>
+
+    <button id="finishBtn" onclick="processFinalDone()" class="btn-main" disabled style="opacity: 0.5; cursor: not-allowed;">DONE / NEW TRANSACTION</button>
+</div>
         </div>
     </div>
 </div>
@@ -329,49 +354,34 @@ async function checkMyStatus() {
             statusBox.style.display = "block";
             statusBox.className = "status-badge status-completed";
             statusBox.innerText = "✅ TRANSACTION FINISHED";
-
             instruction.style.display = "none"; 
             completedArea.style.display = "block"; 
 
-            document.getElementById('adminNote').innerHTML = `
-                <div style="margin-bottom: 10px;">
-                    <strong style="color: var(--dark-green);">Salamat sa pagtitiwala!</strong><br>
-                    <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
-                </div>
-            `;
-
-            const receiptImg = document.getElementById('adminReceipt');
-
-            if (result.receipt && result.receipt.toString().toLowerCase().includes("http")) {
-                let finalLink = result.receipt.toString().trim();
+            if (currentMode === "Cash Out") {
+                // Ipakita ang Signature Pad
+                document.getElementById('cashOutVerify').style.display = "block";
+                document.getElementById('cashInVerify').style.display = "none";
+                document.getElementById('sigCustName').innerText = document.getElementById('custName').value;
+                document.getElementById('sigAmt').innerText = formatPHP(parseFloat(document.getElementById('amount').value));
+                document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
                 
-                // FIX PARA MALINAW: Convert Google Drive link to High-Res Thumbnail
-                if (finalLink.includes("drive.google.com")) {
-                    let fileId = "";
-                    if (finalLink.includes("/file/d/")) {
-                        fileId = finalLink.split("/file/d/")[1].split("/")[0];
-                    } else if (finalLink.includes("id=")) {
-                        fileId = finalLink.split("id=")[1].split("&")[0];
-                    }
-                    
-                    if(fileId) {
-                        // Gagamit tayo ng sz=w1200 para HD ang labas ng screenshot
-                        finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1200";
-                    }
-                }
-
-                receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
-                receiptImg.style.display = "block";
-                receiptImg.style.width = "100%"; 
-                receiptImg.style.borderRadius = "12px"; // Para maganda tingnan
+                initSignaturePad(); // Start signature logic
             } else {
-                receiptImg.style.display = "none";
+                // Ipakita ang Resibo (Dating Logic)
+                document.getElementById('cashOutVerify').style.display = "none";
+                document.getElementById('cashInVerify').style.display = "block";
+                
+                // ... (Dito yung dati mong logic para sa adminReceipt.src)
+                const receiptImg = document.getElementById('adminReceipt');
+                if (result.receipt) {
+                    receiptImg.src = result.receipt; // Gamitin ang link mula sa Apps Script
+                    receiptImg.style.display = "block";
+                }
+                
+                document.getElementById('finishBtn').disabled = false;
+                document.getElementById('finishBtn').style.opacity = "1";
+                document.getElementById('finishBtn').style.cursor = "pointer";
             }
-
-            const finishBtn = document.getElementById('finishBtn');
-            finishBtn.disabled = false;
-            finishBtn.style.opacity = "1";
-            finishBtn.style.cursor = "pointer";
 
             clearInterval(statusInterval);
         }
@@ -768,6 +778,86 @@ function adminForceReset() {
     } else if (enteredPin !== null) {
         alert("Maling PIN!");
     }
+}
+
+let canvas, ctx, drawing = false;
+
+// Initialize Signature Pad kapag COMPLETED ang Cash Out
+function initSignaturePad() {
+    canvas = document.getElementById('signature-pad');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+
+    const startDraw = (e) => { drawing = true; draw(e); };
+    const stopDraw = () => { drawing = false; ctx.beginPath(); checkSig(); };
+    
+    // Mouse Events
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mousemove', draw);
+    
+    // Touch Events (Para sa Mobile/Tablet)
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e.touches[0]); });
+    canvas.addEventListener('touchend', stopDraw);
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); });
+}
+
+function draw(e) {
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || e.pageX) - rect.left;
+    const y = (e.clientY || e.pageY) - rect.top;
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000';
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+}
+
+function clearSignature() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const btn = document.getElementById('finishBtn');
+    btn.disabled = true;
+    btn.style.opacity = "0.5";
+}
+
+function checkSig() {
+    // Kapag nakapirma na, enable na ang button
+    const btn = document.getElementById('finishBtn');
+    btn.disabled = false;
+    btn.style.opacity = "1";
+    btn.style.cursor = "pointer";
+}
+
+// Bagong Function para sa DONE button
+async function processFinalDone() {
+    const btn = document.getElementById('finishBtn');
+    
+    if (currentMode === "Cash Out") {
+        btn.innerText = "SAVING SIGNATURE...";
+        btn.disabled = true;
+        
+        const sigImage = canvas.toDataURL("image/png");
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "saveSignature",
+                    queueNo: myQueueNumber,
+                    signature: sigImage,
+                    name: document.getElementById('custName').value
+                }),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+        } catch (e) { console.error("Error saving signature", e); }
+    }
+    
+    finishTransaction(); // Tawagin ang original exit function
 }
 </script>
 
