@@ -280,6 +280,12 @@
                     <img id="adminReceipt" src="" alt="Admin Receipt" style="width: 100%; border-radius: 12px; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                 </div>
 
+                <div id="customerProofPreview" style="display:none; text-align:center; margin-top:20px;">
+    <p style="font-weight:bold; color:green;">Transaction Voucher Generated:</p>
+    <img id="myProofImg" src="" style="width:100%; max-width:350px; border:2px solid #ddd; border-radius:10px;">
+    <p style="font-size:11px; color:#666;">You can screenshot this as your copy.</p>
+</div>
+
                 <p style="color: red; font-weight: bold; font-size: 12px; margin-top: 10px;">
                     Paalala: Huwag kalimutang i-click ang DONE button kung tapos muna ito.
                 </p>
@@ -980,14 +986,10 @@ async function processFinalDone() {
         btn.disabled = true;
 
         const vCanvas = document.createElement('canvas');
-        // Itinaas sa 600 para sakto lahat ng text at pirma
         vCanvas.width = 400; vCanvas.height = 600; 
         const vCtx = vCanvas.getContext('2d');
         
-        // 1. Malinis na Background
         vCtx.fillStyle = "white"; vCtx.fillRect(0,0,400,600);
-        
-        // 2. Header (Branding mo)
         vCtx.fillStyle = "#1b4332"; 
         vCtx.font = "bold 16px Arial"; 
         vCtx.textAlign = "center";
@@ -995,12 +997,10 @@ async function processFinalDone() {
         vCtx.font = "12px Arial";
         vCtx.fillText("CASH-OUT ACKNOWLEDGMENT", 200, 65);
         
-        // Guhit sa ilalim ng header
         vCtx.strokeStyle = "#ccc";
         vCtx.lineWidth = 1;
         vCtx.beginPath(); vCtx.moveTo(30, 80); vCtx.lineTo(370, 80); vCtx.stroke();
         
-        // 3. Transaction Details (Balik sa Left Align)
         vCtx.textAlign = "left";
         vCtx.fillStyle = "black";
         vCtx.font = "13px Arial";
@@ -1014,9 +1014,9 @@ async function processFinalDone() {
         
         vCtx.fillText("Customer:", 40, 160);
         vCtx.font = "bold 13px Arial";
-        vCtx.fillText(document.getElementById('custName').value.toUpperCase(), 150, 160);
+        const customerFullName = document.getElementById('custName').value.toUpperCase();
+        vCtx.fillText(customerFullName, 150, 160);
         
-        // 4. Amount Box (Highlighting the cash)
         vCtx.fillStyle = "#f8f9fa";
         vCtx.fillRect(30, 180, 340, 50);
         vCtx.fillStyle = "#d32f2f"; 
@@ -1024,14 +1024,12 @@ async function processFinalDone() {
         const amtText = "CASH RECEIVED: " + document.getElementById('sigAmt').innerText;
         vCtx.fillText(amtText, 50, 212);
         
-        // 5. Consent & Privacy Policy (Yung legal part mo)
         vCtx.fillStyle = "#555";
         vCtx.font = "italic 11px Arial";
         const lines = [
             "By signing below, I acknowledge that I have received the exact",
             "amount stated above and that the transaction is complete.",
-            "I also agree to the Privacy Policy and Terms of Service",
-            "provided during the queueing process."
+            "I also agree to the Privacy Policy and Terms of Service."
         ];
         
         let yPos = 255;
@@ -1040,32 +1038,36 @@ async function processFinalDone() {
             yPos += 15;
         });
 
-        // 6. Signature Area
+        // --- SIGNATURE AND NAME AREA ---
         const sigPad = document.getElementById('signature-pad');
         if (sigPad) {
-            vCtx.strokeStyle = "#eee";
-            vCtx.strokeRect(40, 330, 320, 160);
-            vCtx.drawImage(sigPad, 40, 330, 320, 160);
+            // Nilipat natin ng konti ang pwesto ng pirma (y=310) para magkasya ang name sa baba
+            vCtx.drawImage(sigPad, 40, 310, 320, 140);
         }
         
-        // Linya ng Pirma
         vCtx.strokeStyle = "black";
-        vCtx.beginPath(); vCtx.moveTo(80, 475); vCtx.lineTo(320, 475); vCtx.stroke();
-        vCtx.font = "bold 12px Arial";
+        vCtx.lineWidth = 1.5;
+        vCtx.beginPath(); 
+        vCtx.moveTo(80, 450); // Ang line ng pirma
+        vCtx.lineTo(320, 450); 
+        vCtx.stroke();
+        
+        // DITO LALABAS ANG NAME SA BABA NG LINE
+        vCtx.font = "bold 14px Arial";
         vCtx.fillStyle = "black";
         vCtx.textAlign = "center";
-        vCtx.fillText("CUSTOMER SIGNATURE", 200, 495);
+        vCtx.fillText(customerFullName, 200, 470); 
         
-        // 7. Footer Disclaimer
         vCtx.font = "10px Arial";
-        vCtx.fillStyle = "#999";
-        vCtx.fillText("This is a system-generated voucher for Flavi Deal.", 200, 560);
-        vCtx.fillText("Thank you for trusting Jerric's Personal Service!", 200, 575);
+        vCtx.fillStyle = "#666";
+        vCtx.fillText("CUSTOMER SIGNATURE", 200, 485);
+        
+        // --- END OF VOUCHER DRAWING ---
 
-        // --- IMAGE GENERATION ---
         const voucherDataURL = vCanvas.toDataURL("image/png");
 
-        // 8. Auto-Display para sa Customer
+        document.getElementById('cashOutVerify').style.display = 'none';
+        
         const voucherPreview = document.getElementById('myProofImg'); 
         const previewContainer = document.getElementById('customerProofPreview');
         if (voucherPreview && previewContainer) {
@@ -1074,7 +1076,6 @@ async function processFinalDone() {
             previewContainer.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 9. Auto-Save sa Google Drive
         try {
             await fetch(WEB_APP_URL, {
                 method: "POST",
@@ -1087,7 +1088,6 @@ async function processFinalDone() {
                 headers: { "Content-Type": "text/plain;charset=utf-8" }
             });
 
-            // Tapos na!
             btn.innerText = "DONE - CLOSE SYSTEM";
             btn.style.background = "#2e7d32";
             btn.disabled = false;
@@ -1095,8 +1095,9 @@ async function processFinalDone() {
 
         } catch (e) { 
             console.error("Voucher error:", e);
-            alert("Error saving voucher to Drive, but transaction is recorded.");
-            finishTransaction();
+            btn.innerText = "DONE - CLOSE";
+            btn.disabled = false;
+            btn.onclick = finishTransaction;
         }
     } else {
         finishTransaction();
