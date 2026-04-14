@@ -496,6 +496,26 @@ setMode('Cash In');
         return; 
     }
 
+    // --- [DAGDAG: FILE UPLOAD LOGIC] ---
+    const fileInput = document.getElementById('proofUpload');
+    let base64File = "";
+    let fileName = "";
+    let fileType = "";
+
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileName = file.name;
+        fileType = file.type;
+        
+        // Convert to Base64
+        base64File = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+        });
+    }
+    // -----------------------------------
+
     // --- BAGONG VALIDATION LOGIC ---
     const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
     const feeOption = document.getElementById('reviewFeeOption').value;
@@ -506,7 +526,6 @@ setMode('Cash In');
     const fee = baseAmount * 0.01;
     const totalWithFee = baseAmount + fee;
 
-    // Harangin kung Cash In, Add-on, hindi exact, pero walang input na pera o kulang
     if (currentMode === 'Cash In' && feeOption === 'add' && !isExact) {
         if (cashInputValue <= 0 || isNaN(cashInputValue)) {
             alert("Pakilagay kung magkano ang iaabot mong cash.");
@@ -517,68 +536,63 @@ setMode('Cash In');
             return;
         }
     }
-    // -------------------------------
 
     const btn = document.querySelector("#stepReview .btn-main");
     const originalText = "GET A NUMBER";
     btn.innerText = "SENDING... PLEASE WAIT";
     btn.disabled = true;
 
-   try {
-    const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
-    const fee = baseAmount * 0.01;
-    const feeOption = document.getElementById('reviewFeeOption').value;
-    const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
+    try {
+        const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
-    let finalK = 0; 
-    let finalL = 0;
+        let finalK = 0; 
+        let finalL = 0;
 
-    if (currentMode === 'Cash In') {
-        const isExact = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
-        const cashInput = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
+        if (currentMode === 'Cash In') {
+            const isExact = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+            const cashInput = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
 
-        if (feeOption === 'add') {
-            // --- CASH IN: ADD-ON ---
-            if (isExact) {
-                finalK = baseAmount + fee; // K: 1010
-                finalL = baseAmount;       // L: 1000
+            if (feeOption === 'add') {
+                if (isExact) {
+                    finalK = baseAmount + fee; 
+                    finalL = baseAmount;       
+                } else {
+                    finalK = cashInput;        
+                    finalL = cashInput - baseAmount - fee; 
+                }
             } else {
-                finalK = cashInput;        // K: Inabot na cash
-                finalL = cashInput - baseAmount - fee; // L: Sukli
+                finalK = baseAmount;           
+                finalL = baseAmount - fee;     
             }
         } else {
-            // --- CASH IN: DEDUCT ---
-            finalK = baseAmount;           // K: "amount lang yan" (1000)
-            finalL = baseAmount - fee;     // L: 990
+            if (feeOption === 'add') {
+                finalK = baseAmount + fee;     
+                finalL = baseAmount;           
+            } else {
+                finalK = baseAmount;           
+                finalL = baseAmount - fee;     
+            }
         }
-    } else {
-        // --- CASH OUT LOGIC ---
-        if (feeOption === 'add') {
-            finalK = baseAmount + fee;     // K: 1010
-            finalL = baseAmount;           // L: 1000
-        } else {
-            finalK = baseAmount;           // K: 1000
-            finalL = baseAmount - fee;     // L: 990
-        }
-    }
 
-    const formData = {
-        customerName: document.getElementById('custName').value,
-        queueNo: generatedNum,
-        timestamp: new Date().toLocaleString(),
-        provider: "GCASH",
-        transType: currentMode,
-        gcashName: document.getElementById('accName').value,
-        gcashNo: document.getElementById('accNo').value,
-        amount: baseAmount,             // Column H
-        feeAmount: fee,                 // Column I
-        feeOption: feeOption,           // Column J
-        totalAmount: finalK,            // Column K
-        cashAmount: finalL,             // Column L
-        consent: "YES"                  // Column M
-    };
-            
-            // ... rest of your code (fetch/sending)
+        const formData = {
+            customerName: document.getElementById('custName').value,
+            queueNo: generatedNum,
+            timestamp: new Date().toLocaleString(),
+            provider: "GCASH",
+            transType: currentMode,
+            gcashName: document.getElementById('accName').value,
+            gcashNo: document.getElementById('accNo').value,
+            amount: baseAmount,
+            feeAmount: fee,
+            feeOption: feeOption,
+            totalAmount: finalK,
+            cashAmount: finalL,
+            consent: "YES",
+            // --- [DAGDAG DITO PARA SA RECEIPT] ---
+            receiptFile: base64File,
+            receiptFileName: fileName,
+            receiptFileType: fileType
+        };
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
@@ -588,22 +602,27 @@ setMode('Cash In');
             headers: { "Content-Type": "text/plain;charset=utf-8" }
         });
 
-        // UI Updates pagkatapos ng successful fetch
-        myQueueNumber = generatedNum; 
-        localStorage.setItem('savedQueueNumber', myQueueNumber);
-        localStorage.setItem('isWaiting', 'true');
-        localStorage.setItem('sessionStartTime', new Date().getTime());
+        const result = await response.json();
 
-        document.getElementById('numberDisplay').innerText = myQueueNumber;
-        document.getElementById('stepReview').style.display = 'none';
-        document.getElementById('stepForm').style.display = 'none';
-        document.getElementById('stepSuccess').style.display = 'block';
-        
-        statusInterval = setInterval(checkMyStatus, 5000);
+        if (result.result === "success") {
+            myQueueNumber = generatedNum; 
+            localStorage.setItem('savedQueueNumber', myQueueNumber);
+            localStorage.setItem('isWaiting', 'true');
+            localStorage.setItem('sessionStartTime', new Date().getTime());
+
+            document.getElementById('numberDisplay').innerText = myQueueNumber;
+            document.getElementById('stepReview').style.display = 'none';
+            document.getElementById('stepForm').style.display = 'none';
+            document.getElementById('stepSuccess').style.display = 'block';
+            
+            statusInterval = setInterval(checkMyStatus, 5000);
+        } else {
+            throw new Error(result.error || "Submission failed");
+        }
 
     } catch (err) {
         console.error("Critical Error:", err);
-        alert(err.message.includes("Kulang") ? err.message : "System Error: Pakisiguro na tama ang lahat ng fields.");
+        alert(err.message.includes("Kulang") ? err.message : "System Error: " + err.message);
         btn.innerText = originalText;
         btn.disabled = false;
     }
