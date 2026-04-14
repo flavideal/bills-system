@@ -576,21 +576,31 @@ setMode('Cash In');
         }
 
         const formData = {
-            customerName: document.getElementById('custName').value,
-            queueNo: generatedNum,
-            timestamp: new Date().toLocaleString(),
-            provider: "GCASH",
-            transType: currentMode,
-            gcashName: document.getElementById('accName').value,
-            gcashNo: document.getElementById('accNo').value,
-            amount: finalAmountToGcash,        
-            feeAmount: fee,                    
-            feeOption: feeOption,              
-            totalAmount: totalWithFee,          
-            cashAmount: actualCashHanded,      
-            change: sheetChange,               
-            consent: "YES"
-        };
+    customerName: document.getElementById('custName').value,
+    queueNo: generatedNum,
+    timestamp: new Date().toLocaleString(),
+    provider: "GCASH",
+    transType: currentMode,
+    gcashName: document.getElementById('accName').value,
+    gcashNo: document.getElementById('accNo').value,
+    
+    // COLUMN H: Dito dapat ang laging "BUO" o base input ng user
+    amount: baseAmount, 
+    
+    // COLUMN I: Ang 1% fee
+    feeAmount: fee,
+    
+    // COLUMN J: Add-on o Deduct
+    feeOption: feeOption,
+    
+    // COLUMN K: Dito dapat ang may logic (May bawas o may dagdag)
+    totalAmount: finalAmountToGcash, 
+    
+    // COLUMN L at M: Cash received at Sukli/Ibinigay na cash
+    cashAmount: actualCashHanded,
+    change: sheetChange,
+    consent: "YES"
+};
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
