@@ -32,7 +32,7 @@
             font-family: 'Segoe UI', Roboto, sans-serif; 
             background: var(--bg); 
             margin: 0; 
-            padding: 20px; 
+            padding: 15px; 
             display: flex; 
             justify-content: center; 
             color: #333;
@@ -40,14 +40,14 @@
 
         .kiosk-container { 
             width: 100%; 
-            max-width: 600px; 
+            max-width: 500px; 
         }
 
-        /* PREMIUM LOGO STYLE */
+        /* HEADER */
         .header { 
             text-align: center; 
-            margin-bottom: 30px; 
-            padding: 20px;
+            margin-bottom: 20px; 
+            padding: 15px;
             background: var(--premium-green);
             border-radius: 20px;
             box-shadow: 0 10px 20px rgba(27, 67, 28, 0.2);
@@ -56,29 +56,73 @@
         .header h1 { 
             color: var(--gold); 
             margin: 0; 
-            font-size: 28px; 
+            font-size: 24px; 
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: 800;
         }
 
-        .header p { 
-            color: white; 
-            margin-top: 5px; 
-            font-size: 14px; 
-            opacity: 0.9;
+        /* SLIDESHOW STYLES */
+        .promo-slider {
+            width: 100%;
+            height: 120px;
+            background: var(--white);
+            border-radius: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            display: none;
+        }
+
+        .slide.active {
+            opacity: 1;
+            display: block;
+        }
+
+        .slide h2 {
+            margin: 0;
+            color: var(--premium-green);
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .slide p {
+            margin: 5px 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .highlight-gold {
+            color: #b8860b;
+            background: #fff9e6;
+            padding: 2px 8px;
+            border-radius: 5px;
         }
 
         /* MENU GRID */
         .menu-grid { 
             display: grid; 
-            grid-template-columns: 1fr 1fr; /* Ginawa nating 2 columns para mas premium ang laki */
-            gap: 15px; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
         }
 
         .menu-item { 
             background: var(--white); 
-            padding: 25px 15px; 
+            padding: 25px 10px; 
             border-radius: 20px; 
             text-align: center; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
@@ -87,70 +131,61 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             border: 2px solid transparent;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
-        /* HOVER EFFECT PARA SA PREMIUM FEEL */
-        .menu-item:active {
-            transform: scale(0.95);
-            background: #fdfdfd;
-        }
+        .menu-item:active { transform: scale(0.96); }
 
-        .menu-item.active-link {
-            border-color: var(--gold);
-        }
+        .menu-item.active-link { border-color: var(--gold); }
 
-        /* TEXT STYLES */
         .menu-item .service-name { 
-            display: block; 
-            font-size: 18px; 
+            font-size: 16px; 
             font-weight: 800; 
             color: var(--premium-green);
-            letter-spacing: 1px;
         }
 
         .menu-item .fee-note {
-            display: block;
-            font-size: 11px;
-            color: #666;
-            margin-top: 5px;
-            font-weight: normal;
-        }
-
-        /* COMING SOON STYLE */
-        .menu-item.coming-soon {
-            background: #ececec;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .menu-item.coming-soon .service-name {
-            color: #999;
-        }
-
-        .status-tag {
-            font-size: 9px;
-            background: #ddd;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-top: 10px;
+            font-size: 10px;
             color: #777;
+            margin-top: 4px;
         }
+
+        .coming-soon { background: #f0f0f0; opacity: 0.7; cursor: not-allowed; }
+        .coming-soon .service-name { color: #999; }
+        .status-tag { font-size: 8px; background: #ddd; padding: 2px 8px; border-radius: 10px; margin-top: 8px; color: #777; }
     </style>
 </head>
 <body>
     <div class="kiosk-container">
         <div class="header">
             <h1>JERRIC</h1>
-            <p>Personal Service Kiosk</p>
+            <p style="color: white; margin: 5px 0 0; font-size: 12px; opacity: 0.8;">Personal Assistance Service</p>
+        </div>
+
+        <div class="promo-slider">
+            <div class="slide active">
+                <h2>As low as <span class="highlight-gold">1% FEE</span></h2>
+                <p>Pinakamura sa Butuan City!</p>
+            </div>
+            <div class="slide">
+                <h2>Safe at Sigurado</h2>
+                <p>Personalized Service na Maasahan.</p>
+            </div>
+            <div class="slide">
+                <h2>Cash In & Out</h2>
+                <p>GCash, Maya, at marami pang iba!</p>
+            </div>
+            <div class="slide">
+                <h2>Bills Payment</h2>
+                <p>Hassle-free payment para sa lahat.</p>
+            </div>
         </div>
 
         <div class="menu-grid">
             <a href="g.html" class="menu-item active-link">
                 <span class="service-name">GCASH</span>
-                <span class="fee-note">As low as 1% Service Fee</span>
+                <span class="fee-note">1% Service Fee</span>
             </a>
             
             <div class="menu-item coming-soon">
@@ -164,24 +199,35 @@
             </div>
 
             <div class="menu-item coming-soon">
-                <span class="service-name">PALAWAN</span>
-                <span class="status-tag">COMING SOON</span>
-            </div>
-
-            <div class="menu-item coming-soon">
-                <span class="service-name">WATER DISTRICT</span>
-                <span class="status-tag">COMING SOON</span>
-            </div>
-
-            <div class="menu-item coming-soon">
                 <span class="service-name">BILLS PAYMENT</span>
                 <span class="status-tag">COMING SOON</span>
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 30px; color: #999; font-size: 11px;">
+        <div style="text-align: center; margin-top: 30px; color: #bbb; font-size: 10px; letter-spacing: 1px;">
             &copy; 2026 JERRIC PERSONAL SERVICE | BUTUAN HUB
         </div>
     </div>
+
+    <script>
+        // Slideshow Logic
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+
+        function showNextSlide() {
+            slides[currentSlide].classList.remove('active');
+            slides[currentSlide].style.display = 'none';
+            
+            currentSlide = (currentSlide + 1) % slides.length;
+            
+            slides[currentSlide].style.display = 'block';
+            setTimeout(() => {
+                slides[currentSlide].classList.add('active');
+            }, 50);
+        }
+
+        // Magpapalit ang slide kada 3 segundo
+        setInterval(showNextSlide, 3000);
+    </script>
 </body>
 </html>
