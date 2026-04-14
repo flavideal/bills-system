@@ -121,6 +121,12 @@
     user-select: none;
     padding: 5px;
 }
+#reviewIsExact {
+    width: 25px !important;
+    height: 25px !important;
+    accent-color: var(--dark-green);
+    cursor: pointer;
+}
     </style>
 </head>
 <body>
@@ -490,6 +496,29 @@ setMode('Cash In');
         return; 
     }
 
+    // --- BAGONG VALIDATION LOGIC ---
+    const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+    const feeOption = document.getElementById('reviewFeeOption').value;
+    const exactCheckEl = document.getElementById('reviewIsExact');
+    const isExact = exactCheckEl ? exactCheckEl.checked : true;
+    const cashInputEl = document.getElementById('reviewCashReceived');
+    const cashInputValue = cashInputEl ? parseFloat(cashInputEl.value) : 0;
+    const fee = baseAmount * 0.01;
+    const totalWithFee = baseAmount + fee;
+
+    // Harangin kung Cash In, Add-on, hindi exact, pero walang input na pera o kulang
+    if (currentMode === 'Cash In' && feeOption === 'add' && !isExact) {
+        if (cashInputValue <= 0 || isNaN(cashInputValue)) {
+            alert("Pakilagay kung magkano ang iaabot mong cash.");
+            return;
+        }
+        if (cashInputValue < totalWithFee) {
+            alert("Kulang ang cash na iyong ilalagay para sa total amount.");
+            return;
+        }
+    }
+    // -------------------------------
+
     const btn = document.querySelector("#stepReview .btn-main");
     const originalText = "GET A NUMBER";
     btn.innerText = "SENDING... PLEASE WAIT";
@@ -609,7 +638,7 @@ setMode('Cash In');
 
     // 1. SAVE CURRENT STATE: Kunin ang values bago mag-update ng HTML
     const oldCheckbox = document.getElementById('reviewIsExact');
-    const isExact = oldCheckbox ? oldCheckbox.checked : false;
+    const isExact = oldCheckbox ? oldCheckbox.checked : true;
     
     const oldCashInput = document.getElementById('reviewCashReceived');
     const oldCashValue = oldCashInput ? oldCashInput.value : "";
