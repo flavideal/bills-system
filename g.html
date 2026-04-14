@@ -40,19 +40,19 @@
         .sukli-display { font-size: 18px; font-weight: 900; color: #d32f2f; margin-top: 5px; }
         
         /* Review & Success Screens */
-       .overlay-screen {  
+      .overlay-screen {  
     display: none;  
-    position: absolute;  
+    position: fixed; /* Palitan ng fixed para hindi gumagalaw sa scroll */
     top: 0;  
     left: 0;  
     width: 100%;  
-    min-height: 100%; /* Gamitin ang min-height imbes na fixed height */
+    height: 100%; 
     background: white;  
-    border-radius: 20px;  
     padding: 25px;  
     box-sizing: border-box;  
     z-index: 1000; 
-    overflow-y: visible; /* Gawing visible para hindi magka-scroll sa loob */
+    overflow-y: auto; /* Dito ang scroll kung mahaba ang content */
+    pointer-events: auto; /* Siguradong clickable */
 }
         #stepSuccess {
     padding-bottom: 40px;
@@ -129,12 +129,16 @@
 }
 
 #signature-pad {
-    border: 2px dashed #ccc;
+    border: 2px dashed #1b431c; /* Gawing dark green para kita agad */
     border-radius: 10px;
     background: #fff;
     cursor: crosshair;
-    touch-action: none; /* Mahalaga para sa mobile/tablet touch */
+    touch-action: none; 
+    display: block;
+    width: 100%; /* Siguradong sakop ang container */
+    height: 150px;
 }
+        
 .sig-container {
     background: #fdfdfd;
     padding: 15px;
@@ -348,7 +352,7 @@ async function checkMyStatus() {
             completedArea.style.display = "none"; // Tago pa rin ang button
         } 
         
-        // --- STATUS: COMPLETED (Tapos na) ---
+       // --- STATUS: COMPLETED (Tapos na) ---
         else if (result.status === "COMPLETED") {
             statusBox.style.display = "block";
             statusBox.className = "status-badge status-completed";
@@ -363,11 +367,22 @@ async function checkMyStatus() {
                 document.getElementById('cashOutVerify').style.display = "block";
                 document.getElementById('cashInVerify').style.display = "none";
                 
-                document.getElementById('sigCustName').innerText = document.getElementById('custName').value;
-                document.getElementById('sigAmt').innerText = document.getElementById('reviewTotal').innerText; 
+                // [FIX] Kuhanin ang value para sa amount at date
+                const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
+                const fee = rawAmount * 0.01;
+                const reviewText = document.getElementById('reviewContent').innerText.toLowerCase();
+                const isDeducted = reviewText.includes("deduct") || reviewText.includes("bawasan");
+                
+                let finalCash = isDeducted ? (rawAmount - fee) : rawAmount;
+
+                document.getElementById('sigCustName').innerText = document.getElementById('custName').value.toUpperCase();
+                document.getElementById('sigAmt').innerText = "₱" + finalCash.toLocaleString(); 
                 document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
                 
-                initSignaturePad(); 
+                // [FIX] Delay ng konti para ma-recognize ang canvas size bago pirmahan
+                setTimeout(() => {
+                    initSignaturePad(); 
+                }, 100);
                 
             } else {
                 // --- BACKUP LOGIC PARA SA CASH IN (COLUMN Q) ---
@@ -827,19 +842,13 @@ function initSignaturePad() {
     if (!canvas) return;
     ctx = canvas.getContext('2d');
 
-    // FIX: I-set ang tamang sukat base sa hitsura nito sa screen
+    // Kunin ang actual size ng canvas sa screen
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
-
-    const startDraw = (e) => { 
-        drawing = true; 
-        ctx.beginPath();
-        draw(e); 
-    };
-    const stopDraw = () => { 
-        drawing = false; 
-        checkSig(); // I-enable ang DONE button
-    };
+    
+    // Clear muna para fresh
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
     
     // Mouse Events
     canvas.addEventListener('mousedown', startDraw);
@@ -864,15 +873,9 @@ function draw(e) {
     if (!drawing) return;
     const rect = canvas.getBoundingClientRect();
     
-    // [FIX] Kunin ang tamang X at Y mapa-Mouse o Touch man
-    let clientX, clientY;
-    if (e.touches && e.touches[0]) {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-    } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-    }
+    // Support para sa Mouse at Touch (Mahalaga ito!)
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
     const x = clientX - rect.left;
     const y = clientY - rect.top;
