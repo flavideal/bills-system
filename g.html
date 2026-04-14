@@ -138,11 +138,11 @@
 /* Fix para sa Signature Pad */
 #signature-pad {
     display: block;
-    width: 100% !important;
-    height: 100% !important;
+    width: 100%;
+    height: 100%;
     background: transparent;
     cursor: crosshair;
-    touch-action: none; /* Importante para sa Kiosk/Mobile touch */
+    touch-action: none;
 }
         
 .sig-wrapper {
@@ -371,7 +371,7 @@ async function checkMyStatus() {
             completedArea.style.display = "none"; // Tago pa rin ang button
         } 
         
-       // --- STATUS: COMPLETED (Tapos na) ---
+      // --- STATUS: COMPLETED (Tapos na) ---
         else if (result.status === "COMPLETED") {
             statusBox.style.display = "block";
             statusBox.className = "status-badge status-completed";
@@ -380,13 +380,25 @@ async function checkMyStatus() {
             instruction.style.display = "none"; 
             completedArea.style.display = "block"; 
 
-            // I-check natin kung Cash Out o Cash In
+            // [FIX] I-set lang ang session start time kapag tapos na talaga ang transaction
+            // Para hindi mag-expire ang 3 mins habang naghihintay sa queue
+            if (!localStorage.getItem('sessionStartTime')) {
+                localStorage.setItem('sessionStartTime', new Date().getTime());
+            }
+
+            const finishBtn = document.getElementById('finishBtn');
+
             if (currentMode === "Cash Out") {
                 // --- SIGNATURE LOGIC PARA SA CASHOUT ---
                 document.getElementById('cashOutVerify').style.display = "block";
                 document.getElementById('cashInVerify').style.display = "none";
                 
-                // [FIX] Kuhanin ang value para sa amount at date
+                // [PROTECTION] Siguraduhing NAKA-DISABLE ang Done button kung Cash Out
+                // Mabubuhay lang ito kapag gumalaw na ang kamay sa signature pad via checkSig()
+                finishBtn.disabled = true;
+                finishBtn.style.opacity = "0.5";
+                finishBtn.style.cursor = "not-allowed";
+
                 const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
                 const fee = rawAmount * 0.01;
                 const reviewText = document.getElementById('reviewContent').innerText.toLowerCase();
@@ -398,15 +410,19 @@ async function checkMyStatus() {
                 document.getElementById('sigAmt').innerText = "₱" + finalCash.toLocaleString(); 
                 document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
                 
-                // [FIX] Delay ng konti para ma-recognize ang canvas size bago pirmahan
                 setTimeout(() => {
-        initSignaturePad(); 
-    }, 500); // Bigyan ng sapat na oras ang browser
+                    initSignaturePad(); 
+                }, 500); 
                 
             } else {
-                // --- BACKUP LOGIC PARA SA CASH IN (COLUMN Q) ---
+                // --- CASH IN LOGIC ---
                 document.getElementById('cashOutVerify').style.display = "none";
                 document.getElementById('cashInVerify').style.display = "block";
+
+                // [PROTECTION] Kung Cash In, okay lang i-enable agad ang button
+                finishBtn.disabled = false;
+                finishBtn.style.opacity = "1";
+                finishBtn.style.cursor = "pointer";
 
                 document.getElementById('adminNote').innerHTML = `
                     <div style="margin-bottom: 10px;">
@@ -416,11 +432,8 @@ async function checkMyStatus() {
                 `;
 
                 const receiptImg = document.getElementById('adminReceipt');
-
                 if (result.receipt && result.receipt.toString().toLowerCase().includes("http")) {
                     let finalLink = result.receipt.toString().trim();
-                    
-                    // FIX PARA SA DRIVE (Galing sa backup mo)
                     if (finalLink.includes("drive.google.com")) {
                         let fileId = "";
                         if (finalLink.includes("/file/d/")) {
@@ -428,26 +441,14 @@ async function checkMyStatus() {
                         } else if (finalLink.includes("id=")) {
                             fileId = finalLink.split("id=")[1].split("&")[0];
                         }
-                        
-                        if(fileId) {
-                            finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1200";
-                        }
+                        if(fileId) finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1200";
                     }
-
                     receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
                     receiptImg.style.display = "block";
-                    receiptImg.style.width = "100%"; 
-                    receiptImg.style.borderRadius = "12px"; 
                 } else {
                     receiptImg.style.display = "none";
                 }
             }
-
-            // Enable yung finish button para sa parehong mode
-            const finishBtn = document.getElementById('finishBtn');
-            finishBtn.disabled = false;
-            finishBtn.style.opacity = "1";
-            finishBtn.style.cursor = "pointer";
 
             clearInterval(statusInterval);
         }
@@ -921,6 +922,7 @@ function clearSignature() {
 
 function checkSig() {
     const btn = document.getElementById('finishBtn');
+    // I-enable lang ang button kapag may guhit na sa canvas
     btn.disabled = false;
     btn.style.opacity = "1";
     btn.style.cursor = "pointer";
