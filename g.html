@@ -790,15 +790,26 @@ function initSignaturePad() {
     if (!canvas) return;
     ctx = canvas.getContext('2d');
 
-    const startDraw = (e) => { drawing = true; draw(e); };
-    const stopDraw = () => { drawing = false; ctx.beginPath(); checkSig(); };
+    // Importante: I-set ang internal size ng canvas para hindi blurred o offset ang drawing
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    const startDraw = (e) => { 
+        drawing = true; 
+        ctx.beginPath(); // Start new path
+        draw(e); 
+    };
+    const stopDraw = () => { 
+        drawing = false; 
+        enableFinishButton(); // I-enable ang button kapag may pirma na
+    };
     
-    // Mouse Events
+    // Mouse
     canvas.addEventListener('mousedown', startDraw);
     canvas.addEventListener('mouseup', stopDraw);
     canvas.addEventListener('mousemove', draw);
     
-    // Touch Events (Para sa Mobile/Tablet)
+    // Touch (Mobile)
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e.touches[0]); });
     canvas.addEventListener('touchend', stopDraw);
     canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); });
@@ -843,79 +854,43 @@ async function processFinalDone() {
     const btn = document.getElementById('finishBtn');
     
     if (currentMode === "Cash Out") {
-        btn.innerText = "GENERATING VOUCHER...";
+        btn.innerText = "SAVING VOUCHER...";
         btn.disabled = true;
 
-        // 1. Kuhanin ang tamang computation ng Cash na ibibigay
+        // Kuhanin ang values
         const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
-        const fee = parseFloat(document.getElementById('feeAmount').value) || 0;
-        const feeOption = document.getElementById('feeOption').value; // 'add' o 'deduct'
+        const fee = rawAmount * 0.01;
+        const feeOption = document.getElementById('reviewFeeOption').value;
 
-        let finalCashToGive = 0;
-        let feeNote = "";
+        // LOGIC: Kung DEDUCT, bawasan ang cash. Kung ADD, buo ang cash (dahil hiwalay ang fee).
+        let finalCashToGive = (feeOption === 'deduct') ? (rawAmount - fee) : rawAmount;
+        let feeNote = (feeOption === 'deduct') ? `(Fee of ${formatPHP(fee)} was deducted)` : "(Fee paid separately)";
 
-        if (feeOption === 'add') {
-            // Halimbawa: 1000 amount + 20 fee. Ang ibibigay na cash ay 1000 (hiwalay binayaran ang fee).
-            finalCashToGive = rawAmount;
-            feeNote = "(Service fee paid separately)";
-        } else {
-            // Halimbawa: 1000 amount - 20 fee. Ang ibibigay na cash ay 980 (binawas sa cash out).
-            finalCashToGive = rawAmount - fee;
-            feeNote = "(Fee of " + formatPHP(fee) + " was deducted from " + formatPHP(rawAmount) + ")";
-        }
-
-        // 2. Gumawa ng Temporary Canvas para sa Voucher
+        // Gawa ng Voucher Canvas
         const vCanvas = document.createElement('canvas');
+        vCanvas.width = 400; vCanvas.height = 500;
         const vCtx = vCanvas.getContext('2d');
-        vCanvas.width = 400;
-        vCanvas.height = 520; // Tinaasan ko nang konti para sa fee note
-
-        // 3. Background (Puting Resibo)
-        vCtx.fillStyle = "#ffffff";
-        vCtx.fillRect(0, 0, vCanvas.width, vCanvas.height);
-
-        // 4. Header & Details
-        vCtx.fillStyle = "#1b431c"; // Dark Green (Flavi Deal style)
-        vCtx.font = "bold 18px Arial";
-        vCtx.fillText("CASH-OUT ACKNOWLEDGEMENT", 40, 50);
         
-        vCtx.fillStyle = "#333";
-        vCtx.font = "13px Arial";
-        vCtx.fillText("Date: " + new Date().toLocaleString(), 50, 90);
-        vCtx.fillText("Queue No: " + myQueueNumber, 50, 115);
-        vCtx.fillText("Customer: " + document.getElementById('custName').value, 50, 140);
-        vCtx.fillText("GCash No: " + document.getElementById('accNo').value, 50, 165);
+        vCtx.fillStyle = "white"; vCtx.fillRect(0,0,400,500);
+        vCtx.fillStyle = "black"; vCtx.font = "bold 18px Arial";
+        vCtx.fillText("CASH-OUT RECEIPT", 40, 50);
         
-        // Highlighted Amount
-        vCtx.fillStyle = "#000";
-        vCtx.font = "bold 17px Arial";
-        vCtx.fillText("AMOUNT RECEIVED: " + formatPHP(finalCashToGive), 50, 210);
-
-        // Fee Note (Para sa transparency kung bakit bawas ang pera)
-        vCtx.fillStyle = "#666";
-        vCtx.font = "italic 11px Arial";
-        vCtx.fillText(feeNote, 50, 230);
-
-        vCtx.fillStyle = "#333";
-        vCtx.font = "italic 12px Arial";
-        vCtx.fillText("I acknowledge that I received the amount above in full.", 50, 260);
-
-        // 5. Border para sa Pirma
-        vCtx.strokeStyle = "#ccc";
-        vCtx.lineWidth = 1;
-        vCtx.strokeRect(50, 280, 300, 130);
+        vCtx.font = "14px Arial";
+        vCtx.fillText("Customer: " + document.getElementById('custName').value, 40, 90);
+        vCtx.fillText("Amount: " + formatPHP(rawAmount), 40, 115);
         
-        vCtx.font = "bold 10px Arial";
-        vCtx.fillText("CUSTOMER SIGNATURE", 50, 425);
+        vCtx.fillStyle = "red";
+        vCtx.font = "bold 16px Arial";
+        vCtx.fillText("CASH TO RECEIVE: " + formatPHP(finalCashToGive), 40, 150);
+        
+        vCtx.fillStyle = "gray"; vCtx.font = "italic 11px Arial";
+        vCtx.fillText(feeNote, 40, 170);
 
-        // 6. I-copy ang Pirma mula sa Signature Pad papunta sa Voucher
+        // Kopyahin ang pirma mula sa UI
         const sigPad = document.getElementById('signature-pad');
-        vCtx.drawImage(sigPad, 50, 280, 300, 130);
-
-        // 7. I-convert ang Buong Voucher sa Image
-        const voucherImage = vCanvas.toDataURL("image/png");
-
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+        vCtx.drawImage(sigPad, 40, 200, 320, 150);
+        vCtx.strokeStyle = "#000"; vCtx.strokeRect(40, 200, 320, 150);
+        vCtx.fillStyle = "black"; vCtx.fillText("CUSTOMER SIGNATURE", 40, 365);
 
         try {
             await fetch(WEB_APP_URL, {
@@ -923,22 +898,14 @@ async function processFinalDone() {
                 body: JSON.stringify({
                     action: "saveSignature",
                     queueNo: myQueueNumber,
-                    signature: voucherImage,
-                    name: document.getElementById('custName').value,
-                    actualCash: finalCashToGive // Isama na rin natin sa logs para sigurado
+                    signature: vCanvas.toDataURL("image/png")
                 }),
                 headers: { "Content-Type": "text/plain;charset=utf-8" }
             });
-        } catch (e) { 
-            console.error("Error saving voucher", e); 
-            alert("Error saving signature. Please try again.");
-            btn.innerText = "DONE / NEW TRANSACTION";
-            btn.disabled = false;
-            return; // Wag i-exit kung nag-error ang upload
-        }
+        } catch (e) { console.error("Voucher error:", e); }
     }
     
-    finishTransaction();
+    finishTransaction(); // Tawagin ang clear storage at redirect
 }
 </script>
 
