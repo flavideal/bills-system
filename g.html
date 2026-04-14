@@ -138,21 +138,16 @@
 /* Fix para sa Signature Pad */
 #signature-pad {
     display: block;
-    width: 100% !important; 
-    height: 180px !important; 
-    background: #ffffff;
-    border: 2px dashed var(--dark-green);
-    border-radius: 10px;
+    width: 100% !important;
+    height: 100% !important;
+    background: transparent;
     cursor: crosshair;
-    touch-action: none; 
+    touch-action: none; /* Importante para sa Kiosk/Mobile touch */
 }
         
-.sig-container {
-    background: #fdfdfd;
-    padding: 15px;
-    border-radius: 15px;
-    border: 1px solid #ddd;
-    margin-top: 10px;
+.sig-wrapper {
+    position: relative;
+    z-index: 2500; /* Mas mataas sa overlay para sure na clickable */
 }
     </style>
 </head>
@@ -257,18 +252,18 @@
         TRANSACTION COMPLETED
     </p>
 
-    <div id="cashOutVerify" style="display:none; background: #fff9e6; padding: 15px; border-radius: 12px; border: 1px solid #ffc267; margin-bottom: 15px; position: relative; z-index: 1100;">
+    <div id="cashOutVerify" style="display:none; background: #fff9e6; padding: 15px; border-radius: 12px; border: 1px solid #ffc267; margin-bottom: 15px;">
     <p style="font-size: 13px; font-weight: bold; color: #1b431c; margin-bottom: 8px; text-transform: uppercase;">Acknowledgement Receipt</p>
     <div style="text-align: left; font-size: 12px; color: #333; line-height: 1.4; margin-bottom: 10px;">
         I, <strong id="sigCustName"></strong>, confirm that I have received the full cash amount of 
         <strong id="sigAmt"></strong> for my GCash Cash-Out transaction today, <span id="sigDate"></span>.
     </div>
     
-    <div style="position: relative; width: 100%; height: 160px; background: white; border-radius: 8px; border: 2px dashed #1b431c; overflow: hidden;">
-        <canvas id="signature-pad" style="display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; position: relative; z-index: 1200;"></canvas>
+    <div class="sig-wrapper" style="width: 100%; height: 180px; background: white; border-radius: 8px; border: 2px dashed #1b431c;">
+        <canvas id="signature-pad"></canvas> 
     </div>
     
-    <button onclick="clearSignature()" style="background:none; border:none; color:#d32f2f; font-size:11px; margin-top:10px; cursor:pointer;">[ CLEAR SIGNATURE ]</button>
+    <button type="button" onclick="clearSignature()" style="background:none; border:none; color:#d32f2f; font-size:11px; margin-top:10px; cursor:pointer;">[ CLEAR SIGNATURE ]</button>
 </div>
 
     <div id="cashInVerify">
