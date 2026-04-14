@@ -972,8 +972,6 @@ function checkSig() {
     btn.style.cursor = "pointer";
 }
 
-// --- FINAL PROCESS (SAVING TO DRIVE) ---
-// --- FINAL PROCESS (AUTO-VOUCHER) ---
 async function processFinalDone() {
     const btn = document.getElementById('finishBtn');
     
@@ -981,72 +979,129 @@ async function processFinalDone() {
         btn.innerText = "GENERATING VOUCHER...";
         btn.disabled = true;
 
-        // 1. Create Voucher (Yung background at text)
         const vCanvas = document.createElement('canvas');
-        vCanvas.width = 400; vCanvas.height = 500;
+        // Itinaas sa 600 para sakto lahat ng text at pirma
+        vCanvas.width = 400; vCanvas.height = 600; 
         const vCtx = vCanvas.getContext('2d');
         
-        vCtx.fillStyle = "white"; vCtx.fillRect(0,0,400,500);
-        vCtx.fillStyle = "black"; vCtx.font = "bold 20px Arial";
-        vCtx.fillText("FLAVI DEAL CASH-OUT", 40, 50);
+        // 1. Malinis na Background
+        vCtx.fillStyle = "white"; vCtx.fillRect(0,0,400,600);
         
-        // Detalye ng transaction
-        vCtx.font = "14px Arial";
-        vCtx.fillText("Date: " + new Date().toLocaleString(), 40, 80);
-        vCtx.fillText("Customer: " + document.getElementById('custName').value, 40, 110);
+        // 2. Header (Branding mo)
+        vCtx.fillStyle = "#1b4332"; 
+        vCtx.font = "bold 16px Arial"; 
+        vCtx.textAlign = "center";
+        vCtx.fillText("GCASH BY JERRIC PERSONAL SERVICE", 200, 45);
+        vCtx.font = "12px Arial";
+        vCtx.fillText("CASH-OUT ACKNOWLEDGMENT", 200, 65);
         
-        // 2. Kuhanin ang Pirma mula sa Signature Pad
+        // Guhit sa ilalim ng header
+        vCtx.strokeStyle = "#ccc";
+        vCtx.lineWidth = 1;
+        vCtx.beginPath(); vCtx.moveTo(30, 80); vCtx.lineTo(370, 80); vCtx.stroke();
+        
+        // 3. Transaction Details (Balik sa Left Align)
+        vCtx.textAlign = "left";
+        vCtx.fillStyle = "black";
+        vCtx.font = "13px Arial";
+        vCtx.fillText("Queue No:", 40, 110);
+        vCtx.font = "bold 13px Arial";
+        vCtx.fillText(myQueueNumber, 150, 110);
+        
+        vCtx.font = "13px Arial";
+        vCtx.fillText("Date/Time:", 40, 135);
+        vCtx.fillText(new Date().toLocaleString(), 150, 135);
+        
+        vCtx.fillText("Customer:", 40, 160);
+        vCtx.font = "bold 13px Arial";
+        vCtx.fillText(document.getElementById('custName').value.toUpperCase(), 150, 160);
+        
+        // 4. Amount Box (Highlighting the cash)
+        vCtx.fillStyle = "#f8f9fa";
+        vCtx.fillRect(30, 180, 340, 50);
+        vCtx.fillStyle = "#d32f2f"; 
+        vCtx.font = "bold 20px Arial";
+        const amtText = "CASH RECEIVED: " + document.getElementById('sigAmt').innerText;
+        vCtx.fillText(amtText, 50, 212);
+        
+        // 5. Consent & Privacy Policy (Yung legal part mo)
+        vCtx.fillStyle = "#555";
+        vCtx.font = "italic 11px Arial";
+        const lines = [
+            "By signing below, I acknowledge that I have received the exact",
+            "amount stated above and that the transaction is complete.",
+            "I also agree to the Privacy Policy and Terms of Service",
+            "provided during the queueing process."
+        ];
+        
+        let yPos = 255;
+        lines.forEach(line => {
+            vCtx.fillText(line, 40, yPos);
+            yPos += 15;
+        });
+
+        // 6. Signature Area
         const sigPad = document.getElementById('signature-pad');
         if (sigPad) {
-            vCtx.drawImage(sigPad, 40, 230, 320, 150); // Inilalagay ang pirma sa voucher
-            vCtx.strokeStyle = "#000"; 
-            vCtx.strokeRect(40, 230, 320, 150); // Box ng pirma
+            vCtx.strokeStyle = "#eee";
+            vCtx.strokeRect(40, 330, 320, 160);
+            vCtx.drawImage(sigPad, 40, 330, 320, 160);
         }
         
-        // 3. I-convert ang buong Voucher Canvas sa Image Data
+        // Linya ng Pirma
+        vCtx.strokeStyle = "black";
+        vCtx.beginPath(); vCtx.moveTo(80, 475); vCtx.lineTo(320, 475); vCtx.stroke();
+        vCtx.font = "bold 12px Arial";
+        vCtx.fillStyle = "black";
+        vCtx.textAlign = "center";
+        vCtx.fillText("CUSTOMER SIGNATURE", 200, 495);
+        
+        // 7. Footer Disclaimer
+        vCtx.font = "10px Arial";
+        vCtx.fillStyle = "#999";
+        vCtx.fillText("This is a system-generated voucher for Flavi Deal.", 200, 560);
+        vCtx.fillText("Thank you for trusting Jerric's Personal Service!", 200, 575);
+
+        // --- IMAGE GENERATION ---
         const voucherDataURL = vCanvas.toDataURL("image/png");
 
-        // 4. AUTO-DISPLAY: Ilalagay na natin sa preview box sa screen
-        const previewImg = document.getElementById('myProofImg'); 
+        // 8. Auto-Display para sa Customer
+        const voucherPreview = document.getElementById('myProofImg'); 
         const previewContainer = document.getElementById('customerProofPreview');
-        if (previewImg && previewContainer) {
-            previewImg.src = voucherDataURL; // ETO NA YUNG PIC NG VOUCHER
-            previewContainer.style.display = 'block'; // Lalabas na siya nang kusa
-            
-            const label = previewContainer.querySelector('p');
-            if(label) label.innerText = "System Generated Voucher:";
+        if (voucherPreview && previewContainer) {
+            voucherPreview.src = voucherDataURL;
+            previewContainer.style.display = 'block';
+            previewContainer.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 5. I-save sa Google Drive (Silent process)
+        // 9. Auto-Save sa Google Drive
         try {
-            btn.innerText = "SAVING TO DRIVE...";
             await fetch(WEB_APP_URL, {
                 method: "POST",
                 body: JSON.stringify({
                     action: "saveSignature",
                     queueNo: myQueueNumber,
-                    signature: voucherDataURL, // Ang system na ang nag-generate ng pic
+                    signature: voucherDataURL,
                     finalCash: document.getElementById('sigAmt').innerText
                 }),
                 headers: { "Content-Type": "text/plain;charset=utf-8" }
             });
 
-            // Tapos na! Hindi na kailangan mag-upload ng customer.
-            btn.innerText = "ALL DONE! CLICK TO CLOSE";
-            btn.style.background = "#2e7d32"; 
+            // Tapos na!
+            btn.innerText = "DONE - CLOSE SYSTEM";
+            btn.style.background = "#2e7d32";
             btn.disabled = false;
             btn.onclick = finishTransaction; 
 
         } catch (e) { 
             console.error("Voucher error:", e);
-            alert("Voucher saved locally, but Drive upload failed.");
+            alert("Error saving voucher to Drive, but transaction is recorded.");
             finishTransaction();
         }
     } else {
         finishTransaction();
     }
 }
-
 
 function saveInput(id) {
     const el = document.getElementById(id);
