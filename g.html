@@ -348,51 +348,75 @@ async function checkMyStatus() {
             completedArea.style.display = "none"; // Tago pa rin ang button
         } 
         
-        // --- STATUS: COMPLETED (Base sa iyong Apps Script row[16]) ---
-// --- HANAPIN ITO SA LOOB NG checkMyStatus MO ---
-else if (result.status === "COMPLETED") {
-    
-    // 1. Standard UI updates
-    statusBox.style.display = "block";
-    statusBox.className = "status-badge status-completed";
-    statusBox.innerText = "✅ TRANSACTION FINISHED";
-    instruction.style.display = "none"; 
-    completedArea.style.display = "block"; 
+        // --- STATUS: COMPLETED (Tapos na) ---
+        else if (result.status === "COMPLETED") {
+            statusBox.style.display = "block";
+            statusBox.className = "status-badge status-completed";
+            statusBox.innerText = "✅ TRANSACTION FINISHED";
 
-    if (currentMode === "Cash Out") {
-        document.getElementById('cashOutVerify').style.display = "block";
-        document.getElementById('cashInVerify').style.display = "none";
-        // ... (yung signature logic mo dito)
-    } else {
-        // --- ITO ANG CRITICAL PART PARA SA CASH IN ---
-        document.getElementById('cashOutVerify').style.display = "none";
-        document.getElementById('cashInVerify').style.display = "block";
-        
-        const receiptImg = document.getElementById('adminReceipt');
-        const adminNoteEl = document.getElementById('adminNote');
+            instruction.style.display = "none"; 
+            completedArea.style.display = "block"; 
 
-        // Kung may nahanap na resibo sa Column Q
-        if (result.receipt && result.receipt.trim() !== "") {
-            receiptImg.src = result.receipt; 
-            
-            // [FIX] FORCE DISPLAY BLOCK PARA MA-OVERRIDE ANG CSS display:none
-            receiptImg.style.setProperty('display', 'block', 'important');
-            
-            adminNoteEl.innerText = "Heto ang iyong transaction slip:";
-        } else {
-            receiptImg.style.display = "none";
-            adminNoteEl.innerHTML = "<span style='color:orange;'>Processing digital receipt... <br>Pakihintay i-upload ni Jerric sa Column Q.</span>";
+            // I-check natin kung Cash Out o Cash In
+            if (currentMode === "Cash Out") {
+                // --- SIGNATURE LOGIC PARA SA CASHOUT ---
+                document.getElementById('cashOutVerify').style.display = "block";
+                document.getElementById('cashInVerify').style.display = "none";
+                
+                document.getElementById('sigCustName').innerText = document.getElementById('custName').value;
+                document.getElementById('sigAmt').innerText = document.getElementById('reviewTotal').innerText; 
+                document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
+                
+                initSignaturePad(); 
+                
+            } else {
+                // --- BACKUP LOGIC PARA SA CASH IN (COLUMN Q) ---
+                document.getElementById('cashOutVerify').style.display = "none";
+                document.getElementById('cashInVerify').style.display = "block";
+
+                document.getElementById('adminNote').innerHTML = `
+                    <div style="margin-bottom: 10px;">
+                        <strong style="color: var(--dark-green);">Salamat sa pagtitiwala!</strong><br>
+                        <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
+                    </div>
+                `;
+
+                const receiptImg = document.getElementById('adminReceipt');
+
+                if (result.receipt && result.receipt.toString().toLowerCase().includes("http")) {
+                    let finalLink = result.receipt.toString().trim();
+                    
+                    // FIX PARA SA DRIVE (Galing sa backup mo)
+                    if (finalLink.includes("drive.google.com")) {
+                        let fileId = "";
+                        if (finalLink.includes("/file/d/")) {
+                            fileId = finalLink.split("/file/d/")[1].split("/")[0];
+                        } else if (finalLink.includes("id=")) {
+                            fileId = finalLink.split("id=")[1].split("&")[0];
+                        }
+                        
+                        if(fileId) {
+                            finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1200";
+                        }
+                    }
+
+                    receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+                    receiptImg.style.display = "block";
+                    receiptImg.style.width = "100%"; 
+                    receiptImg.style.borderRadius = "12px"; 
+                } else {
+                    receiptImg.style.display = "none";
+                }
+            }
+
+            // Enable yung finish button para sa parehong mode
+            const finishBtn = document.getElementById('finishBtn');
+            finishBtn.disabled = false;
+            finishBtn.style.opacity = "1";
+            finishBtn.style.cursor = "pointer";
+
+            clearInterval(statusInterval);
         }
-        
-        // Enable DONE button
-        const fBtn = document.getElementById('finishBtn');
-        fBtn.disabled = false;
-        fBtn.style.opacity = "1";
-        fBtn.style.cursor = "pointer";
-    }
-
-    clearInterval(statusInterval);
-}
     } catch (e) {
         console.error("Error checking status:", e);
     }
