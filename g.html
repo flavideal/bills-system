@@ -469,14 +469,13 @@ setMode('Cash In');
     const accName = document.getElementById('accName').value;
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     
-    // 1. Validation check - Siguraduhing may laman ang fields bago mag-review
+    // 1. Validation check
     if(!name || !accNo || !accName || amt <= 0) { 
         alert("Pakikumpleto ang lahat ng detalye kasama ang Account Name."); 
         return; 
     }
 
-    // 2. Build the Review Content 
-    // TANGGALIN NATIN YUNG VALIDATION DITO DAHIL SA NEXT SCREEN PA MAG-IINPUT NG PERA
+    // 2. Build the Review Content (WALANG BINAGO DITO)
     let reviewHTML = `
         <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
         <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
@@ -496,6 +495,18 @@ setMode('Cash In');
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
     
+    // --- [DAGDAG NA LOGIC PARA SA QR AREA] ---
+    // Ito lang ang idadagdag natin para hindi lumabas ang QR sa Cash Out
+    const qrArea = document.getElementById('qrReviewArea');
+    if (qrArea) {
+        if (currentMode === 'Cash In') {
+            qrArea.style.display = 'block'; // Pakita kung Cash In
+        } else {
+            qrArea.style.display = 'none';  // Tago kung Cash Out
+        }
+    }
+    // -----------------------------------------
+
     // 3. Gawing visible ang screen
     const reviewScreen = document.getElementById('stepReview');
     reviewScreen.style.setProperty('display', 'block', 'important'); 
