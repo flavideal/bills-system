@@ -790,41 +790,47 @@ function initSignaturePad() {
     if (!canvas) return;
     ctx = canvas.getContext('2d');
 
-    // Importante: I-set ang internal size ng canvas para hindi blurred o offset ang drawing
+    // FIX: I-set ang tamang sukat base sa hitsura nito sa screen
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
     const startDraw = (e) => { 
         drawing = true; 
-        ctx.beginPath(); // Start new path
+        ctx.beginPath();
         draw(e); 
     };
     const stopDraw = () => { 
         drawing = false; 
-        enableFinishButton(); // I-enable ang button kapag may pirma na
+        checkSig(); // I-enable ang DONE button
     };
     
-    // Mouse
+    // Mouse Events
     canvas.addEventListener('mousedown', startDraw);
     canvas.addEventListener('mouseup', stopDraw);
     canvas.addEventListener('mousemove', draw);
     
-    // Touch (Mobile)
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e.touches[0]); });
+    // Touch Events (Para sa Mobile)
+    canvas.addEventListener('touchstart', (e) => { 
+        e.preventDefault(); 
+        const touch = e.touches[0];
+        startDraw(touch);
+    }, { passive: false });
     canvas.addEventListener('touchend', stopDraw);
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); });
+    canvas.addEventListener('touchmove', (e) => { 
+        e.preventDefault(); 
+        const touch = e.touches[0];
+        draw(touch);
+    }, { passive: false });
 }
 
 function draw(e) {
     if (!drawing) return;
-    
     const rect = canvas.getBoundingClientRect();
-    
-    // Mas accurate na pagkuha ng x at y para sa mouse at touch
-    const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
-    const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+    // Accurate positioning
+    const x = (e.clientX || e.pageX) - rect.left;
+    const y = (e.clientY || e.pageY) - rect.top;
 
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000';
     
@@ -833,7 +839,7 @@ function draw(e) {
     ctx.beginPath();
     ctx.moveTo(x, y);
 }
-
+    
 function clearSignature() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const btn = document.getElementById('finishBtn');
@@ -860,52 +866,70 @@ async function processFinalDone() {
         // Kuhanin ang values
         const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
         const fee = rawAmount * 0.01;
-        const feeOption = document.getElementById('reviewFeeOption').value;
+        
+        // Siguraduhin na may fallback kung sakaling hindi mahanap ang element
+        const feeOptionEl = document.getElementById('reviewFeeOption');
+        const feeOption = feeOptionEl ? feeOptionEl.value : 'add'; // default to add
 
-        // LOGIC: Kung DEDUCT, bawasan ang cash. Kung ADD, buo ang cash (dahil hiwalay ang fee).
         let finalCashToGive = (feeOption === 'deduct') ? (rawAmount - fee) : rawAmount;
-        let feeNote = (feeOption === 'deduct') ? `(Fee of ${formatPHP(fee)} was deducted)` : "(Fee paid separately)";
+        let feeNote = (feeOption === 'deduct') ? `Fee Deducted: -${formatPHP(fee)}` : "Fee Paid Separately";
 
-        // Gawa ng Voucher Canvas
         const vCanvas = document.createElement('canvas');
         vCanvas.width = 400; vCanvas.height = 500;
         const vCtx = vCanvas.getContext('2d');
         
+        // background
         vCtx.fillStyle = "white"; vCtx.fillRect(0,0,400,500);
+        
+        // header
         vCtx.fillStyle = "black"; vCtx.font = "bold 18px Arial";
         vCtx.fillText("CASH-OUT RECEIPT", 40, 50);
         
+        // details
         vCtx.font = "14px Arial";
         vCtx.fillText("Customer: " + document.getElementById('custName').value, 40, 90);
-        vCtx.fillText("Amount: " + formatPHP(rawAmount), 40, 115);
+        vCtx.fillText("Gross Amount: " + formatPHP(rawAmount), 40, 115);
         
+        // Fee line
+        vCtx.fillStyle = "#666";
+        vCtx.fillText(feeNote, 40, 135);
+        
+        // Final Amount
         vCtx.fillStyle = "red";
-        vCtx.font = "bold 16px Arial";
-        vCtx.fillText("CASH TO RECEIVE: " + formatPHP(finalCashToGive), 40, 150);
-        
-        vCtx.fillStyle = "gray"; vCtx.font = "italic 11px Arial";
-        vCtx.fillText(feeNote, 40, 170);
+        vCtx.font = "bold 18px Arial";
+        vCtx.fillText("CASH TO RECEIVE: " + formatPHP(finalCashToGive), 40, 170);
 
-        // Kopyahin ang pirma mula sa UI
+        // Signature Area
         const sigPad = document.getElementById('signature-pad');
-        vCtx.drawImage(sigPad, 40, 200, 320, 150);
-        vCtx.strokeStyle = "#000"; vCtx.strokeRect(40, 200, 320, 150);
-        vCtx.fillStyle = "black"; vCtx.fillText("CUSTOMER SIGNATURE", 40, 365);
+        // I-check kung may laman ang signature pad bago i-draw
+        if (sigPad) {
+            vCtx.drawImage(sigPad, 40, 210, 320, 150);
+            vCtx.strokeStyle = "#ccc"; 
+            vCtx.strokeRect(40, 210, 320, 150);
+        }
+        
+        vCtx.fillStyle = "black"; 
+        vCtx.font = "bold 12px Arial";
+        vCtx.fillText("CUSTOMER SIGNATURE", 40, 375);
 
+        // Send to Google Sheets
         try {
-            await fetch(WEB_APP_URL, {
+            const response = await fetch(WEB_APP_URL, {
                 method: "POST",
                 body: JSON.stringify({
                     action: "saveSignature",
                     queueNo: myQueueNumber,
-                    signature: vCanvas.toDataURL("image/png")
+                    signature: vCanvas.toDataURL("image/png"),
+                    finalCash: finalCashToGive // Isama mo na rin ito para sa record mo
                 }),
                 headers: { "Content-Type": "text/plain;charset=utf-8" }
             });
-        } catch (e) { console.error("Voucher error:", e); }
+        } catch (e) { 
+            console.error("Voucher error:", e); 
+        }
     }
     
-    finishTransaction(); // Tawagin ang clear storage at redirect
+    finishTransaction(); 
 }
 </script>
 
