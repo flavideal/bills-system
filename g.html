@@ -525,67 +525,58 @@ setMode('Cash In');
     btn.disabled = true;
 
    try {
-            const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
-            const fee = baseAmount * 0.01;
-            const feeOption = document.getElementById('reviewFeeOption').value;
-            const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
+    const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+    const fee = baseAmount * 0.01;
+    const feeOption = document.getElementById('reviewFeeOption').value;
+    const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
-            let finalAmountToGcash = 0; // Column K
-            let actualCashHanded = 0;   // Column L
-            let sheetChange = 0;        // Column M
+    let finalK = 0; 
+    let finalL = 0;
 
-            if (currentMode === 'Cash In') {
-                const exactCheckEl = document.getElementById('reviewIsExact');
-                const isExact = exactCheckEl ? exactCheckEl.checked : true;
-                const cashInputEl = document.getElementById('reviewCashReceived');
-                const cashInputValue = cashInputEl ? parseFloat(cashInputEl.value) : 0;
+    if (currentMode === 'Cash In') {
+        const isExact = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+        const cashInput = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
 
-                if (feeOption === 'add') {
-                    // --- CASH IN: ADD-ON ---
-                    if (isExact) {
-                        finalAmountToGcash = baseAmount + fee; // "baseAmount + fee sa K" (1010)
-                        actualCashHanded = baseAmount;         // "sa Column L ang base amount lang" (1000)
-                        sheetChange = 0;
-                    } else {
-                        // Not Exact Logic
-                        finalAmountToGcash = cashInputValue; 
-                        actualCashHanded = cashInputValue; 
-                        sheetChange = cashInputValue - baseAmount - fee; 
-                    }
-                } else {
-                    // --- CASH IN: DEDUCT ---
-                    finalAmountToGcash = 0; 
-                    actualCashHanded = baseAmount - fee; // 990.00
-                    sheetChange = 0;
-                }
+        if (feeOption === 'add') {
+            // --- CASH IN: ADD-ON ---
+            if (isExact) {
+                finalK = baseAmount + fee; // K: 1010
+                finalL = baseAmount;       // L: 1000
             } else {
-                // --- CASH OUT LOGIC ---
-                if (feeOption === 'add') {
-                    finalAmountToGcash = 0; 
-                    actualCashHanded = baseAmount; 
-                } else {
-                    finalAmountToGcash = 0; 
-                    actualCashHanded = baseAmount - fee; 
-                }
-                sheetChange = 0;
+                finalK = cashInput;        // K: Inabot na cash
+                finalL = cashInput - baseAmount - fee; // L: Sukli
             }
+        } else {
+            // --- CASH IN: DEDUCT ---
+            finalK = baseAmount;           // K: "amount lang yan" (1000)
+            finalL = baseAmount - fee;     // L: 990
+        }
+    } else {
+        // --- CASH OUT LOGIC ---
+        if (feeOption === 'add') {
+            finalK = baseAmount + fee;     // K: 1010
+            finalL = baseAmount;           // L: 1000
+        } else {
+            finalK = baseAmount;           // K: 1000
+            finalL = baseAmount - fee;     // L: 990
+        }
+    }
 
-            const formData = {
-                customerName: document.getElementById('custName').value,
-                queueNo: generatedNum,
-                timestamp: new Date().toLocaleString(),
-                provider: "GCASH",
-                transType: currentMode,
-                gcashName: document.getElementById('accName').value,
-                gcashNo: document.getElementById('accNo').value,
-                amount: baseAmount,             // Column H
-                feeAmount: fee,                 // Column I
-                feeOption: feeOption,           // Column J
-                totalAmount: finalAmountToGcash, // Column K
-                cashAmount: actualCashHanded,    // Column L
-                change: sheetChange,             // Column M
-                consent: "YES"
-            };
+    const formData = {
+        customerName: document.getElementById('custName').value,
+        queueNo: generatedNum,
+        timestamp: new Date().toLocaleString(),
+        provider: "GCASH",
+        transType: currentMode,
+        gcashName: document.getElementById('accName').value,
+        gcashNo: document.getElementById('accNo').value,
+        amount: baseAmount,             // Column H
+        feeAmount: fee,                 // Column I
+        feeOption: feeOption,           // Column J
+        totalAmount: finalK,            // Column K
+        cashAmount: finalL,             // Column L
+        consent: "YES"                  // Column M
+    };
             
             // ... rest of your code (fetch/sending)
 
