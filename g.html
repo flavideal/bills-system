@@ -292,22 +292,28 @@
 </div>
 
 <script>
-    let myQueueNumber = "";
+let myQueueNumber = "";
 let statusInterval;
 
 window.onload = function() {
-    const savedNumber = localStorage.getItem('savedQueueNumber');
-    const isWaiting = localStorage.getItem('isWaiting');
-    
-    // [FIX] I-restore ang lahat ng inputs
+    // 1. Restore Mode muna (Pinaka-importante)
+    const savedMode = localStorage.getItem('savedMode') || 'Cash In';
+    currentMode = savedMode; // I-set ang global variable agad
+    setMode(savedMode); 
+
+    // 2. Restore Inputs
     const inputs = ['custName', 'accNo', 'accName', 'amount'];
     inputs.forEach(id => {
         const val = localStorage.getItem('input_' + id);
-        if (val) document.getElementById(id).value = val;
+        if (val) {
+            const el = document.getElementById(id);
+            if(el) el.value = val;
+        }
     });
 
-    const savedMode = localStorage.getItem('savedMode') || 'Cash In';
-    setMode(savedMode);
+    // 3. Check Queue Status
+    const savedNumber = localStorage.getItem('savedQueueNumber');
+    const isWaiting = localStorage.getItem('isWaiting');
 
     if (savedNumber && isWaiting === 'true') {
         myQueueNumber = savedNumber;
@@ -317,6 +323,7 @@ window.onload = function() {
         document.getElementById('stepReview').style.display = 'none';
         document.getElementById('stepSuccess').style.display = 'block';
         
+        // Simulan ang polling
         statusInterval = setInterval(checkMyStatus, 5000);
         checkMyStatus(); 
     }
@@ -358,6 +365,7 @@ async function checkMyStatus() {
         } 
         
      // --- STATUS: COMPLETED (Tapos na) ---
+// --- STATUS: COMPLETED (Tapos na) ---
 else if (result.status === "COMPLETED") {
     statusBox.style.display = "block";
     statusBox.className = "status-badge status-completed";
@@ -383,25 +391,33 @@ else if (result.status === "COMPLETED") {
 
         const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
         const fee = rawAmount * 0.01;
-        const reviewText = document.getElementById('reviewContent').innerText.toLowerCase();
-        const isDeducted = reviewText.includes("deduct") || reviewText.includes("bawasan");
         
-        let finalCash = isDeducted ? (rawAmount - fee) : rawAmount;
+        // [IMPORTANT] I-check kung "deduct" base sa saved feeOption para hindi mag-error sa refresh
+        const savedFeeOption = localStorage.getItem('feeOption') || "add";
+        let finalCash = (savedFeeOption === "deduct") ? (rawAmount - fee) : rawAmount;
 
         document.getElementById('sigCustName').innerText = document.getElementById('custName').value.toUpperCase();
         document.getElementById('sigAmt').innerText = "₱" + finalCash.toLocaleString(); 
         document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
         
         // [FIX] Mas siguradong initialization ng Signature Pad
-        // Gumamit ng 800ms para siguradong tapos na ang lahat ng CSS transitions
         setTimeout(() => {
             if (typeof initSignaturePad === "function") {
-                initSignaturePad();
-                // Force refresh ng canvas size paglabas
-                const canvas = document.getElementById('signature-pad');
-                if(canvas) {
-                    canvas.width = canvas.parentElement.offsetWidth;
-                    canvas.height = 180;
+                initSignaturePad(); // Tawagin ang main init
+                
+                const canvasEl = document.getElementById('signature-pad');
+                if(canvasEl) {
+                    // Force set ng sukat base sa container
+                    canvasEl.width = canvasEl.parentElement.offsetWidth;
+                    canvasEl.height = 180;
+                    
+                    // Re-bind ang context globally para makapag-drawing
+                    ctx = canvasEl.getContext('2d');
+                    ctx.strokeStyle = "#000";
+                    ctx.lineWidth = 3;
+                    ctx.lineCap = "round";
+                    
+                    console.log("Canvas Re-initialized after refresh");
                 }
             }
         }, 800); 
@@ -456,16 +472,22 @@ else if (result.status === "COMPLETED") {
     }).format(number);
 }
     
-    let currentMode = "Cash In";
+    let currentMode = "Cash In"; // Siguraduhing nasa taas ito ng script
 
-    function setMode(mode) {
+function setMode(mode) {
     currentMode = mode;
-    localStorage.setItem('savedMode', mode); // <--- IDAGDAG ITONG LINYA NA ITO
+    localStorage.setItem('savedMode', mode);
     
-    document.getElementById('btnIn').classList.toggle('active', mode === 'Cash In');
-    document.getElementById('btnOut').classList.toggle('active', mode === 'Cash Out');
+    const btnIn = document.getElementById('btnIn');
+    const btnOut = document.getElementById('btnOut');
     
-    calculateFee();
+    if(btnIn) btnIn.classList.toggle('active', mode === 'Cash In');
+    if(btnOut) btnOut.classList.toggle('active', mode === 'Cash Out');
+    
+    // Huwag mag-calculate fee kung wala sa form step para iwas error
+    if(document.getElementById('stepForm').style.display !== 'none') {
+        calculateFee();
+    }
 }
 
 // Mahalaga: Tawagin ito pag-load ng script
