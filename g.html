@@ -836,44 +836,52 @@ let canvas;
 let ctx;
 let drawing = false;
 
-// Initialize Signature Pad kapag COMPLETED ang Cash Out
+// --- INITIALIZE SIGNATURE PAD ---
 function initSignaturePad() {
     canvas = document.getElementById('signature-pad');
     if (!canvas) return;
     ctx = canvas.getContext('2d');
 
-    // Kunin ang actual size ng canvas sa screen
+    // I-set ang sukat ng canvas base sa display size
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
     
-    // Clear muna para fresh
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-    
+
+    // Drawing Logic Functions
+    const startDraw = (e) => { 
+        drawing = true; 
+        ctx.beginPath();
+        draw(e); 
+    };
+    const stopDraw = () => { 
+        drawing = false; 
+        checkSig(); // I-enable ang DONE button pag may guhit na
+    };
+
     // Mouse Events
     canvas.addEventListener('mousedown', startDraw);
     canvas.addEventListener('mouseup', stopDraw);
     canvas.addEventListener('mousemove', draw);
     
-    // Touch Events (Para sa Mobile)
+    // Touch Events para sa Kiosk/Mobile
     canvas.addEventListener('touchstart', (e) => { 
         e.preventDefault(); 
-        const touch = e.touches[0];
-        startDraw(touch);
+        startDraw(e);
     }, { passive: false });
     canvas.addEventListener('touchend', stopDraw);
     canvas.addEventListener('touchmove', (e) => { 
         e.preventDefault(); 
-        const touch = e.touches[0];
-        draw(touch);
+        draw(e);
     }, { passive: false });
 }
 
+// --- DRAWING LOGIC ---
 function draw(e) {
     if (!drawing) return;
     const rect = canvas.getBoundingClientRect();
     
-    // Support para sa Mouse at Touch (Mahalaga ito!)
+    // Support para sa Mouse at Touch
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
@@ -889,8 +897,10 @@ function draw(e) {
     ctx.beginPath();
     ctx.moveTo(x, y);
 }
-    
+
+// --- BUTTON CONTROLS ---
 function clearSignature() {
+    if(!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const btn = document.getElementById('finishBtn');
     btn.disabled = true;
@@ -898,14 +908,13 @@ function clearSignature() {
 }
 
 function checkSig() {
-    // Kapag nakapirma na, enable na ang button
     const btn = document.getElementById('finishBtn');
     btn.disabled = false;
     btn.style.opacity = "1";
     btn.style.cursor = "pointer";
 }
 
-// Bagong Function para sa DONE button
+// --- FINAL PROCESS (SAVING TO DRIVE) ---
 async function processFinalDone() {
     const btn = document.getElementById('finishBtn');
     
@@ -913,16 +922,16 @@ async function processFinalDone() {
         btn.innerText = "SAVING VOUCHER...";
         btn.disabled = true;
 
-        // [FIX] Kuhanin ang amount at fee logic
         const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
         const fee = rawAmount * 0.01;
         
-        // Hanapin natin sa reviewContent kung 'deduct' ba ang pinili
+        // I-check kung "deduct" ang pinili sa review
         const isDeducted = document.getElementById('reviewContent').innerText.toLowerCase().includes("deduct");
         
         let finalCashToGive = isDeducted ? (rawAmount - fee) : rawAmount;
         let feeNote = isDeducted ? `Fee Deducted: -${formatPHP(fee)}` : "Fee Paid Separately";
 
+        // Create Voucher Canvas for Google Drive
         const vCanvas = document.createElement('canvas');
         vCanvas.width = 400; vCanvas.height = 500;
         const vCtx = vCanvas.getContext('2d');
