@@ -1,20 +1,25 @@
 {
   "name": "JERRIC Personal Service",
   "short_name": "JERRIC",
-  "start_url": "index.html",
+  "description": "Digital Kiosk for Cash In, Cash Out, and Bills Payment",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#1b431c",
   "theme_color": "#1b431c",
   "icons": [
     {
       "src": "https://jerrickiosk.flavideal.com/logo/jpsk.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "https://jerrickiosk.flavideal.com/logo/jpsk.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
