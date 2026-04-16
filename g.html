@@ -998,19 +998,24 @@ function adminForceReset() {
     
 // --- BUTTON CONTROLS ---
 function clearSignature() {
-    if(!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // I-lock uli ang button dahil binura ang pirma
     const btn = document.getElementById('finishBtn');
     btn.disabled = true;
     btn.style.opacity = "0.5";
+    btn.style.cursor = "not-allowed";
+    btn.innerText = "SIGN ABOVE TO FINISH";
 }
 
 function checkSig() {
     const btn = document.getElementById('finishBtn');
-    // I-enable lang ang button kapag may guhit na sa canvas
-    btn.disabled = false;
-    btn.style.opacity = "1";
-    btn.style.cursor = "pointer";
+    if (btn && btn.disabled) { // I-check kung disabled pa para hindi paulit-ulit ang pag-run
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
+        btn.innerText = "GENERATE VOUCHER & DONE"; // Palitan ang text para alam nilang ito na ang dulo
+    }
 }
 
 async function processFinalDone() {
