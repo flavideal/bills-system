@@ -1,55 +1,131 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JPS Admin Panel</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
-    :root { --primary: #1b431c; --gold: #ffc267; --bg: #0d0d0d; }
-    body { font-family: 'Roboto', sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
+    :root { --primary: #1b431c; --gold: #ffc267; --bg: #0d0d0d; --card-bg: #1a1a1a; }
     
+    body { 
+      font-family: 'Roboto', sans-serif; 
+      background: var(--bg); 
+      color: white; 
+      margin: 0; 
+      padding: 10px; 
+    }
+
+    /* Container for spacing */
+    .container { max-width: 1000px; margin: 0 auto; }
+
     /* Login Box Styles */
     #login-box { 
-      max-width: 300px; margin: 100px auto; background: #1a1a1a; padding: 30px; 
-      border-radius: 15px; border: 2px solid var(--primary); text-align: center;
-      box-shadow: 0 0 20px rgba(27, 67, 28, 0.5);
+      max-width: 350px; 
+      margin: 80px auto; 
+      background: var(--card-bg); 
+      padding: 30px; 
+      border-radius: 15px; 
+      border: 2px solid var(--primary); 
+      text-align: center;
+      box-shadow: 0 0 20px rgba(27, 67, 28, 0.4);
     }
-    input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #333; background: #000; color: #fff; }
-    button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
-    
+    input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
+    button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; }
+    button:hover { background: #2a612b; }
+
     /* Dashboard Styles */
     #dashboard { display: none; }
-    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
-    .header h2 { font-family: 'Orbitron', sans-serif; color: var(--gold); }
-    
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-    th { background: var(--primary); color: white; padding: 12px; text-align: left; }
-    td { padding: 12px; border-bottom: 1px solid #222; }
-    tr:hover { background: rgba(255, 255, 255, 0.05); }
+    .header { 
+      display: flex; 
+      flex-direction: row; 
+      justify-content: space-between; 
+      align-items: center; 
+      border-bottom: 2px solid var(--primary); 
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    .header h2 { font-family: 'Orbitron', sans-serif; color: var(--gold); font-size: 1.2rem; margin: 0; }
+    .header-btns { display: flex; gap: 10px; }
+    .btn-small { width: auto; padding: 8px 15px; font-size: 12px; background: #333; }
 
-    .btn-call { background: #2196F3; font-size: 11px; padding: 5px; }
-    .btn-done { background: #4CAF50; font-size: 11px; padding: 5px; }
-    .status-badge { padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
-    .new { background: #ff9800; }
-    .calling { background: #2196F3; }
-    .completed { background: #4CAF50; }
+    /* Table & Responsive Desktop */
+    .table-container { background: var(--card-bg); border-radius: 10px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { background: var(--primary); color: white; padding: 15px; text-align: left; }
+    td { padding: 15px; border-bottom: 1px solid #222; }
+    
+    .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+    .new { background: #ff9800; color: #000; }
+    .calling { background: #2196F3; color: #fff; }
+    .completed { background: #4CAF50; color: #fff; }
+
+    .actions { display: flex; gap: 5px; }
+    .btn-call { background: #2196F3; }
+    .btn-done { background: #4CAF50; }
+    .actions button { padding: 8px; font-size: 11px; }
+
+    /* RESPONSIVE DESIGN FOR MOBILE */
+    @media screen and (max-width: 600px) {
+      .header h2 { font-size: 1rem; }
+      
+      /* Itatago natin ang table header sa mobile */
+      thead { display: none; }
+      
+      /* Gawing cards ang bawat row */
+      tr { 
+        display: block; 
+        background: #111; 
+        margin-bottom: 15px; 
+        border: 1px solid #333; 
+        border-radius: 10px;
+        padding: 10px;
+      }
+      
+      td { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        padding: 8px 10px; 
+        border-bottom: 1px solid #222; 
+        text-align: right;
+      }
+      
+      td::before { 
+        content: attr(data-label); 
+        font-weight: bold; 
+        color: var(--gold); 
+        text-transform: uppercase; 
+        font-size: 11px;
+        float: left;
+      }
+
+      td:last-child { border-bottom: none; justify-content: center; background: #1a1a1a; margin-top: 5px; border-radius: 5px; }
+      .actions { width: 100%; justify-content: space-around; }
+    }
   </style>
 </head>
 <body>
 
+<div class="container">
   <div id="login-box">
     <h3 style="color: var(--gold); font-family: 'Orbitron';">ADMIN ACCESS</h3>
     <input type="text" id="user" placeholder="Username">
     <input type="password" id="pass" placeholder="Passcode">
     <button onclick="login()">LOGIN TO HUB</button>
-    <p id="err" style="color: red; font-size: 12px;"></p>
+    <p id="err" style="color: red; font-size: 12px; margin-top: 10px;"></p>
   </div>
 
   <div id="dashboard">
     <div class="header">
       <h2>JPS ADMIN PANEL</h2>
-      <button onclick="location.reload()" style="width: auto; background: #333;">REFRESH</button>
+      <div class="header-btns">
+        <button class="btn-small" onclick="loadData()">REFRESH</button>
+        <button class="btn-small" style="background: #a32a2a;" onclick="logout()">LOGOUT</button>
+      </div>
     </div>
-    <div style="overflow-x: auto;">
+
+    <div class="table-container">
       <table id="trans-table">
         <thead>
           <tr>
@@ -66,26 +142,48 @@
       </table>
     </div>
   </div>
+</div>
 
-  <script>
-  let u = "", p = "";
-  // PALITAN MO ITO NG IYONG WEB APP URL PAGKADEPLOY:
+<script>
+  // KUKUNIN ANG SAVED LOGIN PARA HINDI NAGLO-LOGOUT SA REFRESH
+  let u = localStorage.getItem('admin_u') || "";
+  let p = localStorage.getItem('admin_p') || "";
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec"; 
 
-  function login() {
-    u = document.getElementById('user').value;
-    p = document.getElementById('pass').value;
+  window.onload = function() {
+    if (u && p) {
+      showDashboard();
+      loadData();
+    }
+  };
 
-    if (u === "jerric_admin" && p === "butuan2026") {
-      document.getElementById('login-box').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
+  function login() {
+    let user_in = document.getElementById('user').value;
+    let pass_in = document.getElementById('pass').value;
+
+    if (user_in === "jerric_admin" && pass_in === "butuan2026") {
+      u = user_in; p = pass_in;
+      localStorage.setItem('admin_u', u);
+      localStorage.setItem('admin_p', p);
+      showDashboard();
       loadData();
     } else {
-      alert("Mali ang credentials!");
+      document.getElementById('err').innerText = "Mali ang credentials!";
     }
   }
 
+  function logout() {
+    localStorage.clear();
+    location.reload();
+  }
+
+  function showDashboard() {
+    document.getElementById('login-box').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+  }
+
   async function loadData() {
+    if(!u) return;
     try {
       const response = await fetch(SCRIPT_URL, {
         method: "POST",
@@ -95,22 +193,27 @@
       if (res.result === "success") {
         let html = "";
         res.data.forEach(function(row) {
-          let statusClass = row[13] ? row[13].toLowerCase() : "new";
+          let status = row[13] || "NEW";
+          let statusClass = status.toLowerCase();
+          
+          // data-label ay para sa mobile view "cards"
           html += `<tr>
-            <td style="font-weight:bold; color:var(--gold)">${row[1]}</td>
-            <td>${row[0]}</td>
-            <td>${row[4]}</td>
-            <td>₱${row[7]}</td>
-            <td><span class="status-badge ${statusClass}">${row[13]}</span></td>
-            <td>
-              <button class="btn-call" onclick="update('${row[1]}', 'CALLING')">CALL</button>
-              <button class="btn-done" onclick="update('${row[1]}', 'COMPLETED')">DONE</button>
+            <td data-label="Queue" style="font-weight:bold; color:var(--gold)">${row[1]}</td>
+            <td data-label="Name">${row[0]}</td>
+            <td data-label="Type">${row[4]}</td>
+            <td data-label="Amount">₱${row[7]}</td>
+            <td data-label="Status"><span class="status-badge ${statusClass}">${status}</span></td>
+            <td data-label="Actions">
+              <div class="actions">
+                <button class="btn-call" onclick="update('${row[1]}', 'CALLING')">CALL</button>
+                <button class="btn-done" onclick="update('${row[1]}', 'COMPLETED')">DONE</button>
+              </div>
             </td>
           </tr>`;
         });
         document.getElementById('table-body').innerHTML = html;
       }
-    } catch (e) { console.error("Error:", e); }
+    } catch (e) { console.error("Load Error:", e); }
   }
 
   async function update(q, s) {
@@ -120,10 +223,11 @@
         body: JSON.stringify({ action: "updateStatus", user: u, pass: p, queueNo: q, newStatus: s })
       });
       loadData();
-    } catch (e) { alert("Failed update"); }
+    } catch (e) { alert("Update failed"); }
   }
 
-  setInterval(() => { if(u) loadData(); }, 30000);
+  // Refresh every 20 seconds
+  setInterval(() => { if(u) loadData(); }, 20000);
 </script>
 </body>
 </html>
