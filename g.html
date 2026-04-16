@@ -857,23 +857,26 @@ function showStep(stepId) {
     }
 }
     
-    function finishTransaction() {
-    // 1. Burahin lahat ng input data
+     function finishTransaction() {
+
+    // Burahin ang mga sinave na input
+
     ['custName', 'accNo', 'accName', 'amount'].forEach(id => {
+
         localStorage.removeItem('input_' + id);
+
     });
 
-    // 2. Burahin ang mga system status (Queue, Mode, atbp.)
-    localStorage.removeItem('savedQueueNumber');
-    localStorage.removeItem('isWaiting');
-    localStorage.removeItem('currentStep');
-    localStorage.removeItem('savedMode');
-    localStorage.removeItem('sessionStartTime');
-    localStorage.removeItem('feeOption'); // Kung meron kang sinave na fee preference
+    // Burahin din ang queue status
 
-    // 3. I-redirect sa index.html imbes na reload lang
-    // Mas safe ito para bumalik talaga sa "CASH IN" default state
-    window.location.href = 'index.html'; 
+    localStorage.removeItem('savedQueueNumber');
+
+    localStorage.removeItem('isWaiting');
+
+
+
+    window.location.reload(); // Refresh para malinis lahat
+
 }
     
     function updateReviewTotal() {
@@ -998,181 +1001,293 @@ function adminForceReset() {
     
 // --- BUTTON CONTROLS ---
 function clearSignature() {
+
+    if(!ctx) return;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // I-lock uli ang button dahil binura ang pirma
+
     const btn = document.getElementById('finishBtn');
+
     btn.disabled = true;
+
     btn.style.opacity = "0.5";
-    btn.style.cursor = "not-allowed";
-    btn.innerText = "SIGN ABOVE TO FINISH";
+
 }
 
 function checkSig() {
+
     const btn = document.getElementById('finishBtn');
-    if (btn && btn.disabled) { // I-check kung disabled pa para hindi paulit-ulit ang pag-run
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.style.cursor = "pointer";
-        btn.innerText = "GENERATE VOUCHER & DONE"; // Palitan ang text para alam nilang ito na ang dulo
-    }
+
+    // I-enable lang ang button kapag may guhit na sa canvas
+
+    btn.disabled = false;
+
+    btn.style.opacity = "1";
+
+    btn.style.cursor = "pointer";
+
 }
 
 async function processFinalDone() {
+
     const btn = document.getElementById('finishBtn');
+
     
+
     if (currentMode === "Cash Out") {
+
         btn.innerText = "GENERATING VOUCHER...";
+
         btn.disabled = true;
 
-        // --- HIGH DPI SETTINGS (Para hindi Blur) ---
+
+
         const vCanvas = document.createElement('canvas');
-        const scale = 2; // Doble ang linaw
-        vCanvas.width = 400 * scale; 
-        vCanvas.height = 600 * scale; 
+
+        vCanvas.width = 400; vCanvas.height = 600; 
+
         const vCtx = vCanvas.getContext('2d');
-        vCtx.scale(scale, scale); // I-scale ang drawing
+
         
-        // Background
+
         vCtx.fillStyle = "white"; vCtx.fillRect(0,0,400,600);
-        
-        // Header
+
         vCtx.fillStyle = "#1b4332"; 
+
         vCtx.font = "bold 16px Arial"; 
+
         vCtx.textAlign = "center";
+
         vCtx.fillText("GCASH BY JERRIC PERSONAL SERVICE", 200, 45);
+
         vCtx.font = "12px Arial";
+
         vCtx.fillText("CASH-OUT ACKNOWLEDGMENT", 200, 65);
+
         
+
         vCtx.strokeStyle = "#ccc";
+
         vCtx.lineWidth = 1;
+
         vCtx.beginPath(); vCtx.moveTo(30, 80); vCtx.lineTo(370, 80); vCtx.stroke();
+
         
-        // Basic Info
+
         vCtx.textAlign = "left";
+
         vCtx.fillStyle = "black";
-        vCtx.font = "12px Arial";
-        vCtx.fillText("Queue No:", 40, 105);
-        vCtx.font = "bold 12px Arial";
-        vCtx.fillText(myQueueNumber, 150, 105);
-        
-        vCtx.font = "12px Arial";
-        vCtx.fillText("Date/Time:", 40, 125);
-        vCtx.fillText(new Date().toLocaleString(), 150, 125);
-        
-        vCtx.fillText("Customer:", 40, 145);
-        vCtx.font = "bold 12px Arial";
-        const customerFullName = document.getElementById('custName').value.toUpperCase();
-        vCtx.fillText(customerFullName, 150, 145);
 
-        // --- TRANSACTION SUMMARY (Dito lalabas ang Fee Breakdown) ---
-        vCtx.strokeStyle = "#eee";
-        vCtx.strokeRect(35, 160, 330, 85);
-        
-        vCtx.font = "11px Arial";
-        vCtx.fillStyle = "#555";
-        vCtx.fillText("Transferred Amount:", 45, 180);
-        // Kunin natin ang value sa mga inputs mo (palitan ang IDs kung iba ang gamit mo)
-        const rawAmt = document.getElementById('amt').value || "0";
-        const feeAmt = document.getElementById('fee').value || "0";
-        const feeOpt = document.getElementById('feeOpt').value; // Add-on o Deduct
+        vCtx.font = "13px Arial";
 
-        vCtx.textAlign = "right";
-        vCtx.fillText("₱" + rawAmt, 350, 180);
-        
-        vCtx.textAlign = "left";
-        vCtx.fillText("Service Fee (" + feeOpt + "):", 45, 200);
-        vCtx.textAlign = "right";
-        vCtx.fillText("- ₱" + feeAmt, 350, 200);
+        vCtx.fillText("Queue No:", 40, 110);
 
-        // Final Cash Received Highlight
-        vCtx.fillStyle = "#f8f9fa";
-        vCtx.fillRect(40, 210, 320, 30);
-        vCtx.fillStyle = "#d32f2f"; 
-        vCtx.font = "bold 16px Arial";
-        vCtx.textAlign = "left";
-        const finalCash = document.getElementById('sigAmt').innerText;
-        vCtx.fillText("NET CASH RECEIVED:", 50, 231);
-        vCtx.textAlign = "right";
-        vCtx.fillText(finalCash, 350, 231);
-        
-        // --- TERMS ---
-        vCtx.textAlign = "left";
-        vCtx.fillStyle = "#555";
-        vCtx.font = "italic 10px Arial";
-        const lines = [
-            "I acknowledge receipt of the exact amount stated above.",
-            "Transaction is final. I agree to the Privacy Policy."
-        ];
-        let yPos = 265;
-        lines.forEach(line => { vCtx.fillText(line, 40, yPos); yPos += 14; });
-
-        // --- SIGNATURE AREA ---
-        const sigPad = document.getElementById('signature-pad');
-        if (sigPad) {
-            vCtx.drawImage(sigPad, 40, 290, 320, 140);
-        }
-        
-        vCtx.strokeStyle = "black";
-        vCtx.lineWidth = 1.5;
-        vCtx.beginPath(); 
-        vCtx.moveTo(80, 440); 
-        vCtx.lineTo(320, 440); 
-        vCtx.stroke();
-        
         vCtx.font = "bold 13px Arial";
-        vCtx.fillStyle = "black";
-        vCtx.textAlign = "center";
-        vCtx.fillText(customerFullName, 200, 458); 
-        
-        vCtx.font = "9px Arial";
-        vCtx.fillStyle = "#666";
-        vCtx.fillText("CUSTOMER SIGNATURE", 200, 472);
 
-        // Footer
-        vCtx.font = "9px Arial";
-        vCtx.fillStyle = "#999";
-        vCtx.fillText("System-generated voucher by Flavi Deal - Jerric Personal Service", 200, 560);
+        vCtx.fillText(myQueueNumber, 150, 110);
+
         
+
+        vCtx.font = "13px Arial";
+
+        vCtx.fillText("Date/Time:", 40, 135);
+
+        vCtx.fillText(new Date().toLocaleString(), 150, 135);
+
+        
+
+        vCtx.fillText("Customer:", 40, 160);
+
+        vCtx.font = "bold 13px Arial";
+
+        const customerFullName = document.getElementById('custName').value.toUpperCase();
+
+        vCtx.fillText(customerFullName, 150, 160);
+
+        
+
+        vCtx.fillStyle = "#f8f9fa";
+
+        vCtx.fillRect(30, 180, 340, 50);
+
+        vCtx.fillStyle = "#d32f2f"; 
+
+        vCtx.font = "bold 20px Arial";
+
+        const amtText = "CASH RECEIVED: " + document.getElementById('sigAmt').innerText;
+
+        vCtx.fillText(amtText, 50, 212);
+
+        
+
+        vCtx.fillStyle = "#555";
+
+        vCtx.font = "italic 11px Arial";
+
+        const lines = [
+
+            "By signing below, I acknowledge that I have received the exact",
+
+            "amount stated above and that the transaction is complete.",
+
+            "I also agree to the Privacy Policy and Terms of Service."
+
+        ];
+
+        
+
+        let yPos = 255;
+
+        lines.forEach(line => {
+
+            vCtx.fillText(line, 40, yPos);
+
+            yPos += 15;
+
+        });
+
+
+
+        // --- SIGNATURE AND NAME AREA ---
+
+        const sigPad = document.getElementById('signature-pad');
+
+        if (sigPad) {
+
+            // Nilipat natin ng konti ang pwesto ng pirma (y=310) para magkasya ang name sa baba
+
+            vCtx.drawImage(sigPad, 40, 310, 320, 140);
+
+        }
+
+        
+
+        vCtx.strokeStyle = "black";
+
+        vCtx.lineWidth = 1.5;
+
+        vCtx.beginPath(); 
+
+        vCtx.moveTo(80, 450); // Ang line ng pirma
+
+        vCtx.lineTo(320, 450); 
+
+        vCtx.stroke();
+
+        
+
+        // DITO LALABAS ANG NAME SA BABA NG LINE
+
+        vCtx.font = "bold 14px Arial";
+
+        vCtx.fillStyle = "black";
+
+        vCtx.textAlign = "center";
+
+        vCtx.fillText(customerFullName, 200, 470); 
+
+        
+
+        vCtx.font = "10px Arial";
+
+        vCtx.fillStyle = "#666";
+
+        vCtx.fillText("CUSTOMER SIGNATURE", 200, 485);
+
+
+
+        // --- IBALIK ANG SYSTEM GENERATED NOTE ---
+
+        vCtx.font = "10px Arial";
+
+        vCtx.fillStyle = "#999";
+
+        vCtx.fillText("This is a system-generated voucher.", 200, 560);
+
+        vCtx.fillText("Thank you for trusting Jerric's Personal Service!", 200, 575);
+
+        
+
+        // --- END OF VOUCHER DRAWING ---
+
+
+
         const voucherDataURL = vCanvas.toDataURL("image/png");
 
-        // Preview
+
+
         document.getElementById('cashOutVerify').style.display = 'none';
+
+        
+
         const voucherPreview = document.getElementById('myProofImg'); 
+
         const previewContainer = document.getElementById('customerProofPreview');
+
         if (voucherPreview && previewContainer) {
+
             voucherPreview.src = voucherDataURL;
+
             previewContainer.style.display = 'block';
+
             previewContainer.scrollIntoView({ behavior: 'smooth' });
+
         }
 
-        // Save to Database
+
+
         try {
+
             await fetch(WEB_APP_URL, {
+
                 method: "POST",
+
                 body: JSON.stringify({
+
                     action: "saveSignature",
+
                     queueNo: myQueueNumber,
+
                     signature: voucherDataURL,
-                    finalCash: finalCash
+
+                    finalCash: document.getElementById('sigAmt').innerText
+
                 }),
+
                 headers: { "Content-Type": "text/plain;charset=utf-8" }
+
             });
 
+
+
             btn.innerText = "DONE - CLOSE SYSTEM";
+
             btn.style.background = "#2e7d32";
+
             btn.disabled = false;
+
             btn.onclick = finishTransaction; 
 
+
+
         } catch (e) { 
+
             console.error("Voucher error:", e);
-            btn.innerText = "DONE - NEW TRANSACTION";
+
+            btn.innerText = "DONE - CLOSE";
+
             btn.disabled = false;
+
             btn.onclick = finishTransaction;
+
         }
+
     } else {
+
         finishTransaction();
+
     }
+
 }
 
 function saveInput(id) {
