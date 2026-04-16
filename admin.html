@@ -145,11 +145,13 @@
   }
 
   function fixDriveUrl(url) {
-    if (!url || !url.includes("id=")) return url;
-    // Kunin ang ID ng file
+    if (!url) return "";
+    if (url.startsWith("data:image")) return url; // Para sa base64 signatures
+    if (!url.includes("id=")) return url;
+
     const id = url.split("id=")[1].split("&")[0];
-    // Gamitin ang standard export link para sa Google Drive images
-    return `https://docs.google.com/uc?export=view&id=${id}`;
+    // Ito ang format na ginamit natin sa g.html na mabilis mag-load
+    return `https://lh3.googleusercontent.com/d/${id}=s1000`;
   }
 
   function showDetails(index) {
@@ -196,28 +198,27 @@
       <div class="detail-item"><span>Consent (M)</span>${row[12] || ""}</div>
     `;
 
-    // VIEW IMAGE LOGIC
+    // VIEW IMAGE LOGIC (Para sa Cash Out)
     if (type.includes("out")) {
       let imgUrl = row[15] || ""; // Column P
       let sigProofR = row[17] || ""; // Column R
       
-      // I-convert ang link para maging direct image
       let directImgP = fixDriveUrl(imgUrl);
-      let directImgR = sigProofR; // Kadalasan ang sig URL ay direct na, pero safe i-fixDriveUrl din kung galing drive
-
+      let directImgR = fixDriveUrl(sigProofR);
+      
       body += `
         <div style="margin-top:10px; border-top: 1px solid #333; padding-top: 10px;">
           <span style="font-size:10px; color:var(--gold);">CUSTOMER RECEIPT (P):</span><br>
-          ${imgUrl ? `<img src="${directImgP}" class="proof-img" style="min-height:150px;" onerror="this.src='https://placehold.co/400x200?text=Image+Loading+Error'" onclick="window.open('${imgUrl}')">` : `<p style="font-size:12px; color:#666;">No receipt uploaded.</p>`}
+          ${imgUrl ? `<img src="${directImgP}" class="proof-img" style="min-height:150px; background:#222;" onerror="this.src='https://placehold.co/400x200?text=Wait+loading+image...'" onclick="window.open('${imgUrl}')">` : `<p style="font-size:12px; color:#666;">No receipt uploaded.</p>`}
         </div>
         
         <div style="margin-top:10px; border-top: 1px solid #333; padding-top: 10px;">
           <span style="font-size:10px; color:var(--gold);">SIGNATURE PROOF (R):</span><br>
-          ${sigProofR ? `<img src="${sigProofR}" class="proof-img" style="min-height:100px; border-color: #4CAF50;" onclick="window.open('${sigProofR}')">` : `<p style="font-size:12px; color:#666;">No signature proof yet.</p>`}
+          ${sigProofR ? `<img src="${directImgR}" class="proof-img" style="min-height:100px; border: 1px solid #4CAF50; background:#222;" onerror="this.src='https://placehold.co/400x200?text=Wait+loading+signature...'" onclick="window.open('${sigProofR}')">` : `<p style="font-size:12px; color:#666;">No signature proof yet.</p>`}
         </div>`;
-    }
-    // UPLOAD LOGIC (Para sa Cash In / Admin Proof - Column Q)
-   else {
+    } 
+    // UPLOAD LOGIC (Para sa Cash In / Admin Proof)
+    else {
       let adminProofQ = row[16] || "";
       let directImgQ = fixDriveUrl(adminProofQ);
 
@@ -230,7 +231,7 @@
           ${adminProofQ ? `
             <div style="margin-top:10px;">
               <span style="font-size:10px; color:cyan;">CURRENT UPLOAD:</span>
-              <img src="${directImgQ}" class="proof-img" onclick="window.open('${adminProofQ}')">
+              <img src="${directImgQ}" class="proof-img" style="min-height:150px; background:#222;" onclick="window.open('${adminProofQ}')">
             </div>
           ` : ""}
         </div>`;
