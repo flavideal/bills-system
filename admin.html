@@ -267,86 +267,75 @@
     const cashL = row[11] || 0;
     const timeStampC = row[2] || "N/A";
 
+    // Column Index Mapping:
+    // row[14] = Column O (Admin Proof / Voucher)
+    // row[15] = Column P (Customer Receipt)
+    const adminVoucher = row[14] || ""; 
+    const customerReceipt = row[15] || "";
+
     document.getElementById('mod-queue').innerText = row[1] + " - " + row[0];
     
-    // STEP 1: Buuin ang listahan ng basic details
     let body = `
-      <div class="detail-item">
-        <span>Timestamp (C)</span>
-        <b>${timeStampC}</b>
-      </div>
-      <div class="detail-item"><span>Provider (D)</span><b>${row[3] || ""}</b></div>
-      <div class="detail-item"><span>Trans Type (E)</span><b>${row[4] || ""}</b></div>
+      <div class="detail-item"><span>Timestamp</span><b>${timeStampC}</b></div>
+      <div class="detail-item"><span>Provider</span><b>${row[3] || ""}</b></div>
+      <div class="detail-item"><span>Type</span><b>${row[4] || ""}</b></div>
       
       <div class="detail-item">
-        <span>Account Name (F)</span>
-        <div class="detail-value">
-          <b>${accName}</b>
-          <button class="copy-btn" onclick="copyToClipboard('${accName}')">COPY</button>
-        </div>
+        <span>Account Name</span>
+        <div class="detail-value"><b>${accName}</b><button class="copy-btn" onclick="copyToClipboard('${accName}')">COPY</button></div>
       </div>
 
       <div class="detail-item">
-        <span>Account Number (G)</span>
-        <div class="detail-value">
-          <b>${gcashNum}</b>
-          <button class="copy-btn" onclick="copyToClipboard('${gcashNum}')">COPY</button>
-        </div>
+        <span>Account Number</span>
+        <div class="detail-value"><b>${gcashNum}</b><button class="copy-btn" onclick="copyToClipboard('${gcashNum}')">COPY</button></div>
       </div>
 
       <div class="detail-item">
-        <span>Amount (H)</span>
-        <div class="detail-value">
-          <b>₱${amountH}</b>
-          <button class="copy-btn" onclick="copyToClipboard('${amountH}')">COPY</button>
-        </div>
+        <span>Amount</span>
+        <div class="detail-value"><b>₱${amountH}</b><button class="copy-btn" onclick="copyToClipboard('${amountH}')">COPY</button></div>
       </div>
 
-      <div class="detail-item"><span>Fee (I)</span><b>₱${row[8] || 0}</b></div>
-      <div class="detail-item"><span>Fee Option (J)</span><b>${row[9] || ""}</b></div>
-      <div class="detail-item"><span>Total Amount (K)</span><b>₱${row[10] || 0}</b></div>
-
-      <div class="detail-item">
-        <span>Cash Received (L)</span>
-        <div class="detail-value">
-          <b>₱${cashL}</b>
-          <button class="copy-btn" onclick="copyToClipboard('${cashL}')">COPY</button>
-        </div>
-      </div>
-
-      <div class="detail-item"><span>Consent (M)</span><b>${row[12] || ""}</b></div>
+      <div class="detail-item"><span>Fee</span><b>₱${row[8] || 0}</b></div>
+      <div class="detail-item"><span>Cash Received</span><b>₱${cashL}</b></div>
     `;
 
-    // STEP 2: Idagdag ang Receipt/Upload Logic base sa Type
-    if (type.includes("out")) {
-      let imgUrl = row[15] || ""; 
+    // --- DYNAMICS BUTTONS / UPLOAD SECTION ---
+    body += `<div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">`;
+
+    // A. CUSTOMER RECEIPT (P) - Displayed if it exists (mostly for Cash Out)
+    if (customerReceipt) {
       body += `
-        <div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">
-          <div>
-            <span style="font-size:10px; color:var(--gold);">CUSTOMER RECEIPT (P):</span><br>
-            ${imgUrl ? `<button onclick="window.open('${imgUrl}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW RECEIPT</button>` : `<p style="font-size:12px; color:#666;">No receipt.</p>`}
-          </div>
-        </div>`;
-    } else {
-      body += `
-        <div class="upload-box">
-          <span style="font-size:10px; color:var(--gold);">UPLOAD ADMIN PROOF:</span>
-          <input type="file" id="admin-file" accept="image/*" style="display:block; margin:10px 0; font-size:12px;">
-          <button id="up-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:10px; font-size:12px; border-radius:5px;">UPLOAD PROOF</button>
+        <div>
+          <span style="font-size:10px; color:var(--gold);">CUSTOMER RECEIPT (P):</span><br>
+          <button onclick="window.open('${customerReceipt}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW RECEIPT (P)</button>
         </div>`;
     }
 
-    // STEP 3: I-display na sa Modal
+    // B. ADMIN PROOF (O / Q) - If uploaded, show VIEW. If not, show UPLOAD.
+    body += `<div><span style="font-size:10px; color:var(--gold);">ADMIN VOUCHER (O):</span><br>`;
+    
+    if (adminVoucher) {
+      body += `<button onclick="window.open('${adminVoucher}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:12px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">✅ VIEW VOUCHER (O)</button>`;
+    } else {
+      body += `
+        <div class="upload-box">
+          <input type="file" id="admin-file" accept="image/*" style="display:block; margin:10px 0; font-size:12px;">
+          <button id="up-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:10px; font-size:12px; border-radius:5px; width:100%; font-weight:bold;">UPLOAD PROOF</button>
+        </div>`;
+    }
+    
+    body += `</div></div>`; 
+
     document.getElementById('modal-body').innerHTML = body;
 
     document.getElementById('modal-footer').innerHTML = `
       <button class="btn-call" onclick="updateStatus('${row[1]}', 'CALLING')">CALL</button>
-      <button class="btn-recall" onclick="callAgain('${row[1]}')">CALL AGAIN</button>
+      <button class="btn-recall" onclick="callAgain('${row[1]}')">RECALL</button>
       <button class="btn-done" onclick="updateStatus('${row[1]}', 'COMPLETED')">DONE</button>
     `;
 
     document.getElementById('details-modal').style.display = 'block';
-}
+  }
   
   // --- OTHERS REMAIN THE SAME ---
   async function updateStatus(q, s) {
