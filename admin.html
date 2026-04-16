@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #1b431c; --gold: #ffc267; --bg: #0d0d0d; }
+    body { font-family: 'Roboto', sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
+    
+    /* Login Box Styles */
+    #login-box { 
+      max-width: 300px; margin: 100px auto; background: #1a1a1a; padding: 30px; 
+      border-radius: 15px; border: 2px solid var(--primary); text-align: center;
+      box-shadow: 0 0 20px rgba(27, 67, 28, 0.5);
+    }
+    input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #333; background: #000; color: #fff; }
+    button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
+    
+    /* Dashboard Styles */
+    #dashboard { display: none; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+    .header h2 { font-family: 'Orbitron', sans-serif; color: var(--gold); }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+    th { background: var(--primary); color: white; padding: 12px; text-align: left; }
+    td { padding: 12px; border-bottom: 1px solid #222; }
+    tr:hover { background: rgba(255, 255, 255, 0.05); }
+
+    .btn-call { background: #2196F3; font-size: 11px; padding: 5px; }
+    .btn-done { background: #4CAF50; font-size: 11px; padding: 5px; }
+    .status-badge { padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+    .new { background: #ff9800; }
+    .calling { background: #2196F3; }
+    .completed { background: #4CAF50; }
+  </style>
+</head>
+<body>
+
+  <div id="login-box">
+    <h3 style="color: var(--gold); font-family: 'Orbitron';">ADMIN ACCESS</h3>
+    <input type="text" id="user" placeholder="Username">
+    <input type="password" id="pass" placeholder="Passcode">
+    <button onclick="login()">LOGIN TO HUB</button>
+    <p id="err" style="color: red; font-size: 12px;"></p>
+  </div>
+
+  <div id="dashboard">
+    <div class="header">
+      <h2>JPS ADMIN PANEL</h2>
+      <button onclick="location.reload()" style="width: auto; background: #333;">REFRESH</button>
+    </div>
+    <div style="overflow-x: auto;">
+      <table id="trans-table">
+        <thead>
+          <tr>
+            <th>Queue</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let u = "", p = "";
+
+    function login() {
+      u = document.getElementById('user').value;
+      p = document.getElementById('pass').value;
+      
+      google.script.run.withSuccessHandler(function(isValid){
+        if(isValid){
+          document.getElementById('login-box').style.display = 'none';
+          document.getElementById('dashboard').style.display = 'block';
+          loadData();
+        } else {
+          document.getElementById('err').innerText = "Mali ang credentials!";
+        }
+      }).checkLogin(u, p);
+    }
+
+    function loadData() {
+      google.script.run.withSuccessHandler(function(rows){
+        let html = "";
+        rows.forEach(function(row){
+          let statusClass = row[13].toLowerCase();
+          html += `<tr>
+            <td style="font-weight:bold; color:var(--gold)">${row[1]}</td>
+            <td>${row[0]}</td>
+            <td>${row[4]}</td>
+            <td>₱${row[7]}</td>
+            <td><span class="status-badge ${statusClass}">${row[13]}</span></td>
+            <td>
+              <button class="btn-call" onclick="update('${row[1]}', 'CALLING')">CALL</button>
+              <button class="btn-done" onclick="update('${row[1]}', 'COMPLETED')">DONE</button>
+            </td>
+          </tr>`;
+        });
+        document.getElementById('table-body').innerHTML = html;
+      }).getTransactions(u, p);
+    }
+
+    function update(q, s) {
+      google.script.run.withSuccessHandler(function(res){
+        if(res === "SUCCESS") loadData();
+      }).updateStatus(u, p, q, s);
+    }
+
+    // Auto refresh every 30 seconds
+    setInterval(function(){ if(u) loadData(); }, 30000);
+  </script>
+</body>
+</html>
