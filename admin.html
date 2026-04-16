@@ -71,19 +71,28 @@
     let u = "", p = "";
 
     function login() {
-      u = document.getElementById('user').value;
-      p = document.getElementById('pass').value;
-      
-      google.script.run.withSuccessHandler(function(isValid){
-        if(isValid){
-          document.getElementById('login-box').style.display = 'none';
-          document.getElementById('dashboard').style.display = 'block';
-          loadData();
-        } else {
-          document.getElementById('err').innerText = "Mali ang credentials!";
-        }
-      }).checkLogin(u, p);
-    }
+  u = document.getElementById('user').value;
+  p = document.getElementById('pass').value;
+
+  console.log("Checking login for: " + u); // Makita ni sa F12 Console
+
+  google.script.run
+    .withSuccessHandler(function(isValid){
+      console.log("Response from server: " + isValid);
+      if(isValid){
+        document.getElementById('login-box').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadData();
+      } else {
+        document.getElementById('err').innerText = "Mali ang credentials!";
+      }
+    })
+    .withFailureHandler(function(err){ 
+      // KINI ANG IMPORTANTE: Makita nimo kung ngano wala ni-connect
+      alert("Dili maka-connect sa Server: " + err.message);
+    })
+    .checkLogin(u, p);
+}
 
     function loadData() {
       google.script.run.withSuccessHandler(function(rows){
