@@ -45,6 +45,15 @@
     
     .proof-img { width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid #444; display: block; min-height: 100px; background: #000; }
     .upload-box { background: #1a1a1a; padding: 15px; border-radius: 10px; border: 1px dashed var(--gold); margin-top: 10px; }
+
+    .status-badge.new {
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
   </style>
 </head>
 <body>
@@ -100,7 +109,7 @@
   function logout() { localStorage.clear(); location.reload(); }
   function showDashboard() { document.getElementById('login-box').style.display='none'; document.getElementById('dashboard').style.display='block'; }
 
-  async function loadData() {
+ async function loadData() {
     try {
       const response = await fetch(SCRIPT_URL, {
         method: "POST",
@@ -108,10 +117,15 @@
       });
       const res = await response.json();
       if (res.result === "success") {
-        allData = res.data;
+        // [FIX] I-reverse natin ang data bago i-loop 
+        // Para ang huling row sa Google Sheets ang unang lalabas sa Table
+        allData = res.data; 
+        
         let html = "";
         allData.forEach((row, index) => {
           let st = row[13] || "NEW";
+          
+          // Row layout para sa bawat transaction
           html += `<tr onclick="showDetails(${index})">
             <td style="font-weight:bold; color:var(--gold); font-size:18px;">${row[1]}</td>
             <td><span class="status-badge ${st.toLowerCase()}">${st}</span></td>
@@ -119,7 +133,9 @@
         });
         document.getElementById('table-body').innerHTML = html;
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error("Error loading data:", e); 
+    }
   }
 
   function copyToClipboard(text) {
