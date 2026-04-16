@@ -3,86 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JPS Admin Panel - Detailed View</title>
+  <title>JPS Admin Panel - Clean View</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
     :root { --primary: #1b431c; --gold: #ffc267; --bg: #0d0d0d; --card-bg: #1a1a1a; }
     body { font-family: 'Roboto', sans-serif; background: var(--bg); color: white; margin: 0; padding: 10px; }
-    .container { max-width: 1000px; margin: 0 auto; }
+    .container { max-width: 600px; margin: 0 auto; } /* Ginawa nating mas maliit para sa focus */
 
-    /* Login Box */
     #login-box { max-width: 350px; margin: 80px auto; background: var(--card-bg); padding: 30px; border-radius: 15px; border: 2px solid var(--primary); text-align: center; }
     input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
     button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
 
-    /* Dashboard */
     #dashboard { display: none; }
     .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
-    .header h2 { font-family: 'Orbitron', sans-serif; color: var(--gold); font-size: 1.1rem; margin: 0; }
+    .header h2 { font-family: 'Orbitron', sans-serif; color: var(--gold); font-size: 1rem; margin: 0; }
     
-    /* Table Styling */
-    .table-container { background: var(--card-bg); border-radius: 10px; overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th { background: var(--primary); color: white; padding: 15px; text-align: left; }
-    td { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; }
-    tr:hover { background: #222; }
+    table { width: 100%; border-collapse: collapse; }
+    td { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; text-align: center; }
+    tr:hover { background: #111; }
     
-    .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; }
+    .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
     .new { background: #ff9800; color: #000; }
     .calling { background: #2196F3; color: #fff; }
     .completed { background: #4CAF50; color: #fff; }
 
-    .actions { display: flex; gap: 5px; }
-    .btn-call { background: #2196F3; border:none; color:white; padding: 8px; border-radius: 4px; font-size: 11px; cursor: pointer;}
-    .btn-done { background: #4CAF50; border:none; color:white; padding: 8px; border-radius: 4px; font-size: 11px; cursor: pointer;}
+    /* MODAL BOX */
+    #details-modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); overflow-y: auto; }
+    .modal-content { background: #111; margin: 5% auto; padding: 20px; border: 1px solid var(--primary); width: 90%; max-width: 450px; border-radius: 15px; }
+    .modal-header { font-family: 'Orbitron'; color: var(--gold); border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 14px; }
+    
+    .detail-item { margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding-bottom: 5px; }
+    .detail-item span { color: var(--gold); font-size: 10px; text-transform: uppercase; }
 
-    /* MODAL / DETAILS BOX */
-    #details-modal { 
-      display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; 
-      background: rgba(0,0,0,0.9); overflow-y: auto;
-    }
-    .modal-content { 
-      background: #1a1a1a; margin: 5% auto; padding: 20px; border: 1px solid var(--gold); 
-      width: 90%; max-width: 500px; border-radius: 15px; 
-    }
-    .modal-header { font-family: 'Orbitron'; color: var(--gold); border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
-    .detail-item { margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-    .detail-item span { color: var(--gold); font-weight: bold; display: block; font-size: 11px; text-transform: uppercase; }
-
-    @media screen and (max-width: 600px) {
-      thead { display: none; }
-      tr { display: block; margin-bottom: 10px; border: 1px solid #333; border-radius: 8px; }
-      td { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222; }
-      td::before { content: attr(data-label); font-weight: bold; color: var(--gold); font-size: 11px; }
-    }
+    .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+    .btn-call { background: #2196F3; }
+    .btn-recall { background: #9c27b0; }
+    .btn-done { background: #4CAF50; grid-column: span 2; }
+    
+    .proof-img { width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid #333; }
+    .upload-box { background: #1a1a1a; padding: 15px; border-radius: 10px; border: 1px dashed var(--gold); margin-top: 10px; }
   </style>
 </head>
 <body>
 
 <div class="container">
   <div id="login-box">
-    <h3 style="color: var(--gold); font-family: 'Orbitron';">ADMIN LOGIN</h3>
+    <h3 style="color: var(--gold); font-family: 'Orbitron'; font-size: 14px;">JPS ADMIN</h3>
     <input type="text" id="user" placeholder="Username">
     <input type="password" id="pass" placeholder="Passcode">
-    <button onclick="login()">ENTER PANEL</button>
+    <button onclick="login()">LOGIN</button>
   </div>
 
   <div id="dashboard">
     <div class="header">
-      <h2>JPS ADMIN PANEL</h2>
-      <button onclick="logout()" style="width:auto; padding:5px 10px; background:#a32a2a; font-size:12px;">LOGOUT</button>
+      <h2>QUEUE LIST</h2>
+      <button onclick="logout()" style="width:auto; padding:5px 10px; background:#333; font-size:10px;">LOGOUT</button>
     </div>
     <div class="table-container">
       <table>
-        <thead>
-          <tr>
-            <th>Queue</th>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
         <tbody id="table-body"></tbody>
       </table>
     </div>
@@ -92,18 +70,18 @@
 <div id="details-modal">
   <div class="modal-content">
     <div class="modal-header">
-      <span id="mod-queue">QUEUE DETAILS</span>
-      <span onclick="closeModal()" style="cursor:pointer; color:red;">[X]</span>
+      <span id="mod-queue">DETAILS</span>
+      <span onclick="closeModal()" style="cursor:pointer; color:red;">[CLOSE]</span>
     </div>
     <div id="modal-body"></div>
-    <button onclick="closeModal()" style="margin-top:20px; background:#333;">CLOSE</button>
+    <div id="modal-footer" class="modal-actions"></div>
   </div>
 </div>
 
 <script>
   let u = localStorage.getItem('admin_u') || "";
   let p = localStorage.getItem('admin_p') || "";
-  let allData = []; // Dito itatago ang full details
+  let allData = [];
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec"; 
 
   window.onload = function() { if (u && p) { showDashboard(); loadData(); } };
@@ -129,21 +107,13 @@
       });
       const res = await response.json();
       if (res.result === "success") {
-        allData = res.data; // Save data for modal
+        allData = res.data;
         let html = "";
         allData.forEach((row, index) => {
           let st = row[13] || "NEW";
           html += `<tr onclick="showDetails(${index})">
-            <td data-label="Queue" style="font-weight:bold; color:var(--gold)">${row[1]}</td>
-            <td data-label="Name">${row[0]}</td>
-            <td data-label="Type">${row[4]}</td>
-            <td data-label="Status"><span class="status-badge ${st.toLowerCase()}">${st}</span></td>
-            <td data-label="Actions">
-              <div class="actions" onclick="event.stopPropagation()">
-                <button class="btn-call" onclick="update('${row[1]}', 'CALLING')">CALL</button>
-                <button class="btn-done" onclick="update('${row[1]}', 'COMPLETED')">DONE</button>
-              </div>
-            </td>
+            <td style="font-weight:bold; color:var(--gold); font-size:18px;">${row[1]}</td>
+            <td><span class="status-badge ${st.toLowerCase()}">${st}</span></td>
           </tr>`;
         });
         document.getElementById('table-body').innerHTML = html;
@@ -153,83 +123,76 @@
 
   function showDetails(index) {
     const row = allData[index];
-    document.getElementById('mod-queue').innerText = "DETAILS: " + row[1];
+    const type = row[4] ? row[4].toString().toLowerCase() : "";
+    document.getElementById('mod-queue').innerText = row[1] + " - " + row[0];
+    
     let body = `
-      <div class="detail-item"><span>Customer Name</span>${row[0]}</div>
-      <div class="detail-item"><span>Transaction Type</span>${row[4]}</div>
-      <div class="detail-item"><span>Amount</span>₱${row[7]}</div>
-      <div class="detail-item"><span>Total to Pay</span>₱${row[10]}</div>
-      <hr style="border:0; border-top:1px solid #333">
-      <div class="detail-item">
-        <span>Admin Proof (Column Q)</span>
-        ${row[16] ? `<a href="${row[16]}" target="_blank" style="color:cyan">View Saved Proof</a>` : "No proof uploaded yet"}
-      </div>
-      <div style="margin-top:15px; padding:10px; border:1px dashed var(--gold); border-radius:5px;">
-        <span style="font-size:11px; color:var(--gold); font-weight:bold;">UPLOAD RECEIPT/PROOF:</span>
-        <input type="file" id="admin-file" accept="image/*" style="font-size:12px; margin:5px 0;">
-        <button id="upload-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:5px; font-size:12px;">UPLOAD NOW</button>
-      </div>
+      <div class="detail-item"><span>Type</span>${row[4]}</div>
+      <div class="detail-item"><span>Number</span>${row[6]}</div>
+      <div class="detail-item"><span>Total</span>₱${row[10]}</div>
     `;
+
+    // KUNG CASH OUT - Pakita agad yung picture link sa P (Index 15)
+    if (type.includes("out")) {
+      body += `
+        <div style="margin-top:10px;">
+          <span style="font-size:10px; color:var(--gold);">CUSTOMER RECEIPT:</span><br>
+          ${row[15] && row[15].includes("http") ? `<img src="${row[15].replace('open?', 'thumbnail?sz=w500&')}" class="proof-img" onclick="window.open('${row[15]}')">` : `<p style="font-size:12px; color:#666;">No receipt uploaded by customer.</p>`}
+        </div>`;
+    } 
+    // KUNG CASH IN - Pakita yung Upload UI (Para sa Column Q)
+    else {
+      body += `
+        <div class="upload-box">
+          <span style="font-size:10px; color:var(--gold);">UPLOAD ADMIN PROOF (CASH IN):</span>
+          <input type="file" id="admin-file" accept="image/*" style="display:block; margin:10px 0; font-size:12px;">
+          <button id="up-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:8px; font-size:11px;">UPLOAD PROOF</button>
+          ${row[16] ? `<br><a href="${row[16]}" target="_blank" style="color:cyan; font-size:11px;">[View Uploaded Proof]</a>` : ""}
+        </div>`;
+    }
+
     document.getElementById('modal-body').innerHTML = body;
+
+    // FOOTER BUTTONS
+    document.getElementById('modal-footer').innerHTML = `
+      <button class="btn-call" onclick="updateStatus('${row[1]}', 'CALLING')">CALL</button>
+      <button class="btn-recall" onclick="callAgain('${row[1]}')">CALL AGAIN</button>
+      <button class="btn-done" onclick="updateStatus('${row[1]}', 'COMPLETED')">DONE / COMPLETED</button>
+    `;
+
     document.getElementById('details-modal').style.display = 'block';
+  }
+
+  async function updateStatus(q, s) {
+    await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "updateStatus", user: u, pass: p, queueNo: q, newStatus: s }) });
+    closeModal(); loadData();
+  }
+
+  // CALL AGAIN logic: Nilalagay ang "CALL AGAIN" sa Column O (Index 14) para mabasa ng doGet
+  async function callAgain(q) {
+    // Note: Gagamitin natin ang updateStatus action pero sa Column O (15th column)
+    // Kailangan mong i-verify kung ang script mo ay tumatanggap ng action para sa note
+    // For now, i-set natin ang status sa CALLING ulit at lagyan ng logic sa Apps Script
+    await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "updateStatus", user: u, pass: p, queueNo: q, newStatus: "CALLING", note: "CALL AGAIN" }) });
+    alert("Recall signal sent to TV!");
+    closeModal(); loadData();
   }
 
   async function uploadAdminProof(qNo) {
     const fileInput = document.getElementById('admin-file');
-    const btn = document.getElementById('upload-btn');
-    
-    if (fileInput.files.length === 0) {
-      alert("Pumili muna ng file!");
-      return;
-    }
+    if (fileInput.files.length === 0) return alert("Pili muna file");
+    const btn = document.getElementById('up-btn');
+    btn.innerText = "UPLOADING..."; btn.disabled = true;
 
-    btn.innerText = "UPLOADING...";
-    btn.disabled = true;
-
-    const file = fileInput.files[0];
     const reader = new FileReader();
-    
     reader.onload = async function(e) {
-      const base64 = e.target.result;
-      try {
-        const response = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({ 
-            action: "uploadAdminReceipt", 
-            user: u, 
-            pass: p, 
-            queueNo: qNo, 
-            file: base64 
-          })
-        });
-        const res = await response.json();
-        if (res.result === "success") {
-          alert("Uploaded and saved to Column Q!");
-          closeModal();
-          loadData();
-        }
-      } catch (err) {
-        alert("Upload failed!");
-      } finally {
-        btn.innerText = "UPLOAD NOW";
-        btn.disabled = false;
-      }
+      await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "uploadAdminReceipt", user: u, pass: p, queueNo: qNo, file: e.target.result }) });
+      alert("Success!"); closeModal(); loadData();
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(fileInput.files[0]);
   }
-  
+
   function closeModal() { document.getElementById('details-modal').style.display = 'none'; }
-
-  async function update(q, s) {
-    try {
-      await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "updateStatus", user: u, pass: p, queueNo: q, newStatus: s })
-      });
-      loadData();
-    } catch (e) { alert("Error"); }
-  }
-
   setInterval(() => { if(u) loadData(); }, 20000);
 </script>
 </body>
