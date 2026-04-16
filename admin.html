@@ -155,22 +155,69 @@
     const row = allData[index];
     document.getElementById('mod-queue').innerText = "DETAILS: " + row[1];
     let body = `
-      <div class="detail-item"><span>Timestamp</span>${row[2]}</div>
       <div class="detail-item"><span>Customer Name</span>${row[0]}</div>
-      <div class="detail-item"><span>Provider</span>${row[3]}</div>
       <div class="detail-item"><span>Transaction Type</span>${row[4]}</div>
-      <div class="detail-item"><span>GCash Name</span>${row[5]}</div>
-      <div class="detail-item"><span>GCash Number</span>${row[6]}</div>
       <div class="detail-item"><span>Amount</span>₱${row[7]}</div>
-      <div class="detail-item"><span>Fee</span>₱${row[8]}</div>
-      <div class="detail-item"><span>Total to Pay/Receive</span>₱${row[10]}</div>
-      <div class="detail-item"><span>Status</span>${row[13]}</div>
-      <div class="detail-item"><span>Receipt Link</span><a href="${row[15]}" target="_blank" style="color:cyan">View Receipt</a></div>
+      <div class="detail-item"><span>Total to Pay</span>₱${row[10]}</div>
+      <hr style="border:0; border-top:1px solid #333">
+      <div class="detail-item">
+        <span>Admin Proof (Column Q)</span>
+        ${row[16] ? `<a href="${row[16]}" target="_blank" style="color:cyan">View Saved Proof</a>` : "No proof uploaded yet"}
+      </div>
+      <div style="margin-top:15px; padding:10px; border:1px dashed var(--gold); border-radius:5px;">
+        <span style="font-size:11px; color:var(--gold); font-weight:bold;">UPLOAD RECEIPT/PROOF:</span>
+        <input type="file" id="admin-file" accept="image/*" style="font-size:12px; margin:5px 0;">
+        <button id="upload-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:5px; font-size:12px;">UPLOAD NOW</button>
+      </div>
     `;
     document.getElementById('modal-body').innerHTML = body;
     document.getElementById('details-modal').style.display = 'block';
   }
 
+  async function uploadAdminProof(qNo) {
+    const fileInput = document.getElementById('admin-file');
+    const btn = document.getElementById('upload-btn');
+    
+    if (fileInput.files.length === 0) {
+      alert("Pumili muna ng file!");
+      return;
+    }
+
+    btn.innerText = "UPLOADING...";
+    btn.disabled = true;
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = async function(e) {
+      const base64 = e.target.result;
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({ 
+            action: "uploadAdminReceipt", 
+            user: u, 
+            pass: p, 
+            queueNo: qNo, 
+            file: base64 
+          })
+        });
+        const res = await response.json();
+        if (res.result === "success") {
+          alert("Uploaded and saved to Column Q!");
+          closeModal();
+          loadData();
+        }
+      } catch (err) {
+        alert("Upload failed!");
+      } finally {
+        btn.innerText = "UPLOAD NOW";
+        btn.disabled = false;
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+  
   function closeModal() { document.getElementById('details-modal').style.display = 'none'; }
 
   async function update(q, s) {
