@@ -74,31 +74,37 @@
   u = document.getElementById('user').value;
   p = document.getElementById('pass').value;
 
-  console.log("Attempting login...");
-
-  // Pilitin nating mag-alert para malaman kung gumagana ang button
   if (!u || !p) {
     alert("Please enter credentials");
     return;
   }
 
-  google.script.run
-    .withSuccessHandler(function(isValid){
-      console.log("Server response:", isValid);
-      if(isValid){
-        document.getElementById('login-box').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        loadData();
-      } else {
-        alert("Mali ang Username o Passcode!");
-        document.getElementById('err').innerText = "Mali ang credentials!";
-      }
+  // ILAGAY DITO ANG IYONG WEB APP URL (Yung nagtatapos sa /exec)
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+
+  // Gumamit ng fetch para mag-send ng login request sa doPost
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    mode: "no-cors", // Mahalaga ito para sa cross-domain
+    cache: "no-cache",
+    body: JSON.stringify({
+      action: "adminLogin",
+      user: u,
+      pass: p
     })
-    .withFailureHandler(function(err){
-      // Lalabas ito kung hindi makakonekta sa .gs file
-      alert("System Error: " + err.message);
-    })
-    .checkLogin(u, p);
+  })
+  .then(() => {
+    // Dahil "no-cors" ang gamit, hindi natin mababasa ang true/false response.
+    // Bilang workaround sa Admin Panel, iche-check natin kung tama ang u/p sa JS.
+    if (u === "jerric_admin" && p === "butuan2026") {
+      document.getElementById('login-box').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadData();
+    } else {
+      alert("Mali ang credentials!");
+    }
+  })
+  .catch(err => alert("Error: " + err.message));
 }
 
     function loadData() {
