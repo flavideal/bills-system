@@ -276,29 +276,41 @@
       
       <div class="detail-item">
         <span>Account Name (F)</span>
-        <div class="detail-value"><b>${accName}</b><button class="copy-btn" onclick="copyToClipboard('${accName}')">COPY</button></div>
+        <div class="detail-value">
+          <b title="${accName}">${accName}</b>
+          <button class="copy-btn" onclick="copyToClipboard('${accName}')">COPY</button>
+        </div>
       </div>
 
       <div class="detail-item">
         <span>Account Number (G)</span>
-        <div class="detail-value"><b>${gcashNum}</b><button class="copy-btn" onclick="copyToClipboard('${gcashNum}')">COPY</button></div>
+        <div class="detail-value">
+          <b title="${gcashNum}">${gcashNum}</b>
+          <button class="copy-btn" onclick="copyToClipboard('${gcashNum}')">COPY</button>
+        </div>
       </div>
 
       <div class="detail-item">
         <span>Amount (H)</span>
-        <div class="detail-value"><b>₱${amountH}</b><button class="copy-btn" onclick="copyToClipboard('${amountH}')">COPY</button></div>
+        <div class="detail-value">
+          <b>₱${amountH}</b>
+          <button class="copy-btn" onclick="copyToClipboard('${amountH}')">COPY</button>
+        </div>
       </div>
 
-      <div class="detail-item"><span>Fee (I)</span>₱${row[8] || 0}</div>
-      <div class="detail-item"><span>Fee Option (J)</span>${row[9] || ""}</div>
-      <div class="detail-item"><span>Total Amount (K)</span>₱${row[10] || 0}</div>
+      <div class="detail-item"><span>Fee (I)</span><b>₱${row[8] || 0}</b></div>
+      <div class="detail-item"><span>Fee Option (J)</span><b>${row[9] || ""}</b></div>
+      <div class="detail-item"><span>Total Amount (K)</span><b>₱${row[10] || 0}</b></div>
 
       <div class="detail-item">
         <span>Cash Received (L)</span>
-        <div class="detail-value"><b>₱${cashL}</b><button class="copy-btn" onclick="copyToClipboard('${cashL}')">COPY</button></div>
+        <div class="detail-value">
+          <b>₱${cashL}</b>
+          <button class="copy-btn" onclick="copyToClipboard('${cashL}')">COPY</button>
+        </div>
       </div>
 
-      <div class="detail-item"><span>Consent (M)</span>${row[12] || ""}</div>
+      <div class="detail-item"><span>Consent (M)</span><b>${row[12] || ""}</b></div>
     `;
 
     // VIEW IMAGE LOGIC (Para sa Cash Out)
