@@ -31,6 +31,16 @@
     #details-modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); overflow-y: auto; }
     .modal-content { background: #111; margin: 5% auto; padding: 20px; border: 1px solid var(--primary); width: 90%; max-width: 450px; border-radius: 15px; }
     .modal-header { font-family: 'Orbitron'; color: var(--gold); border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 14px; }
+
+    .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+    .stat-card { background: #222; padding: 10px; border-radius: 8px; border-left: 3px solid var(--gold); }
+    .stat-card small { font-size: 9px; color: #aaa; text-transform: uppercase; }
+    .stat-card div { font-size: 14px; font-weight: bold; color: var(--gold); font-family: 'Orbitron'; }
+
+    .filter-box { background: var(--card-bg); padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #333; }
+    .filter-box input { margin: 5px 0; padding: 8px; font-size: 12px; }
+    .completed-list { border-top: 2px dashed #333; margin-top: 20px; padding-top: 10px; }
+    .section-title { font-size: 10px; color: #666; margin-bottom: 10px; letter-spacing: 2px; }
     
     .detail-item { 
       margin-bottom: 8px; 
@@ -107,14 +117,30 @@
 
   <div id="dashboard">
     <div class="header">
-      <h2>QUEUE LIST</h2>
+      <h2>BUTUAN HUB ADMIN</h2>
       <button onclick="logout()" style="width:auto; padding:5px 10px; background:#333; font-size:10px;">LOGOUT</button>
     </div>
+
+    <div class="stats-container">
+      <div class="stat-card"><small>Total Fees (Today)</small><div id="stat-fees">₱0</div></div>
+      <div class="stat-card"><small>Total Transactions</small><div id="stat-count">0</div></div>
+    </div>
+
+    <div class="filter-box">
+      <input type="text" id="searchQ" placeholder="Search Queue Number..." oninput="filterData()">
+      <input type="date" id="searchDate" onchange="filterData()">
+    </div>
+
+    <div class="section-title">ACTIVE QUEUE</div>
     <div class="table-container">
       <table><tbody id="table-body"></tbody></table>
     </div>
+
+    <div class="completed-list">
+      <div class="section-title">COMPLETED TODAY</div>
+      <table><tbody id="completed-body"></tbody></table>
+    </div>
   </div>
-</div>
 
 <div id="details-modal">
   <div class="modal-content">
@@ -131,6 +157,7 @@
   let u = localStorage.getItem('admin_u') || "";
   let p = localStorage.getItem('admin_p') || "";
   let allData = [];
+  let filteredData = [];
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec"; 
 
   window.onload = function() { if (u && p) { showDashboard(); loadData(); } };
@@ -156,25 +183,53 @@
       });
       const res = await response.json();
       if (res.result === "success") {
-        // [FIX] I-reverse natin ang data bago i-loop 
-        // Para ang huling row sa Google Sheets ang unang lalabas sa Table
-        allData = res.data; 
-        
-        let html = "";
-        allData.forEach((row, index) => {
-          let st = row[13] || "NEW";
-          
-          // Row layout para sa bawat transaction
-          html += `<tr onclick="showDetails(${index})">
-            <td style="font-weight:bold; color:var(--gold); font-size:18px;">${row[1]}</td>
-            <td><span class="status-badge ${st.toLowerCase()}">${st}</span></td>
-          </tr>`;
-        });
-        document.getElementById('table-body').innerHTML = html;
+        allData = res.data;
+        filterData(); // Dito natin tatawagin ang pag-display
       }
-    } catch (e) { 
-      console.error("Error loading data:", e); 
-    }
+    } catch (e) { console.error(e); }
+  }
+
+  function filterData() {
+    const searchTerm = document.getElementById('searchQ').value.toUpperCase();
+    const searchDate = document.getElementById('searchDate').value; // Format: YYYY-MM-DD
+    
+    let activeHtml = "";
+    let completedHtml = "";
+    let totalFees = 0;
+    let transCount = 0;
+
+    allData.forEach((row, index) => {
+      const qNo = row[1].toString();
+      const status = (row[13] || "NEW").toUpperCase();
+      const rowDate = row[0].split('T')[0]; // Kinukuha ang date part lang ng Timestamp
+      const fee = parseFloat(row[8]) || 0;
+
+      // Filter Logic
+      const matchSearch = qNo.includes(searchTerm);
+      const matchDate = searchDate ? rowDate === searchDate : true;
+
+      if (matchSearch && matchDate) {
+        let rowHtml = `
+          <tr onclick="showDetails(${index})">
+            <td style="font-weight:bold; color:var(--gold); font-size:18px;">${row[1]}</td>
+            <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
+          </tr>`;
+
+        if (status === "COMPLETED") {
+          completedHtml += rowHtml;
+          totalFees += fee;
+          transCount++;
+        } else {
+          activeHtml += rowHtml;
+        }
+      }
+    });
+
+    // Update Dashboard UI
+    document.getElementById('table-body').innerHTML = activeHtml || "<tr><td>No active queue</td></tr>";
+    document.getElementById('completed-body').innerHTML = completedHtml || "<tr><td>No completed yet</td></tr>";
+    document.getElementById('stat-fees').innerText = "₱" + totalFees.toLocaleString();
+    document.getElementById('stat-count').innerText = transCount;
   }
 
   function copyToClipboard(text) {
