@@ -858,15 +858,22 @@ function showStep(stepId) {
 }
     
     function finishTransaction() {
-    // Burahin ang mga sinave na input
+    // 1. Burahin lahat ng input data
     ['custName', 'accNo', 'accName', 'amount'].forEach(id => {
         localStorage.removeItem('input_' + id);
     });
-    // Burahin din ang queue status
+
+    // 2. Burahin ang mga system status (Queue, Mode, atbp.)
     localStorage.removeItem('savedQueueNumber');
     localStorage.removeItem('isWaiting');
+    localStorage.removeItem('currentStep');
+    localStorage.removeItem('savedMode');
+    localStorage.removeItem('sessionStartTime');
+    localStorage.removeItem('feeOption'); // Kung meron kang sinave na fee preference
 
-    window.location.reload(); // Refresh para malinis lahat
+    // 3. I-redirect sa index.html imbes na reload lang
+    // Mas safe ito para bumalik talaga sa "CASH IN" default state
+    window.location.href = 'index.html'; 
 }
     
     function updateReviewTotal() {
@@ -1154,7 +1161,7 @@ async function processFinalDone() {
 
         } catch (e) { 
             console.error("Voucher error:", e);
-            btn.innerText = "DONE - CLOSE";
+            btn.innerText = "DONE - NEW TRANSACTION";
             btn.disabled = false;
             btn.onclick = finishTransaction;
         }
