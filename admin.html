@@ -204,35 +204,32 @@
       let imgUrl = row[15] || ""; // Column P
       let sigProofR = row[17] || ""; // Column R
       
-      let directImgP = fixDriveUrl(imgUrl);
-      let directImgR = fixDriveUrl(sigProofR);
-      
       body += `
-        <div style="margin-top:10px; border-top: 1px solid #333; padding-top: 10px;">
-          <span style="font-size:10px; color:var(--gold);">CUSTOMER RECEIPT (P):</span><br>
-          ${imgUrl ? `<img src="${directImgP}" class="proof-img" style="min-height:150px; background:#222;" onclick="window.open('${imgUrl}')">` : `<p style="font-size:12px; color:#666;">No receipt uploaded.</p>`}
-        </div>
-        
-        <div style="margin-top:10px; border-top: 1px solid #333; padding-top: 10px;">
-          <span style="font-size:10px; color:var(--gold);">SIGNATURE PROOF (R):</span><br>
-          ${sigProofR ? `<img src="${directImgR}" class="proof-img" style="min-height:100px; border: 1px solid #4CAF50; background:#222;" onclick="window.open('${sigProofR}')">` : `<p style="font-size:12px; color:#666;">No signature proof yet.</p>`}
+        <div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">
+          <div>
+            <span style="font-size:10px; color:var(--gold);">CUSTOMER RECEIPT (P):</span><br>
+            ${imgUrl ? `<button onclick="window.open('${imgUrl}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW RECEIPT</button>` : `<p style="font-size:12px; color:#666;">No receipt uploaded.</p>`}
+          </div>
+          
+          <div>
+            <span style="font-size:10px; color:var(--gold);">SIGNATURE PROOF (R):</span><br>
+            ${sigProofR ? `<button onclick="window.open('${sigProofR}')" style="background:#333; color:#4CAF50; border:1px solid #4CAF50; padding:10px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">✍️ VIEW SIGNATURE</button>` : `<p style="font-size:12px; color:#666;">No signature proof yet.</p>`}
+          </div>
         </div>`;
     }
     // UPLOAD LOGIC (Para sa Cash In / Admin Proof)
     else {
       let adminProofQ = row[16] || "";
-      let directImgQ = fixDriveUrl(adminProofQ);
-
       body += `
         <div class="upload-box">
           <span style="font-size:10px; color:var(--gold);">UPLOAD ADMIN PROOF (Q):</span>
           <input type="file" id="admin-file" accept="image/*" style="display:block; margin:10px 0; font-size:12px;">
-          <button id="up-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:8px; font-size:11px;">UPLOAD PROOF</button>
+          <button id="up-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:10px; font-size:12px; border-radius:5px;">UPLOAD PROOF</button>
           
           ${adminProofQ ? `
-            <div style="margin-top:10px;">
-              <span style="font-size:10px; color:cyan;">CURRENT UPLOAD:</span>
-              <img src="${directImgQ}" class="proof-img" style="min-height:150px; background:#222;" onclick="window.open('${adminProofQ}')">
+            <div style="margin-top:15px; border-top:1px solid #333; padding-top:10px;">
+              <span style="font-size:10px; color:cyan;">EXISTING UPLOAD:</span>
+              <button onclick="window.open('${adminProofQ}')" style="background:#000; color:cyan; border:1px solid cyan; padding:8px; width:100%; border-radius:5px; margin-top:5px; cursor:pointer;">👁️ VIEW MY UPLOAD</button>
             </div>
           ` : ""}
         </div>`;
