@@ -145,14 +145,14 @@
   }
 
   function fixDriveUrl(url) {
-    if (!url) return "";
-    if (url.startsWith("data:image")) return url;
-    if (!url.includes("id=")) return url;
+  if (!url) return "";
+  if (url.startsWith("data:image")) return url;
+  if (!url.includes("id=")) return url;
 
-    const id = url.split("id=")[1].split("&")[0];
-    // Ito ang format na ginagamit sa mga web apps para pilitin lumabas ang preview
-    return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
-  }
+  const id = url.split("id=")[1].split("&")[0];
+  // Subukan natin ang 'uc' format na may 'view'
+  return `https://docs.google.com/uc?id=${id}&export=download`;
+}
 
   function showDetails(index) {
     const row = allData[index];
