@@ -60,18 +60,10 @@
     }
     
     .copy-btn { 
-      background: var(--primary); /* Gawin nating solid para madaling ma-click */
-      color: white; 
-      border: none;
-      padding: 5px 10px; 
-      font-size: 10px; 
-      border-radius: 4px; 
-      cursor: pointer; 
-      margin-left: 10px;
-      transition: 0.2s;
-      flex-shrink: 0; /* BAWAL lumiit o humaba ang button */
-      white-space: nowrap; /* Siguradong isang line lang ang text na COPY */
-      font-family: 'Orbitron', sans-serif;
+      flex-shrink: 0;
+      white-space: nowrap;
+      margin-left: 8px;
+      padding: 4px 8px;
     }
     
     .copy-btn:active { transform: scale(0.9); } /* Feedback pag na-click */
@@ -81,14 +73,13 @@
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      max-width: 70%; /* Limit para sa text area */
-      overflow: hidden; 
+      max-width: 70%; 
+      overflow: hidden;
     }
 
     .detail-value b {
       color: white;
       font-size: 13px;
-      /* Eto ang magic: pag mahaba ang name, magiging "..." siya imbes na bumaba */
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
