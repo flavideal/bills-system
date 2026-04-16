@@ -196,25 +196,35 @@
 
   function filterData() {
     const searchTerm = document.getElementById('searchQ').value.toUpperCase();
-    const searchDate = document.getElementById('searchDate').value; // Format: YYYY-MM-DD
+    const searchDateInput = document.getElementById('searchDate').value; // Ito ay "2026-04-17"
     
+    // --- STEP 1: I-convert ang Date Input (YYYY-MM-DD) para maging (DD/MM/YYYY) ---
+    let formattedSearchDate = "";
+    if (searchDateInput) {
+      const [y, m, d] = searchDateInput.split('-');
+      formattedSearchDate = `${d}/${m}/${y}`; // Magiging "17/04/2026"
+    }
+
     let activeHtml = "";
     let completedHtml = "";
     let totalFees = 0;
     let transCount = 0;
 
-   allData.forEach((row, index) => {
+    allData.forEach((row, index) => {
       const qNo = row[1].toString();
       const status = (row[13] || "NEW").toUpperCase();
       
-      // CHANGE THIS: Mula row[0], gawin nating row[2] para sa Column C
-      const rowDate = row[2] ? row[2].split('T')[0] : ""; 
+      // --- STEP 2: Kunin ang Timestamp sa Column C (row[2]) ---
+      // Halimbawa ng row[2]: "17/04/2026, 02:06:58"
+      const fullTimestamp = row[2] ? row[2].toString() : ""; 
       
       const fee = parseFloat(row[8]) || 0;
 
       // Filter Logic
       const matchSearch = qNo.includes(searchTerm);
-      const matchDate = searchDate ? rowDate === searchDate : true;
+      
+      // I-check kung ang simula ng Timestamp sa Sheet ay kapareho ng ating formatted date
+      const matchDate = formattedSearchDate ? fullTimestamp.startsWith(formattedSearchDate) : true;
 
       if (matchSearch && matchDate) {
         let rowHtml = `
