@@ -310,14 +310,15 @@
 </div>
 
 <script>
-window.addEventListener('beforeunload', function (e) {
+window.addEventListener('load', function () {
     const isWaiting = localStorage.getItem('isWaiting');
-    // Kung isWaiting ay true, lalabas ang "Confirm Navigation" pop-up
-    if (isWaiting === 'true') {
-        e.preventDefault();
-        e.returnValue = ''; // Standard ito para lumabas ang warning sa browser
+    const allowExit = localStorage.getItem('allowExit');
+
+    // 👉 Kapag hindi na waiting (DONE na) → balik index
+    if (isWaiting !== 'true' || allowExit === 'true') {
+        window.location.replace('index.html');
     }
-});    
+});
  
 let myQueueNumber = "";
 let statusInterval;
@@ -858,15 +859,19 @@ function showStep(stepId) {
 }
     
      function finishTransaction() {
-    // Burahin ang mga sinave na input
+    // 👉 sabihin na pwede na umalis
+    localStorage.setItem('allowExit', 'true');
+
+    // clear data
     ['custName', 'accNo', 'accName', 'amount'].forEach(id => {
         localStorage.removeItem('input_' + id);
     });
-    // Burahin din ang queue status
+
     localStorage.removeItem('savedQueueNumber');
     localStorage.removeItem('isWaiting');
 
-    window.location.reload(); // Refresh para malinis lahat
+    // 👉 redirect agad
+    window.location.replace('index.html');
 }
     
     function updateReviewTotal() {
