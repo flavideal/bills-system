@@ -42,7 +42,7 @@
     .completed-list { border-top: 2px dashed #333; margin-top: 20px; padding-top: 10px; }
     .section-title { font-size: 10px; color: #666; margin-bottom: 10px; letter-spacing: 2px; }
     
-    /* ITO ANG MAG-AAYOS NG LAYOUT NG NAME AT NUMBER */
+   /* CSS FIX PARA LUMITAW ANG VALUE SA TABI NG LABEL */
     .detail-item { 
       margin-bottom: 8px; 
       font-size: 14px; 
@@ -57,31 +57,16 @@
       color: var(--gold); 
       font-size: 10px; 
       text-transform: uppercase;
-      width: 35%; /* Label lang ito (e.g., Account Name) */
+      width: 40%; /* Space para sa Label (e.g. Account Name) */
       flex-shrink: 0;
     }
-    
-    .copy-btn { 
-      background: rgba(255, 194, 103, 0.2);
-      color: var(--gold); 
-      border: 1px solid var(--gold);
-      padding: 4px 8px; 
-      font-size: 9px; 
-      border-radius: 4px; 
-      cursor: pointer;
-      flex-shrink: 0; /* Bawal itong liitan o pitpitin */
-      font-weight: bold;
-    }
-    
-    .copy-btn:hover { background: var(--gold); color: black; }
-    .copy-btn:active { transform: scale(0.9); }
     
     .detail-value {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
-      width: 65%; /* Dito papasok yung Name/Number at Copy Button */
-      overflow: hidden;
+      justify-content: flex-end; /* Itutulak ang lahat sa kanan */
+      width: 60%; 
+      gap: 8px; /* Space sa pagitan ng Value at Button */
     }
 
     .detail-value b {
@@ -89,11 +74,22 @@
       font-size: 13px;
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis; /* Pag mahaba, magiging "..." */
-      display: inline-block;
-      margin-right: 8px; /* Space bago ang button */
-      flex-grow: 1;
+      text-overflow: ellipsis; 
+      flex-grow: 1; /* Pipilitin nito yung text na magpakita */
       text-align: right;
+    }
+    
+    .copy-btn { 
+      background: rgba(255, 194, 103, 0.2);
+      color: var(--gold); 
+      border: 1px solid var(--gold);
+      padding: 4px 10px; 
+      font-size: 10px; 
+      border-radius: 4px; 
+      cursor: pointer;
+      flex-shrink: 0; /* Bawal itong lumaki o sumakop ng row */
+      width: auto; /* Siguraduhin na hindi siya mag-100% width */
+      font-weight: bold;
     }
 
     .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
