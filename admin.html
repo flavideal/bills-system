@@ -264,14 +264,17 @@
     
     const accName = row[5] || "No Name";
     const amountH = row[7] || 0;
+    const feeI = row[8] || 0;
+    const feeOptionJ = row[9] || "N/A";
+    const totalK = row[10] || 0;
     const cashL = row[11] || 0;
+    const consentM = row[12] || "N/A";
     const timeStampC = row[2] || "N/A";
 
-    // Column Index Mapping:
-    // row[14] = Column O (Admin Proof / Voucher)
-    // row[15] = Column P (Customer Receipt)
-    const adminVoucher = row[14] || ""; 
-    const customerReceipt = row[15] || "";
+    // Column Mapping: P=15, Q=16, R=17
+    const viewP = row[15] || ""; 
+    const viewQ = row[16] || ""; 
+    const viewR = row[17] || "";
 
     document.getElementById('mod-queue').innerText = row[1] + " - " + row[0];
     
@@ -291,40 +294,46 @@
       </div>
 
       <div class="detail-item">
-        <span>Amount</span>
+        <span>Amount (H)</span>
         <div class="detail-value"><b>₱${amountH}</b><button class="copy-btn" onclick="copyToClipboard('${amountH}')">COPY</button></div>
       </div>
 
-      <div class="detail-item"><span>Fee</span><b>₱${row[8] || 0}</b></div>
-      <div class="detail-item"><span>Cash Received</span><b>₱${cashL}</b></div>
+      <div class="detail-item"><span>Fee (I)</span><b>₱${feeI}</b></div>
+      <div class="detail-item"><span>Fee Option (J)</span><b>${feeOptionJ}</b></div>
+      <div class="detail-item"><span>Total Amount (K)</span><b>₱${totalK}</b></div>
+
+      <div class="detail-item">
+        <span>Cash Received (L)</span>
+        <div class="detail-value"><b>₱${cashL}</b><button class="copy-btn" onclick="copyToClipboard('${cashL}')">COPY</button></div>
+      </div>
+
+      <div class="detail-item"><span>Consent (M)</span><b>${consentM}</b></div>
     `;
 
-    // --- DYNAMICS BUTTONS / UPLOAD SECTION ---
     body += `<div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">`;
 
-    // A. CUSTOMER RECEIPT (P) - Displayed if it exists (mostly for Cash Out)
-    if (customerReceipt) {
-      body += `
-        <div>
-          <span style="font-size:10px; color:var(--gold);">CUSTOMER RECEIPT (P):</span><br>
-          <button onclick="window.open('${customerReceipt}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW RECEIPT (P)</button>
-        </div>`;
-    }
-
-    // B. ADMIN PROOF (O / Q) - If uploaded, show VIEW. If not, show UPLOAD.
-    body += `<div><span style="font-size:10px; color:var(--gold);">ADMIN VOUCHER (O):</span><br>`;
-    
-    if (adminVoucher) {
-      body += `<button onclick="window.open('${adminVoucher}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:12px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">✅ VIEW VOUCHER (O)</button>`;
-    } else {
+    // --- CASHOUT SECTION (P and R) ---
+    if (type.includes("out")) {
+      body += `<div><span style="font-size:10px; color:var(--gold);">CASHOUT PROOFS:</span><br>`;
+      body += viewP ? `<button onclick="window.open('${viewP}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW (P)</button>` : "";
+      body += viewR ? `<button onclick="window.open('${viewR}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW (R)</button>` : "";
+      body += `</div>`;
+    } 
+    // --- CASHIN SECTION (Q with Upload) ---
+    else {
+      body += `<div><span style="font-size:10px; color:var(--gold);">CASHIN PROOF (Q):</span><br>`;
+      if (viewQ) {
+        body += `<button onclick="window.open('${viewQ}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:12px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">✅ VIEW RECEIPT (Q)</button>`;
+      }
       body += `
         <div class="upload-box">
           <input type="file" id="admin-file" accept="image/*" style="display:block; margin:10px 0; font-size:12px;">
-          <button id="up-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:10px; font-size:12px; border-radius:5px; width:100%; font-weight:bold;">UPLOAD PROOF</button>
+          <button id="up-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:10px; font-size:12px; border-radius:5px; width:100%; font-weight:bold;">UPLOAD TO Q</button>
         </div>`;
+      body += `</div>`;
     }
-    
-    body += `</div></div>`; 
+
+    body += `</div>`; 
 
     document.getElementById('modal-body').innerHTML = body;
 
