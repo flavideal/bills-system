@@ -155,44 +155,66 @@
     const type = row[4] ? row[4].toString().toLowerCase() : "";
     const gcashNum = row[6] ? row[6].toString().replace(/'/g, "") : "";
     
+    // Kunin ang mga value para sa F, H, L
+    const accName = row[5] || "";
+    const amountH = row[7] || 0;
+    const cashL = row[11] || 0;
+    const sigProofR = row[17] || ""; // Column R (Index 17)
+
     document.getElementById('mod-queue').innerText = row[1] + " - " + row[0];
     
-    // Mapping ng Columns (D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12)
     let body = `
       <div class="detail-item"><span>Provider (D)</span><b>${row[3] || ""}</b></div>
       <div class="detail-item"><span>Trans Type (E)</span><b>${row[4] || ""}</b></div>
-      <div class="detail-item"><span>Account Name (F)</span><b>${row[5] || ""}</b></div>
+      
+      <div class="detail-item">
+        <span>Account Name (F)</span>
+        <div><b>${accName}</b><button class="copy-btn" onclick="copyToClipboard('${accName}')">COPY</button></div>
+      </div>
+
       <div class="detail-item">
         <span>Account Number (G)</span>
-        <div>
-          <b>${gcashNum}</b>
-          <button class="copy-btn" onclick="copyToClipboard('${gcashNum}')">COPY</button>
-        </div>
+        <div><b>${gcashNum}</b><button class="copy-btn" onclick="copyToClipboard('${gcashNum}')">COPY</button></div>
       </div>
-      <div class="detail-item"><span>Amount (H)</span>₱${row[7] || 0}</div>
+
+      <div class="detail-item">
+        <span>Amount (H)</span>
+        <div><b>₱${amountH}</b><button class="copy-btn" onclick="copyToClipboard('${amountH}')">COPY</button></div>
+      </div>
+
       <div class="detail-item"><span>Fee (I)</span>₱${row[8] || 0}</div>
       <div class="detail-item"><span>Fee Option (J)</span>${row[9] || ""}</div>
       <div class="detail-item"><span>Total Amount (K)</span>₱${row[10] || 0}</div>
-      <div class="detail-item"><span>Cash Received (L)</span>₱${row[11] || 0}</div>
+
+      <div class="detail-item">
+        <span>Cash Received (L)</span>
+        <div><b>₱${cashL}</b><button class="copy-btn" onclick="copyToClipboard('${cashL}')">COPY</button></div>
+      </div>
+
       <div class="detail-item"><span>Consent (M)</span>${row[12] || ""}</div>
     `;
 
-    // VIEW IMAGE LOGIC (Para sa Cash Out)
+    // VIEW IMAGE LOGIC (Para sa Cash Out - Column P at R)
     if (type.includes("out")) {
-      let imgUrl = row[15] || "";
+      let imgUrl = row[15] || ""; // Customer Receipt (P)
       let finalImg = imgUrl.includes("id=") ? fixDriveUrl(imgUrl) : imgUrl;
       
       body += `
         <div style="margin-top:10px; border-top: 1px solid #333; padding-top: 10px;">
-          <span style="font-size:10px; color:var(--gold);">CUSTOMER RECEIPT (COLUMN P):</span><br>
-          ${imgUrl ? `<img src="${finalImg}" class="proof-img" onerror="this.src='https://placehold.co/400x200?text=Click+to+View+Full+Image'" onclick="window.open('${imgUrl}')">` : `<p style="font-size:12px; color:#666;">No receipt uploaded.</p>`}
+          <span style="font-size:10px; color:var(--gold);">CUSTOMER RECEIPT (P):</span><br>
+          ${imgUrl ? `<img src="${finalImg}" class="proof-img" onclick="window.open('${imgUrl}')">` : `<p style="font-size:12px; color:#666;">No receipt uploaded.</p>`}
+        </div>
+        
+        <div style="margin-top:10px; border-top: 1px solid #333; padding-top: 10px;">
+          <span style="font-size:10px; color:var(--gold);">SIGNATURE PROOF (R):</span><br>
+          ${sigProofR ? `<img src="${sigProofR}" class="proof-img" onclick="window.open('${sigProofR}')" style="border-color: #4CAF50;">` : `<p style="font-size:12px; color:#666;">No signature proof yet.</p>`}
         </div>`;
     } 
-    // UPLOAD LOGIC (Para sa Cash In / Admin Proof)
+    // UPLOAD LOGIC (Para sa Cash In / Admin Proof - Column Q)
     else {
       body += `
         <div class="upload-box">
-          <span style="font-size:10px; color:var(--gold);">UPLOAD ADMIN PROOF (COLUMN Q):</span>
+          <span style="font-size:10px; color:var(--gold);">UPLOAD ADMIN PROOF (Q):</span>
           <input type="file" id="admin-file" accept="image/*" style="display:block; margin:10px 0; font-size:12px;">
           <button id="up-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:8px; font-size:11px;">UPLOAD PROOF</button>
           ${row[16] ? `<br><a href="${row[16]}" target="_blank" style="color:cyan; font-size:11px;">[View My Upload]</a>` : ""}
