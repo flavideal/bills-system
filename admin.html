@@ -203,10 +203,13 @@
     let totalFees = 0;
     let transCount = 0;
 
-    allData.forEach((row, index) => {
+   allData.forEach((row, index) => {
       const qNo = row[1].toString();
       const status = (row[13] || "NEW").toUpperCase();
-      const rowDate = row[0].split('T')[0]; // Kinukuha ang date part lang ng Timestamp
+      
+      // CHANGE THIS: Mula row[0], gawin nating row[2] para sa Column C
+      const rowDate = row[2] ? row[2].split('T')[0] : ""; 
+      
       const fee = parseFloat(row[8]) || 0;
 
       // Filter Logic
@@ -263,10 +266,29 @@
     const amountH = row[7] || 0;
     const cashL = row[11] || 0;
 
+    const timeStampC = row[2] || "N/A";
+
     document.getElementById('mod-queue').innerText = row[1] + " - " + row[0];
     
     // SIGURADUHIN NA GANITO ANG STRUCTURE NG BODY
     let body = `
+
+      <div class="detail-item">
+        <span>Timestamp (C)</span>
+        <b>${timeStampC}</b>
+      </div>
+      <div class="detail-item"><span>Provider (D)</span><b>${row[3] || ""}</b></div>
+      <div class="detail-item"><span>Trans Type (E)</span><b>${row[4] || ""}</b></div>
+      
+      <div class="detail-item">
+        <span>Account Name (F)</span>
+        <div class="detail-value">
+          <b>${accName}</b>
+          <button class="copy-btn" onclick="copyToClipboard('${accName}')">COPY</button>
+        </div>
+      </div>
+      `;
+    
       <div class="detail-item"><span>Provider (D)</span><b>${row[3] || ""}</b></div>
       <div class="detail-item"><span>Trans Type (E)</span><b>${row[4] || ""}</b></div>
       
