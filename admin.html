@@ -212,13 +212,56 @@
   
   // --- OTHERS REMAIN THE SAME ---
   async function updateStatus(q, s) {
-    await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "updateStatus", user: u, pass: p, queueNo: q, newStatus: s }) });
-    closeModal(); loadData();
+    // Papalitan natin ang text ng button para malaman na nagse-send
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "SENDING...";
+    btn.disabled = true;
+
+    try {
+      await fetch(SCRIPT_URL, { 
+        method: "POST", 
+        body: JSON.stringify({ action: "updateStatus", user: u, pass: p, queueNo: q, newStatus: s }) 
+      });
+      
+      // [FIX] Mag-close lang kung "COMPLETED" (DONE button)
+      if (s === 'COMPLETED') {
+        closeModal();
+      } else {
+        alert(s + " sent!");
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
+      
+      loadData(); // I-refresh ang listahan sa likod
+    } catch (e) {
+      alert("Error!");
+      btn.innerText = originalText;
+      btn.disabled = false;
+    }
   }
 
   async function callAgain(q) {
-    await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "updateStatus", user: u, pass: p, queueNo: q, newStatus: "CALLING", note: "CALL AGAIN" }) });
-    alert("Recall signal sent!"); closeModal(); loadData();
+    const btn = event.target;
+    btn.innerText = "RECALLING...";
+    btn.disabled = true;
+
+    try {
+      await fetch(SCRIPT_URL, { 
+        method: "POST", 
+        body: JSON.stringify({ action: "updateStatus", user: u, pass: p, queueNo: q, newStatus: "CALLING", note: "CALL AGAIN" }) 
+      });
+      
+      alert("Recall signal sent!");
+      // [FIX] Tinanggal ang closeModal() dito para hindi mag-close
+      btn.innerText = "CALL AGAIN";
+      btn.disabled = false;
+      loadData();
+    } catch (e) {
+      alert("Error!");
+      btn.innerText = "CALL AGAIN";
+      btn.disabled = false;
+    }
   }
 
   async function uploadAdminProof(qNo) {
