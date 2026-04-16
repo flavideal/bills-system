@@ -269,7 +269,7 @@
 
     document.getElementById('mod-queue').innerText = row[1] + " - " + row[0];
     
-    // BINUO NATIN ULI ANG BODY VARIABLE
+    // STEP 1: Buuin ang listahan ng basic details
     let body = `
       <div class="detail-item">
         <span>Timestamp (C)</span>
@@ -317,7 +317,7 @@
       <div class="detail-item"><span>Consent (M)</span><b>${row[12] || ""}</b></div>
     `;
 
-    // UPLOAD/VIEW LOGIC (Ngayon ay gagana na ito dahil hindi na putol ang variable)
+    // STEP 2: Idagdag ang Receipt/Upload Logic base sa Type
     if (type.includes("out")) {
       let imgUrl = row[15] || ""; 
       body += `
@@ -336,6 +336,7 @@
         </div>`;
     }
 
+    // STEP 3: I-display na sa Modal
     document.getElementById('modal-body').innerHTML = body;
 
     document.getElementById('modal-footer').innerHTML = `
