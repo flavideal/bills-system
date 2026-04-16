@@ -1083,20 +1083,21 @@ async function processFinalDone() {
         vCtx.textAlign = "right";
         vCtx.fillText(finalCash, 350, 255);
         
-        // --- TERMS & ACKNOWLEDGMENT ---
+        // --- TERMS ---
         vCtx.textAlign = "left";
-        vCtx.fillStyle = "#444";
-        vCtx.font = "italic 11px Arial";
+        vCtx.fillStyle = "#555";
+        vCtx.font = "italic 10px Arial";
         
         const lines = [
-            "By signing below, I acknowledge receipt of the exact amount stated above.",
-            "I agree to the service fees and terms. This transaction is final and complete."
+            "By signing below, I acknowledge receipt of the", // Hati sa gitna
+            "exact amount stated above. I agree to the fees", // Hati uli
+            "and terms. This transaction is final and complete."
         ];
         
-        let yPos = 290; // Pantay sa pwesto ng acknowledgment
+        let yPos = 285; // Itinaas ng konti para magkasya ang 3 lines
         lines.forEach(line => { 
-            vCtx.fillText(line, 40, yPos); 
-            yPos += 15; 
+            vCtx.fillText(line, 45, yPos); // Naka-indent ng 45 para sentro tignan
+            yPos += 14; // Sakto ang space ng bawat linya
         });
         
         // --- SIGNATURE AREA ---
