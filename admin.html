@@ -55,8 +55,10 @@
     .detail-item span { 
       color: var(--gold); 
       font-size: 10px; 
-      text-transform: uppercase; 
-      flex-grow: 1; /* Eto ang magtutulak sa value pakanan */
+      text-transform: uppercase;
+      /* Tinanggal ang flex-grow: 1 para hindi niya pitpitin ang value */
+      width: 40%; 
+      flex-shrink: 0;
     }
     
     .copy-btn { 
@@ -79,14 +81,12 @@
     .copy-btn:hover { background: var(--gold); color: black; }
     .copy-btn:active { transform: scale(0.9); }
     
-    /* Siguraduhin na ang container ay hindi nag-wa-wrap */
     .detail-value {
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      max-width: 70%; 
+      width: 60%; /* Binigyan natin ng sapat na space ang Name/Number */
       overflow: hidden;
-      flex-direction: row; /* Pinipilit na magkatabi sila palagi */
     }
 
     .detail-value b {
@@ -94,8 +94,10 @@
       font-size: 13px;
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis; /* Lalabas ang "..." pag masyadong mahaba ang pangalan */
-      display: inline-block;
+      text-overflow: ellipsis; 
+      display: block;
+      text-align: right;
+      width: 100%; /* Para sakop niya ang space bago ang button */
     }
 
     .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
