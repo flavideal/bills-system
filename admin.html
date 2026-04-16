@@ -3,105 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JPS Admin Panel</title>
+  <title>JPS Admin Panel - Detailed View</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
     :root { --primary: #1b431c; --gold: #ffc267; --bg: #0d0d0d; --card-bg: #1a1a1a; }
-    
-    body { 
-      font-family: 'Roboto', sans-serif; 
-      background: var(--bg); 
-      color: white; 
-      margin: 0; 
-      padding: 10px; 
-    }
-
-    /* Container for spacing */
+    body { font-family: 'Roboto', sans-serif; background: var(--bg); color: white; margin: 0; padding: 10px; }
     .container { max-width: 1000px; margin: 0 auto; }
 
-    /* Login Box Styles */
-    #login-box { 
-      max-width: 350px; 
-      margin: 80px auto; 
-      background: var(--card-bg); 
-      padding: 30px; 
-      border-radius: 15px; 
-      border: 2px solid var(--primary); 
-      text-align: center;
-      box-shadow: 0 0 20px rgba(27, 67, 28, 0.4);
-    }
+    /* Login Box */
+    #login-box { max-width: 350px; margin: 80px auto; background: var(--card-bg); padding: 30px; border-radius: 15px; border: 2px solid var(--primary); text-align: center; }
     input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
-    button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; }
-    button:hover { background: #2a612b; }
+    button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
 
-    /* Dashboard Styles */
+    /* Dashboard */
     #dashboard { display: none; }
-    .header { 
-      display: flex; 
-      flex-direction: row; 
-      justify-content: space-between; 
-      align-items: center; 
-      border-bottom: 2px solid var(--primary); 
-      padding-bottom: 10px;
-      margin-bottom: 15px;
-    }
-    .header h2 { font-family: 'Orbitron', sans-serif; color: var(--gold); font-size: 1.2rem; margin: 0; }
-    .header-btns { display: flex; gap: 10px; }
-    .btn-small { width: auto; padding: 8px 15px; font-size: 12px; background: #333; }
-
-    /* Table & Responsive Desktop */
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
+    .header h2 { font-family: 'Orbitron', sans-serif; color: var(--gold); font-size: 1.1rem; margin: 0; }
+    
+    /* Table Styling */
     .table-container { background: var(--card-bg); border-radius: 10px; overflow: hidden; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     th { background: var(--primary); color: white; padding: 15px; text-align: left; }
-    td { padding: 15px; border-bottom: 1px solid #222; }
+    td { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; }
+    tr:hover { background: #222; }
     
-    .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+    .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; }
     .new { background: #ff9800; color: #000; }
     .calling { background: #2196F3; color: #fff; }
     .completed { background: #4CAF50; color: #fff; }
 
     .actions { display: flex; gap: 5px; }
-    .btn-call { background: #2196F3; }
-    .btn-done { background: #4CAF50; }
-    .actions button { padding: 8px; font-size: 11px; }
+    .btn-call { background: #2196F3; border:none; color:white; padding: 8px; border-radius: 4px; font-size: 11px; cursor: pointer;}
+    .btn-done { background: #4CAF50; border:none; color:white; padding: 8px; border-radius: 4px; font-size: 11px; cursor: pointer;}
 
-    /* RESPONSIVE DESIGN FOR MOBILE */
+    /* MODAL / DETAILS BOX */
+    #details-modal { 
+      display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; 
+      background: rgba(0,0,0,0.9); overflow-y: auto;
+    }
+    .modal-content { 
+      background: #1a1a1a; margin: 5% auto; padding: 20px; border: 1px solid var(--gold); 
+      width: 90%; max-width: 500px; border-radius: 15px; 
+    }
+    .modal-header { font-family: 'Orbitron'; color: var(--gold); border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
+    .detail-item { margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+    .detail-item span { color: var(--gold); font-weight: bold; display: block; font-size: 11px; text-transform: uppercase; }
+
     @media screen and (max-width: 600px) {
-      .header h2 { font-size: 1rem; }
-      
-      /* Itatago natin ang table header sa mobile */
       thead { display: none; }
-      
-      /* Gawing cards ang bawat row */
-      tr { 
-        display: block; 
-        background: #111; 
-        margin-bottom: 15px; 
-        border: 1px solid #333; 
-        border-radius: 10px;
-        padding: 10px;
-      }
-      
-      td { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        padding: 8px 10px; 
-        border-bottom: 1px solid #222; 
-        text-align: right;
-      }
-      
-      td::before { 
-        content: attr(data-label); 
-        font-weight: bold; 
-        color: var(--gold); 
-        text-transform: uppercase; 
-        font-size: 11px;
-        float: left;
-      }
-
-      td:last-child { border-bottom: none; justify-content: center; background: #1a1a1a; margin-top: 5px; border-radius: 5px; }
-      .actions { width: 100%; justify-content: space-around; }
+      tr { display: block; margin-bottom: 10px; border: 1px solid #333; border-radius: 8px; }
+      td { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222; }
+      td::before { content: attr(data-label); font-weight: bold; color: var(--gold); font-size: 11px; }
     }
   </style>
 </head>
@@ -109,81 +61,67 @@
 
 <div class="container">
   <div id="login-box">
-    <h3 style="color: var(--gold); font-family: 'Orbitron';">ADMIN ACCESS</h3>
+    <h3 style="color: var(--gold); font-family: 'Orbitron';">ADMIN LOGIN</h3>
     <input type="text" id="user" placeholder="Username">
     <input type="password" id="pass" placeholder="Passcode">
-    <button onclick="login()">LOGIN TO HUB</button>
-    <p id="err" style="color: red; font-size: 12px; margin-top: 10px;"></p>
+    <button onclick="login()">ENTER PANEL</button>
   </div>
 
   <div id="dashboard">
     <div class="header">
       <h2>JPS ADMIN PANEL</h2>
-      <div class="header-btns">
-        <button class="btn-small" onclick="loadData()">REFRESH</button>
-        <button class="btn-small" style="background: #a32a2a;" onclick="logout()">LOGOUT</button>
-      </div>
+      <button onclick="logout()" style="width:auto; padding:5px 10px; background:#a32a2a; font-size:12px;">LOGOUT</button>
     </div>
-
     <div class="table-container">
-      <table id="trans-table">
+      <table>
         <thead>
           <tr>
             <th>Queue</th>
             <th>Name</th>
             <th>Type</th>
-            <th>Amount</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="table-body">
-          </tbody>
+        <tbody id="table-body"></tbody>
       </table>
     </div>
   </div>
 </div>
 
+<div id="details-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span id="mod-queue">QUEUE DETAILS</span>
+      <span onclick="closeModal()" style="cursor:pointer; color:red;">[X]</span>
+    </div>
+    <div id="modal-body"></div>
+    <button onclick="closeModal()" style="margin-top:20px; background:#333;">CLOSE</button>
+  </div>
+</div>
+
 <script>
-  // KUKUNIN ANG SAVED LOGIN PARA HINDI NAGLO-LOGOUT SA REFRESH
   let u = localStorage.getItem('admin_u') || "";
   let p = localStorage.getItem('admin_p') || "";
+  let allData = []; // Dito itatago ang full details
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec"; 
 
-  window.onload = function() {
-    if (u && p) {
-      showDashboard();
-      loadData();
-    }
-  };
+  window.onload = function() { if (u && p) { showDashboard(); loadData(); } };
 
   function login() {
-    let user_in = document.getElementById('user').value;
-    let pass_in = document.getElementById('pass').value;
-
-    if (user_in === "jerric_admin" && pass_in === "butuan2026") {
-      u = user_in; p = pass_in;
-      localStorage.setItem('admin_u', u);
-      localStorage.setItem('admin_p', p);
-      showDashboard();
-      loadData();
-    } else {
-      document.getElementById('err').innerText = "Mali ang credentials!";
-    }
+    let ui = document.getElementById('user').value;
+    let pi = document.getElementById('pass').value;
+    if (ui === "jerric_admin" && pi === "butuan2026") {
+      u = ui; p = pi;
+      localStorage.setItem('admin_u', u); localStorage.setItem('admin_p', p);
+      showDashboard(); loadData();
+    } else { alert("Invalid!"); }
   }
 
-  function logout() {
-    localStorage.clear();
-    location.reload();
-  }
-
-  function showDashboard() {
-    document.getElementById('login-box').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-  }
+  function logout() { localStorage.clear(); location.reload(); }
+  function showDashboard() { document.getElementById('login-box').style.display='none'; document.getElementById('dashboard').style.display='block'; }
 
   async function loadData() {
-    if(!u) return;
     try {
       const response = await fetch(SCRIPT_URL, {
         method: "POST",
@@ -191,20 +129,17 @@
       });
       const res = await response.json();
       if (res.result === "success") {
+        allData = res.data; // Save data for modal
         let html = "";
-        res.data.forEach(function(row) {
-          let status = row[13] || "NEW";
-          let statusClass = status.toLowerCase();
-          
-          // data-label ay para sa mobile view "cards"
-          html += `<tr>
+        allData.forEach((row, index) => {
+          let st = row[13] || "NEW";
+          html += `<tr onclick="showDetails(${index})">
             <td data-label="Queue" style="font-weight:bold; color:var(--gold)">${row[1]}</td>
             <td data-label="Name">${row[0]}</td>
             <td data-label="Type">${row[4]}</td>
-            <td data-label="Amount">₱${row[7]}</td>
-            <td data-label="Status"><span class="status-badge ${statusClass}">${status}</span></td>
+            <td data-label="Status"><span class="status-badge ${st.toLowerCase()}">${st}</span></td>
             <td data-label="Actions">
-              <div class="actions">
+              <div class="actions" onclick="event.stopPropagation()">
                 <button class="btn-call" onclick="update('${row[1]}', 'CALLING')">CALL</button>
                 <button class="btn-done" onclick="update('${row[1]}', 'COMPLETED')">DONE</button>
               </div>
@@ -213,8 +148,30 @@
         });
         document.getElementById('table-body').innerHTML = html;
       }
-    } catch (e) { console.error("Load Error:", e); }
+    } catch (e) { console.error(e); }
   }
+
+  function showDetails(index) {
+    const row = allData[index];
+    document.getElementById('mod-queue').innerText = "DETAILS: " + row[1];
+    let body = `
+      <div class="detail-item"><span>Timestamp</span>${row[2]}</div>
+      <div class="detail-item"><span>Customer Name</span>${row[0]}</div>
+      <div class="detail-item"><span>Provider</span>${row[3]}</div>
+      <div class="detail-item"><span>Transaction Type</span>${row[4]}</div>
+      <div class="detail-item"><span>GCash Name</span>${row[5]}</div>
+      <div class="detail-item"><span>GCash Number</span>${row[6]}</div>
+      <div class="detail-item"><span>Amount</span>₱${row[7]}</div>
+      <div class="detail-item"><span>Fee</span>₱${row[8]}</div>
+      <div class="detail-item"><span>Total to Pay/Receive</span>₱${row[10]}</div>
+      <div class="detail-item"><span>Status</span>${row[13]}</div>
+      <div class="detail-item"><span>Receipt Link</span><a href="${row[15]}" target="_blank" style="color:cyan">View Receipt</a></div>
+    `;
+    document.getElementById('modal-body').innerHTML = body;
+    document.getElementById('details-modal').style.display = 'block';
+  }
+
+  function closeModal() { document.getElementById('details-modal').style.display = 'none'; }
 
   async function update(q, s) {
     try {
@@ -223,10 +180,9 @@
         body: JSON.stringify({ action: "updateStatus", user: u, pass: p, queueNo: q, newStatus: s })
       });
       loadData();
-    } catch (e) { alert("Update failed"); }
+    } catch (e) { alert("Error"); }
   }
 
-  // Refresh every 20 seconds
   setInterval(() => { if(u) loadData(); }, 20000);
 </script>
 </body>
