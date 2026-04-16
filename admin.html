@@ -68,34 +68,14 @@
   </div>
 
   <script>
-    let u = "", p = "";
+  let u = "", p = "";
+  // PALITAN MO ITO NG IYONG WEB APP URL PAGKADEPLOY:
+  const SCRIPT_URL = "https://script.google.com/macros/s/IYONG_SCRIPT_ID/exec"; 
 
-    function login() {
-  u = document.getElementById('user').value;
-  p = document.getElementById('pass').value;
+  function login() {
+    u = document.getElementById('user').value;
+    p = document.getElementById('pass').value;
 
-  if (!u || !p) {
-    alert("Please enter credentials");
-    return;
-  }
-
-  // ILAGAY DITO ANG IYONG WEB APP URL (Yung nagtatapos sa /exec)
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
-
-  // Gumamit ng fetch para mag-send ng login request sa doPost
-  fetch(WEB_APP_URL, {
-    method: "POST",
-    mode: "no-cors", // Mahalaga ito para sa cross-domain
-    cache: "no-cache",
-    body: JSON.stringify({
-      action: "adminLogin",
-      user: u,
-      pass: p
-    })
-  })
-  .then(() => {
-    // Dahil "no-cors" ang gamit, hindi natin mababasa ang true/false response.
-    // Bilang workaround sa Admin Panel, iche-check natin kung tama ang u/p sa JS.
     if (u === "jerric_admin" && p === "butuan2026") {
       document.getElementById('login-box').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
@@ -103,15 +83,19 @@
     } else {
       alert("Mali ang credentials!");
     }
-  })
-  .catch(err => alert("Error: " + err.message));
-}
+  }
 
-    function loadData() {
-      google.script.run.withSuccessHandler(function(rows){
+  async function loadData() {
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "getTransactions", user: u, pass: p })
+      });
+      const res = await response.json();
+      if (res.result === "success") {
         let html = "";
-        rows.forEach(function(row){
-          let statusClass = row[13].toLowerCase();
+        res.data.forEach(function(row) {
+          let statusClass = row[13] ? row[13].toLowerCase() : "new";
           html += `<tr>
             <td style="font-weight:bold; color:var(--gold)">${row[1]}</td>
             <td>${row[0]}</td>
@@ -125,17 +109,21 @@
           </tr>`;
         });
         document.getElementById('table-body').innerHTML = html;
-      }).getTransactions(u, p);
-    }
+      }
+    } catch (e) { console.error("Error:", e); }
+  }
 
-    function update(q, s) {
-      google.script.run.withSuccessHandler(function(res){
-        if(res === "SUCCESS") loadData();
-      }).updateStatus(u, p, q, s);
-    }
+  async function update(q, s) {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "updateStatus", user: u, pass: p, queueNo: q, newStatus: s })
+      });
+      loadData();
+    } catch (e) { alert("Failed update"); }
+  }
 
-    // Auto refresh every 30 seconds
-    setInterval(function(){ if(u) loadData(); }, 30000);
-  </script>
+  setInterval(() => { if(u) loadData(); }, 30000);
+</script>
 </body>
 </html>
