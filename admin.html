@@ -146,8 +146,10 @@
 
   function fixDriveUrl(url) {
     if (!url || !url.includes("id=")) return url;
+    // Kinukuha ang ID ng file mula sa URL
     const id = url.split("id=")[1].split("&")[0];
-    return `https://lh3.googleusercontent.com/u/0/d/${id}`;
+    // Ito ang format para sa direct image display
+    return `https://thumbnail-q.host.google.com/thumbnail?id=${id}&w=1000&h=1000`;
   }
 
   function showDetails(index) {
@@ -194,22 +196,26 @@
       <div class="detail-item"><span>Consent (M)</span>${row[12] || ""}</div>
     `;
 
-    // VIEW IMAGE LOGIC (Para sa Cash Out - Column P at R)
+    // VIEW IMAGE LOGIC (Para sa Cash Out)
     if (type.includes("out")) {
-      let imgUrl = row[15] || ""; // Customer Receipt (P)
-      let finalImg = imgUrl.includes("id=") ? fixDriveUrl(imgUrl) : imgUrl;
+      let imgUrl = row[15] || ""; // Column P
+      let sigProofR = row[17] || ""; // Column R
+      
+      // I-convert ang link para maging direct image
+      let directImgP = fixDriveUrl(imgUrl);
+      let directImgR = fixDriveUrl(sigProofR);
       
       body += `
         <div style="margin-top:10px; border-top: 1px solid #333; padding-top: 10px;">
           <span style="font-size:10px; color:var(--gold);">CUSTOMER RECEIPT (P):</span><br>
-          ${imgUrl ? `<img src="${finalImg}" class="proof-img" onclick="window.open('${imgUrl}')">` : `<p style="font-size:12px; color:#666;">No receipt uploaded.</p>`}
+          ${imgUrl ? `<img src="${directImgP}" class="proof-img" onclick="window.open('${imgUrl}')">` : `<p style="font-size:12px; color:#666;">No receipt uploaded.</p>`}
         </div>
         
         <div style="margin-top:10px; border-top: 1px solid #333; padding-top: 10px;">
           <span style="font-size:10px; color:var(--gold);">SIGNATURE PROOF (R):</span><br>
-          ${sigProofR ? `<img src="${sigProofR}" class="proof-img" onclick="window.open('${sigProofR}')" style="border-color: #4CAF50;">` : `<p style="font-size:12px; color:#666;">No signature proof yet.</p>`}
+          ${sigProofR ? `<img src="${directImgR}" class="proof-img" onclick="window.open('${sigProofR}')" style="border-color: #4CAF50;">` : `<p style="font-size:12px; color:#666;">No signature proof yet.</p>`}
         </div>`;
-    } 
+    }
     // UPLOAD LOGIC (Para sa Cash In / Admin Proof - Column Q)
     else {
       body += `
