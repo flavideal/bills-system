@@ -265,30 +265,16 @@
     const accName = row[5] || "No Name";
     const amountH = row[7] || 0;
     const cashL = row[11] || 0;
-
     const timeStampC = row[2] || "N/A";
 
     document.getElementById('mod-queue').innerText = row[1] + " - " + row[0];
     
-    // SIGURADUHIN NA GANITO ANG STRUCTURE NG BODY
+    // BINUO NATIN ULI ANG BODY VARIABLE
     let body = `
-
       <div class="detail-item">
         <span>Timestamp (C)</span>
         <b>${timeStampC}</b>
       </div>
-      <div class="detail-item"><span>Provider (D)</span><b>${row[3] || ""}</b></div>
-      <div class="detail-item"><span>Trans Type (E)</span><b>${row[4] || ""}</b></div>
-      
-      <div class="detail-item">
-        <span>Account Name (F)</span>
-        <div class="detail-value">
-          <b>${accName}</b>
-          <button class="copy-btn" onclick="copyToClipboard('${accName}')">COPY</button>
-        </div>
-      </div>
-      `;
-    
       <div class="detail-item"><span>Provider (D)</span><b>${row[3] || ""}</b></div>
       <div class="detail-item"><span>Trans Type (E)</span><b>${row[4] || ""}</b></div>
       
@@ -331,10 +317,9 @@
       <div class="detail-item"><span>Consent (M)</span><b>${row[12] || ""}</b></div>
     `;
 
-    // UPLOAD/VIEW LOGIC (Paki-copy na rin ito para hindi mabura ang images)
+    // UPLOAD/VIEW LOGIC (Ngayon ay gagana na ito dahil hindi na putol ang variable)
     if (type.includes("out")) {
       let imgUrl = row[15] || ""; 
-      let sigProofR = row[17] || ""; 
       body += `
         <div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">
           <div>
@@ -343,7 +328,6 @@
           </div>
         </div>`;
     } else {
-      let adminProofQ = row[16] || "";
       body += `
         <div class="upload-box">
           <span style="font-size:10px; color:var(--gold);">UPLOAD ADMIN PROOF:</span>
