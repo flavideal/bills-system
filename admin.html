@@ -32,33 +32,49 @@
     .modal-content { background: #111; margin: 5% auto; padding: 20px; border: 1px solid var(--primary); width: 90%; max-width: 450px; border-radius: 15px; }
     .modal-header { font-family: 'Orbitron'; color: var(--gold); border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 14px; }
     
-    .detail-item { margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding-bottom: 5px; align-items: center; }
-    .detail-item span { color: var(--gold); font-size: 10px; text-transform: uppercase; }
+    .detail-item { 
+      margin-bottom: 8px; 
+      font-size: 14px; 
+      display: flex; 
+      justify-content: space-between; 
+      border-bottom: 1px solid #222; 
+      padding-bottom: 8px; /* Dinagdagan natin ng space para hindi dikit-dikit */
+      align-items: center; 
+    }
+    
+    .detail-item span { 
+      color: var(--gold); 
+      font-size: 10px; 
+      text-transform: uppercase; 
+      flex-grow: 1; /* Eto ang magtutulak sa value pakanan */
+    }
     
     .copy-btn { 
-      background: transparent; 
+      background: rgba(255, 194, 103, 0.1); 
       color: var(--gold); 
       border: 1px solid rgba(255, 194, 103, 0.3); 
-      padding: 4px 8px; 
+      padding: 3px 6px; 
       font-size: 9px; 
       border-radius: 4px; 
       cursor: pointer; 
       margin-left: 8px;
       transition: 0.2s;
-      flex-shrink: 0; /* Para hindi siya ma-piga */
+      flex-shrink: 0; 
     }
     .copy-btn:hover { background: var(--gold); color: black; }
     
-    /* Layout fix para sa detail-item */
     .detail-value {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: flex-end; /* Nakadikit dapat sa kanan */
       text-align: right;
-      max-width: 70%;
+      max-width: 75%; /* Para hindi kainin ang label sa kaliwa */
     }
+
     .detail-value b {
-      word-break: break-all; /* Para hindi lumampas ang mahabang text */
+      color: white;
+      word-break: break-all;
+      font-size: 13px;
     }
 
     .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
