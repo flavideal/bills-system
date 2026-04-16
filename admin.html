@@ -60,13 +60,24 @@
     }
     
     .copy-btn { 
-      flex-shrink: 0;
-      white-space: nowrap;
+      background: rgba(255, 194, 103, 0.2); /* Transparent gold background */
+      color: var(--gold); 
+      border: 1px solid var(--gold);
+      padding: 4px 10px; 
+      font-size: 10px; 
+      border-radius: 4px; 
+      cursor: pointer; 
       margin-left: 8px;
-      padding: 4px 8px;
+      transition: 0.2s;
+      flex-shrink: 0; /* Hindi ito pwedeng mapitpit o lumiit */
+      white-space: nowrap; /* Isang linya lang dapat ang "COPY" */
+      font-weight: bold;
+      font-family: 'Roboto', sans-serif;
+      text-transform: uppercase;
     }
     
-    .copy-btn:active { transform: scale(0.9); } /* Feedback pag na-click */
+    .copy-btn:hover { background: var(--gold); color: black; }
+    .copy-btn:active { transform: scale(0.9); }
     
     /* Siguraduhin na ang container ay hindi nag-wa-wrap */
     .detail-value {
@@ -75,6 +86,7 @@
       justify-content: flex-end;
       max-width: 70%; 
       overflow: hidden;
+      flex-direction: row; /* Pinipilit na magkatabi sila palagi */
     }
 
     .detail-value b {
@@ -82,7 +94,7 @@
       font-size: 13px;
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis;
+      text-overflow: ellipsis; /* Lalabas ang "..." pag masyadong mahaba ang pangalan */
       display: inline-block;
     }
 
