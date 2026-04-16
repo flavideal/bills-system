@@ -42,13 +42,14 @@
     .completed-list { border-top: 2px dashed #333; margin-top: 20px; padding-top: 10px; }
     .section-title { font-size: 10px; color: #666; margin-bottom: 10px; letter-spacing: 2px; }
     
+    /* ITO ANG MAG-AAYOS NG LAYOUT NG NAME AT NUMBER */
     .detail-item { 
       margin-bottom: 8px; 
       font-size: 14px; 
       display: flex; 
       justify-content: space-between; 
       border-bottom: 1px solid #222; 
-      padding-bottom: 8px; /* Dinagdagan natin ng space para hindi dikit-dikit */
+      padding-bottom: 8px; 
       align-items: center; 
     }
     
@@ -56,26 +57,20 @@
       color: var(--gold); 
       font-size: 10px; 
       text-transform: uppercase;
-      /* Tinanggal ang flex-grow: 1 para hindi niya pitpitin ang value */
-      width: 40%; 
+      width: 35%; /* Label lang ito (e.g., Account Name) */
       flex-shrink: 0;
     }
     
     .copy-btn { 
-      background: rgba(255, 194, 103, 0.2); /* Transparent gold background */
+      background: rgba(255, 194, 103, 0.2);
       color: var(--gold); 
       border: 1px solid var(--gold);
-      padding: 4px 10px; 
-      font-size: 10px; 
+      padding: 4px 8px; 
+      font-size: 9px; 
       border-radius: 4px; 
-      cursor: pointer; 
-      margin-left: 8px;
-      transition: 0.2s;
-      flex-shrink: 0; /* Hindi ito pwedeng mapitpit o lumiit */
-      white-space: nowrap; /* Isang linya lang dapat ang "COPY" */
+      cursor: pointer;
+      flex-shrink: 0; /* Bawal itong liitan o pitpitin */
       font-weight: bold;
-      font-family: 'Roboto', sans-serif;
-      text-transform: uppercase;
     }
     
     .copy-btn:hover { background: var(--gold); color: black; }
@@ -85,7 +80,7 @@
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      width: 60%; /* Binigyan natin ng sapat na space ang Name/Number */
+      width: 65%; /* Dito papasok yung Name/Number at Copy Button */
       overflow: hidden;
     }
 
@@ -94,10 +89,11 @@
       font-size: 13px;
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis; 
-      display: block;
+      text-overflow: ellipsis; /* Pag mahaba, magiging "..." */
+      display: inline-block;
+      margin-right: 8px; /* Space bago ang button */
+      flex-grow: 1;
       text-align: right;
-      width: 100%; /* Para sakop niya ang space bago ang button */
     }
 
     .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
