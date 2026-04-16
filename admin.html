@@ -263,14 +263,13 @@
     const type = row[4] ? row[4].toString().toLowerCase() : "";
     const gcashNum = row[6] ? row[6].toString().replace(/'/g, "") : "";
     
-    // Kunin ang mga value para sa F, H, L
-    const accName = row[5] || "";
+    const accName = row[5] || "No Name";
     const amountH = row[7] || 0;
     const cashL = row[11] || 0;
-    const sigProofR = row[17] || ""; // Column R (Index 17)
 
     document.getElementById('mod-queue').innerText = row[1] + " - " + row[0];
     
+    // SIGURADUHIN NA GANITO ANG STRUCTURE NG BODY
     let body = `
       <div class="detail-item"><span>Provider (D)</span><b>${row[3] || ""}</b></div>
       <div class="detail-item"><span>Trans Type (E)</span><b>${row[4] || ""}</b></div>
@@ -278,7 +277,7 @@
       <div class="detail-item">
         <span>Account Name (F)</span>
         <div class="detail-value">
-          <b title="${accName}">${accName}</b>
+          <b>${accName}</b>
           <button class="copy-btn" onclick="copyToClipboard('${accName}')">COPY</button>
         </div>
       </div>
@@ -286,7 +285,7 @@
       <div class="detail-item">
         <span>Account Number (G)</span>
         <div class="detail-value">
-          <b title="${gcashNum}">${gcashNum}</b>
+          <b>${gcashNum}</b>
           <button class="copy-btn" onclick="copyToClipboard('${gcashNum}')">COPY</button>
         </div>
       </div>
@@ -314,39 +313,24 @@
       <div class="detail-item"><span>Consent (M)</span><b>${row[12] || ""}</b></div>
     `;
 
-    // VIEW IMAGE LOGIC (Para sa Cash Out)
+    // UPLOAD/VIEW LOGIC (Paki-copy na rin ito para hindi mabura ang images)
     if (type.includes("out")) {
-      let imgUrl = row[15] || ""; // Column P
-      let sigProofR = row[17] || ""; // Column R
-      
+      let imgUrl = row[15] || ""; 
+      let sigProofR = row[17] || ""; 
       body += `
         <div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">
           <div>
             <span style="font-size:10px; color:var(--gold);">CUSTOMER RECEIPT (P):</span><br>
-            ${imgUrl ? `<button onclick="window.open('${imgUrl}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW RECEIPT</button>` : `<p style="font-size:12px; color:#666;">No receipt uploaded.</p>`}
-          </div>
-          
-          <div>
-            <span style="font-size:10px; color:var(--gold);">SIGNATURE PROOF (R):</span><br>
-            ${sigProofR ? `<button onclick="window.open('${sigProofR}')" style="background:#333; color:#4CAF50; border:1px solid #4CAF50; padding:10px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">✍️ VIEW SIGNATURE</button>` : `<p style="font-size:12px; color:#666;">No signature proof yet.</p>`}
+            ${imgUrl ? `<button onclick="window.open('${imgUrl}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW RECEIPT</button>` : `<p style="font-size:12px; color:#666;">No receipt.</p>`}
           </div>
         </div>`;
-    }
-    // UPLOAD LOGIC (Para sa Cash In / Admin Proof)
-    else {
+    } else {
       let adminProofQ = row[16] || "";
       body += `
         <div class="upload-box">
-          <span style="font-size:10px; color:var(--gold);">UPLOAD ADMIN PROOF (Q):</span>
+          <span style="font-size:10px; color:var(--gold);">UPLOAD ADMIN PROOF:</span>
           <input type="file" id="admin-file" accept="image/*" style="display:block; margin:10px 0; font-size:12px;">
           <button id="up-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:10px; font-size:12px; border-radius:5px;">UPLOAD PROOF</button>
-          
-          ${adminProofQ ? `
-            <div style="margin-top:15px; border-top:1px solid #333; padding-top:10px;">
-              <span style="font-size:10px; color:cyan;">EXISTING UPLOAD:</span>
-              <button onclick="window.open('${adminProofQ}')" style="background:#000; color:cyan; border:1px solid cyan; padding:8px; width:100%; border-radius:5px; margin-top:5px; cursor:pointer;">👁️ VIEW MY UPLOAD</button>
-            </div>
-          ` : ""}
         </div>`;
     }
 
@@ -359,7 +343,7 @@
     `;
 
     document.getElementById('details-modal').style.display = 'block';
-  }
+}
   
   // --- OTHERS REMAIN THE SAME ---
   async function updateStatus(q, s) {
