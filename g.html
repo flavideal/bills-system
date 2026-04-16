@@ -858,17 +858,18 @@ function showStep(stepId) {
 }
     
      function finishTransaction() {
-    // Burahin ang mga sinave na input
-    ['custName', 'accNo', 'accName', 'amount'].forEach(id => {
-        localStorage.removeItem('input_' + id);
+    // 1. Burahin ang mga sinave na input para malinis sa susunod na customer
+    ['custName', 'accNo', 'accName', 'amount', 'savedQueueNumber', 'isWaiting', 'currentStep', 'feeOption', 'sessionStartTime'].forEach(id => {
+        localStorage.removeItem(id);
+        localStorage.removeItem('input_' + id); // Para sa mga input fields
     });
-    // Burahin din ang queue status
-    localStorage.removeItem('savedQueueNumber');
-    localStorage.removeItem('isWaiting');
 
-    window.location.reload(); // Refresh para malinis lahat
+    // 2. Itigil ang pag-check ng status kung meron man
+    if(statusInterval) clearInterval(statusInterval);
+
+    // 3. I-redirect sa index.html imbes na reload lang
+    window.location.href = 'index.html'; 
 }
-
     
     function updateReviewTotal() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
@@ -976,11 +977,11 @@ function adminForceReset() {
     const enteredPin = prompt("ADMIN ONLY: Enter 6-digit PIN to reset kiosk:");
     
     if (enteredPin === ADMIN_PIN) {
-        localStorage.clear(); // Burahin lahat ng data sa storage
+        localStorage.clear(); // Burahin ang lahat
         if(statusInterval) clearInterval(statusInterval);
         
-        alert("System Reset! Redirecting...");
-        // Gamitin ang replace para burahin ang history entry
+        alert("System Reset! Redirecting to Home...");
+        // Ginagamit ang replace para burahin ang history entry
         window.location.replace('index.html'); 
     } else if (enteredPin !== null) {
         alert("Maling PIN!");
