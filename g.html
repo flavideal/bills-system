@@ -1083,17 +1083,22 @@ async function processFinalDone() {
         vCtx.textAlign = "right";
         vCtx.fillText(finalCash, 350, 255);
         
-        // --- TERMS ---
+        // --- TERMS & ACKNOWLEDGMENT ---
         vCtx.textAlign = "left";
-        vCtx.fillStyle = "#555";
-        vCtx.font = "italic 10px Arial";
+        vCtx.fillStyle = "#444";
+        vCtx.font = "italic 11px Arial";
+        
         const lines = [
-            "I acknowledge receipt of the exact amount stated above.",
-            "Transaction is final. I agree to the Fees, Privacy Policy & Terms."
+            "By signing below, I acknowledge receipt of the exact amount stated above.",
+            "I agree to the service fees and terms. This transaction is final and complete."
         ];
-        let yPos = 290;
-        lines.forEach(line => { vCtx.fillText(line, 40, yPos); yPos += 15; });
-
+        
+        let yPos = 290; // Pantay sa pwesto ng acknowledgment
+        lines.forEach(line => { 
+            vCtx.fillText(line, 40, yPos); 
+            yPos += 15; 
+        });
+        
         // --- SIGNATURE AREA ---
         const sigPad = document.getElementById('signature-pad');
         if (sigPad) {
@@ -1119,7 +1124,8 @@ async function processFinalDone() {
         // Footer
         vCtx.font = "9px Arial";
         vCtx.fillStyle = "#999";
-        vCtx.fillText("System-generated voucher by Flavi Deal - Jerric Personal Service", 200, 580);
+        vCtx.fillText("This is a system-generated voucher.", 200, 560);
+        vCtx.fillText("Thank you for trusting Jerric's Personal Service!", 200, 575);
         
         const voucherDataURL = vCanvas.toDataURL("image/png");
 
