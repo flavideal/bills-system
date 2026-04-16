@@ -74,22 +74,29 @@
   u = document.getElementById('user').value;
   p = document.getElementById('pass').value;
 
-  console.log("Checking login for: " + u); // Makita ni sa F12 Console
+  console.log("Attempting login...");
+
+  // Pilitin nating mag-alert para malaman kung gumagana ang button
+  if (!u || !p) {
+    alert("Please enter credentials");
+    return;
+  }
 
   google.script.run
     .withSuccessHandler(function(isValid){
-      console.log("Response from server: " + isValid);
+      console.log("Server response:", isValid);
       if(isValid){
         document.getElementById('login-box').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
         loadData();
       } else {
+        alert("Mali ang Username o Passcode!");
         document.getElementById('err').innerText = "Mali ang credentials!";
       }
     })
-    .withFailureHandler(function(err){ 
-      // KINI ANG IMPORTANTE: Makita nimo kung ngano wala ni-connect
-      alert("Dili maka-connect sa Server: " + err.message);
+    .withFailureHandler(function(err){
+      // Lalabas ito kung hindi makakonekta sa .gs file
+      alert("System Error: " + err.message);
     })
     .checkLogin(u, p);
 }
