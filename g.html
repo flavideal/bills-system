@@ -763,35 +763,13 @@ function showStep(stepId) {
     try {
         const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
-        let finalK = 0; 
-        let finalL = 0;
-
-        if (currentMode === 'Cash In') {
-            const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
-            const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
-
-            if (feeOption === 'add') {
-                if (isExactVal) {
-                    finalK = baseAmount + fee; 
-                    finalL = baseAmount;       
-                } else {
-                    finalK = cashInputVal;        
-                    finalL = cashInputVal - baseAmount - fee; 
-                }
-            } else {
-                finalK = baseAmount;            
-                finalL = baseAmount - fee;     
-            }
-        } else {
-            // Logic para sa Cash Out
-            if (feeOption === 'add') {
-                finalK = baseAmount + fee;     
-                finalL = baseAmount;           
-            } else {
-                finalK = baseAmount;            
-                finalL = baseAmount - fee;     
-            }
-        }
+        // Kukunin lang natin ang mga raw values mula sa form.
+        // Ang Apps Script na ang bahalang mag-sort sa K, L, M, N, at O.
+        const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+        const feeOption = document.getElementById('reviewFeeOption').value;
+        const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+        const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
+        const fee = baseAmount * 0.01;
 
         const formData = {
             customerName: document.getElementById('custName').value,
@@ -804,10 +782,10 @@ function showStep(stepId) {
             amount: baseAmount,
             feeAmount: fee,
             feeOption: feeOption,
-            totalAmount: finalK,
-            cashAmount: finalL,
+            // IPAPASA NATIN ANG RAW VALUES PARA SA LOGIC NG SCRIPT
+            totalAmount: cashInputVal, // Inabot na cash (kung meron)
+            cashAmount: isExactVal ? 0 : (cashInputVal - (baseAmount + fee)), // Sukli (kung meron)
             consent: "YES",
-            // Ipinapasa ang file data sa Google Apps Script
             receiptFile: base64File,
             receiptFileName: fileName,
             receiptFileType: fileType
