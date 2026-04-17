@@ -1,20 +1,20 @@
 {
-  "name": "JERRIC TV MONITOR",
-  "short_name": "TV Kiosk",
-  "description": "Live Status Monitor for JERRIC KIOSK",
-  "start_url": "/tv.html",
+  "name": "JERRIC ADMIN",
+  "short_name": "Admin",
+  "description": "Master Control Panel for JERRIC KIOSK",
+  "start_url": "/admin.html",
   "display": "standalone",
-  "orientation": "landscape",
-  "background_color": "#051106",
-  "theme_color": "#1b431c",
+  "orientation": "any",
+  "background_color": "#2b0000",
+  "theme_color": "#4a0000",
   "icons": [
     {
-      "src": "https://jerrickiosk.flavideal.com/logo/tv.png",
+      "src": "https://jerrickiosk.flavideal.com/logo/admin.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://jerrickiosk.flavideal.com/logo/tv.png",
+      "src": "https://jerrickiosk.flavideal.com/logo/admin.png",
       "sizes": "512x512",
       "type": "image/png"
     }
