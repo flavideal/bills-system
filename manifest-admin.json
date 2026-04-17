@@ -1,8 +1,9 @@
 {
   "name": "JERRIC ADMIN",
   "short_name": "Admin",
-  "description": "Master Control Panel for JERRIC KIOSK",
+  "description": "Control Panel",
   "start_url": "/admin.html",
+  "scope": "/admin.html",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#2b0000",
