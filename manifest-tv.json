@@ -1,8 +1,9 @@
 {
-  "name": "JERRIC TV MONITOR",
-  "short_name": "TV Kiosk",
-  "description": "Live Status Monitor for JERRIC KIOSK",
+  "name": "JERRIC TV",
+  "short_name": "TV App",
+  "description": "TV Display Monitor",
   "start_url": "/tv.html",
+  "scope": "/tv.html",
   "display": "standalone",
   "orientation": "landscape",
   "background_color": "#051106",
