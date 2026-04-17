@@ -118,6 +118,8 @@
 </head>
 <body>
 
+<audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
 <div class="container">
   <div id="login-box">
     <h3 style="color: var(--gold); font-family: 'Orbitron'; font-size: 14px;">JPS ADMIN</h3>
@@ -168,10 +170,24 @@
   let u = localStorage.getItem('admin_u') || "";
   let p = localStorage.getItem('admin_p') || "";
   let allData = [];
-  let filteredData = [];
+  let lastCount = 0; // Taga-bilang ng lumang transactions
+  let isFirstLoad = true; // Para hindi tumunog sa unang load
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec"; 
 
-  window.onload = function() { if (u && p) { showDashboard(); loadData(); } };
+  window.onload = function() { 
+    if (u && p) { 
+      showDashboard(); 
+      loadData(); 
+      requestNotifPermission(); // Hingin ang permission sa start
+    } 
+  };
+
+  // --- NEW: Humingi ng Permission para sa Notifications ---
+  function requestNotifPermission() {
+    if ("Notification" in window) {
+      Notification.requestPermission();
+    }
+  }
 
   function login() {
     let ui = document.getElementById('user').value;
@@ -180,13 +196,11 @@
       u = ui; p = pi;
       localStorage.setItem('admin_u', u); localStorage.setItem('admin_p', p);
       showDashboard(); loadData();
+      requestNotifPermission(); // Hingin din dito pagka-login
     } else { alert("Invalid!"); }
   }
 
-  function logout() { localStorage.clear(); location.reload(); }
-  function showDashboard() { document.getElementById('login-box').style.display='none'; document.getElementById('dashboard').style.display='block'; }
-
- async function loadData() {
+  async function loadData() {
     try {
       const response = await fetch(SCRIPT_URL, {
         method: "POST",
@@ -195,10 +209,46 @@
       const res = await response.json();
       if (res.result === "success") {
         allData = res.data;
-        filterData(); // Dito natin tatawagin ang pag-display
+
+        // --- NEW: NOTIFICATION LOGIC ---
+        // Bilangin lang ang NEW o ACTIVE transactions
+        const currentActiveCount = allData.filter(row => (row[16] || "NEW").toUpperCase() !== "COMPLETED").length;
+
+        // Kung mas marami ang bago kaysa sa huling count, patunugin!
+        if (!isFirstLoad && currentActiveCount > lastCount) {
+          triggerAlert();
+        }
+
+        lastCount = currentActiveCount;
+        isFirstLoad = false;
+        // ------------------------------
+
+        filterData();
       }
     } catch (e) { console.error(e); }
   }
+
+  // --- NEW: Function para sa Tunog at Banner ---
+  function triggerAlert() {
+    // 1. Patunugin ang Audio
+    const sound = document.getElementById('notifSound');
+    if (sound) {
+      sound.play().catch(e => console.log("Sound blocked: Click the page first."));
+    }
+
+    // 2. Ipakita ang Notification Banner (kung naka-install o nasa background)
+    if (Notification.permission === "granted") {
+      new Notification("JPS ADMIN: NEW QUEUE!", {
+        body: "May bagong customer sa kiosk. I-check ang queue.",
+        icon: "https://jerrickiosk.flavideal.com/logo/admin.png"
+      });
+    }
+  }
+
+  /* ... ang rest ng functions mo (logout, filterData, showDetails, etc.) ay mananatili ... */
+
+  function logout() { localStorage.clear(); location.reload(); }
+  function showDashboard() { document.getElementById('login-box').style.display='none'; document.getElementById('dashboard').style.display='block'; }
 
   function filterData() {
     const searchTerm = document.getElementById('searchQ').value.toUpperCase();
