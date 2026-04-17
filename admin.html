@@ -305,20 +305,20 @@
       </div>
 
       <div class="detail-item">
-        <span>Amount (H)</span>
+        <span>Amount</span>
         <div class="detail-value"><b>₱${amountH}</b><button class="copy-btn" onclick="copyToClipboard('${amountH}')">COPY</button></div>
       </div>
 
-      <div class="detail-item"><span>Fee (I)</span><b>₱${feeI}</b></div>
-      <div class="detail-item"><span>Fee Option (J)</span><b>${feeOptionJ}</b></div>
-      <div class="detail-item"><span>Total Amount (K)</span><b>₱${totalK}</b></div>
+      <div class="detail-item"><span>Fee</span><b>₱${feeI}</b></div>
+      <div class="detail-item"><span>Fee Option</span><b>${feeOptionJ}</b></div>
+      <div class="detail-item"><span>Amount (cash na matatanggap o papasok sa account)</span><b>₱${totalK}</b></div>
 
       <div class="detail-item">
-        <span>Cash Received (L)</span>
+        <span>Amount Sukli or (Cash na ibibigay sa cashout/ Cash na e-send sa account niya)</span>
         <div class="detail-value"><b>₱${cashL}</b><button class="copy-btn" onclick="copyToClipboard('${cashL}')">COPY</button></div>
       </div>
 
-      <div class="detail-item"><span>Consent (M)</span><b>${consentM}</b></div>
+      <div class="detail-item"><span>Consent</span><b>${consentM}</b></div>
     `;
 
     body += `<div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">`;
@@ -326,13 +326,13 @@
     // --- CASHOUT SECTION (P and R) ---
     if (type.includes("out")) {
       body += `<div><span style="font-size:10px; color:var(--gold);">CASHOUT PROOFS:</span><br>`;
-      body += viewP ? `<button onclick="window.open('${viewP}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW (P)</button>` : "";
-      body += viewR ? `<button onclick="window.open('${viewR}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW (R)</button>` : "";
+      body += viewP ? `<button onclick="window.open('${viewP}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW SENT PROOF</button>` : "";
+      body += viewR ? `<button onclick="window.open('${viewR}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW VOUCHER</button>` : "";
       body += `</div>`;
     } 
     // --- CASHIN SECTION (Q with Upload) ---
     else {
-      body += `<div><span style="font-size:10px; color:var(--gold);">CASHIN PROOF (Q):</span><br>`;
+      body += `<div><span style="font-size:10px; color:var(--gold);">CASHIN PROOF:</span><br>`;
       if (viewQ) {
         body += `<button onclick="window.open('${viewQ}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:12px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">✅ VIEW RECEIPT (Q)</button>`;
       }
