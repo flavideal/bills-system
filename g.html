@@ -226,15 +226,25 @@
         
         <img src="https://jerrickiosk.flavideal.com/qr/gc.png" id="gcashQR" style="width: 180px; margin-top: 10px; border-radius: 10px;">
         
-        <div style="margin-top: 10px;">
+        <div id="amountToCopyContainer" style="background: #fff; border: 1px solid var(--dark-green); padding: 10px; border-radius: 8px; margin: 10px auto; width: 80%;">
+            <p style="font-size: 10px; color: #666; margin: 0; text-transform: uppercase;">Amount to Send:</p>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+                <span id="displayAmountToSend" style="font-size: 18px; font-weight: bold; color: #d32f2f;">₱0.00</span>
+                <button type="button" onclick="copyAmount()" style="background: var(--dark-green); color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">
+                    COPY
+                </button>
+            </div>
+        </div>
+
+        <div style="margin-top: 5px;">
             <a href="https://jerrickiosk.flavideal.com/qr/gc.png" download="Jerric_GCash_QR.png" style="text-decoration: none;">
                 <button type="button" style="background: var(--dark-green); color: white; border: none; padding: 8px 15px; border-radius: 5px; font-size: 12px; cursor: pointer; font-weight: bold;">
-                    📥 DOWNLOAD QR CODE
+                    📥 DOWNLOAD QR
                 </button>
             </a>
         </div>
 
-        <p id="qrInstructionReview" style="font-size: 11px; margin-top: 8px; color: #d32f2f; font-weight: bold;"></p>
+        <p id="qrInstructionReview" style="font-size: 11px; margin-top: 8px; color: #d32f2f; font-weight: bold; line-height: 1.4;"></p>
     </div>
     
     <div class="field-group">
@@ -939,21 +949,37 @@ function showStep(stepId) {
                 <b style="font-size:24px; color:var(--dark-green);">${formatPHP(amountToReceive)}</b>
                 ${feeOption === 'deduct' ? `<br><small style="color:red;">(Bawas na ang service fee)</small>` : ''}
             </div>`;
+    
+        // --- [BAGONG DAGDAG] PARA SA COPY AMOUNT AT QR NOTE ---
+        const qrInstruction = document.getElementById('qrInstructionReview');
+        const displayAmt = document.getElementById('displayAmountToSend');
+        
+        if (displayAmt) {
+            // Nililinis ang display amount para sa copy button
+            displayAmt.innerText = formatPHP(amountToSend);
+        }
+        
+        if (qrInstruction) {
+            qrInstruction.innerHTML = `PAALALA: Pakisend ang eksaktong <b style="color:black;">${formatPHP(amountToSend)}</b>.<br>I-upload ang screenshot ng Send Money confirmation sa baba.`;
+        }
     }
 
     document.getElementById('finalBreakdown').innerHTML = breakdownHTML;
 
-    // --- PAALALA: WALANG DISPLAY:BLOCK NG QR DITO PARA SA CASH IN ---
-    if (currentMode === 'Cash Out') {
-        const qrInstruction = document.getElementById('qrInstructionReview');
-        if (qrInstruction) {
-            qrInstruction.innerText = "PAALALA: I-upload ang screenshot ng iyong Send Money confirmation.";
-        }
-    }
-
     if (currentMode === 'Cash In' && feeOption === 'add') {
         updateReviewSukli();
     }
+}
+
+// [DAGDAG DIN ITO SA BABA NG SCRIPT PARA GUMANA ANG COPY BUTTON]
+function copyAmount() {
+    const amtText = document.getElementById('displayAmountToSend').innerText;
+    // Number lang ang kukunin (aalisin ang ₱ at commas)
+    const cleanAmt = amtText.replace(/[^\d.-]/g, ''); 
+    
+    navigator.clipboard.writeText(cleanAmt).then(() => {
+        alert("Halagang nakopya: " + cleanAmt);
+    });
 }
 
 // 3. SEPARATE FUNCTION PARA SA SUKLI (Huwag i-rerender ang HTML dito)
