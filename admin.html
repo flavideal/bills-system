@@ -273,19 +273,22 @@
     const type = row[4] ? row[4].toString().toLowerCase() : "";
     const gcashNum = row[6] ? row[6].toString().replace(/'/g, "") : "";
     
-    const accName = row[5] || "No Name";
-    const amountH = row[7] || 0; // Column H (Amount)
-    const feeI = row[8] || 0;    // Column I (Fee)
-    const feeOptionJ = row[9] || "N/A"; // Column J (Fee Option)
-    
-    // MGA BAGONG MAPPING PARA SA LOGIC MO:
-    const cashInK = row[10] || 0;    // Column K (CASH IN - Gross)
-    const cashOutAddL = row[11] || 0; // Column L (CASH OUT - Add-on)
-    const cashOutDedM = row[12] || 0; // Column M (CASH OUT - Deduct)
-    const sukliO = row[14] || 0;      // Column O (SUKLI / NET)
-    
-    const consentP = row[15] || "N/A";
+    // --- COLUMN MAPPING ---
     const timeStampC = row[2] || "N/A";
+    const consentP = row[15] || "N/A"; // Consent (Column P)
+    const providerD = row[3] || "";
+    const typeE = row[4] || "";
+    const accNameF = row[5] || "No Name";
+    const amountH = row[7] || 0;
+    const feeI = row[8] || 0;
+    const feeOptionJ = row[9] || "N/A";
+
+    // --- K, L, M, N, O MAPPING ---
+    const cashInK = row[10] || 0;    // Cash In Amount
+    const cashOutAddL = row[11] || 0; // Cash Out Add-on
+    const cashOutDedM = row[12] || 0; // Cash Out Deduct
+    const cashReceivedN = row[13] || 0; // Cash Received (from Customer)
+    const sukliNetO = row[14] || 0;   // Sukli / Net Amount
 
     // --- FILE LINKS ---
     const viewS = row[18] || ""; // Customer Proof
@@ -296,11 +299,14 @@
     
     let body = `
       <div class="detail-item"><span>Timestamp</span><b>${timeStampC}</b></div>
-      <div class="detail-item"><span>Type</span><b>${row[4] || ""}</b></div>
+      <div class="detail-item" style="background: rgba(255, 194, 103, 0.1);"><span>Consent</span><b>${consentP}</b></div>
+      
+      <div class="detail-item"><span>Provider</span><b>${providerD}</b></div>
+      <div class="detail-item"><span>Type</span><b>${typeE}</b></div>
       
       <div class="detail-item">
         <span>Account Name</span>
-        <div class="detail-value"><b>${accName}</b><button class="copy-btn" onclick="copyToClipboard('${accName}')">COPY</button></div>
+        <div class="detail-value"><b>${accNameF}</b><button class="copy-btn" onclick="copyToClipboard('${accNameF}')">COPY</button></div>
       </div>
 
       <div class="detail-item">
@@ -309,47 +315,29 @@
       </div>
 
       <div class="detail-item">
-        <span>Amount (Base)</span>
+        <span>Amount (H)</span>
         <div class="detail-value"><b>₱${amountH}</b><button class="copy-btn" onclick="copyToClipboard('${amountH}')">COPY</button></div>
       </div>
 
-      <div class="detail-item"><span>Fee Option</span><b>${feeOptionJ}</b></div>
-      <div class="detail-item"><span>Fee Amount</span><b>₱${feeI}</b></div>
+      <div class="detail-item"><span>Fee (I)</span><b>₱${feeI}</b></div>
+      <div class="detail-item"><span>Fee Option (J)</span><b>${feeOptionJ}</b></div>
+
+      <div class="detail-item"><span>Cash In (K)</span><b>₱${cashInK}</b></div>
+      <div class="detail-item"><span>Cash Out Add-on (L)</span><b>₱${cashOutAddL}</b></div>
+      <div class="detail-item"><span>Cash Out Deduct (M)</span><b>₱${cashOutDedM}</b></div>
+      <div class="detail-item"><span>Cash Received (N)</span><b>₱${cashReceivedN}</b></div>
+      <div class="detail-item" style="border-bottom: 2px solid var(--gold);"><span>Sukli / Net (O)</span><b>₱${sukliNetO}</b></div>
     `;
 
-    // DINAMIKONG LOGIC BASE SA COLUMN K, L, M, O
-    if (type.includes("in")) {
-      body += `
-        <div class="detail-item" style="background: rgba(76, 175, 80, 0.1);">
-          <span>Cash In Received (K)</span><b>₱${cashInK}</b>
-        </div>
-        <div class="detail-item">
-          <span>Sukli to Customer (O)</span>
-          <div class="detail-value"><b>₱${sukliO}</b><button class="copy-btn" onclick="copyToClipboard('${sukliO}')">COPY</button></div>
-        </div>`;
-    } else {
-      // CASH OUT DISPLAY
-      let finalCashOut = (feeOptionJ.toLowerCase().includes("add")) ? cashOutAddL : cashOutDedM;
-      let label = (feeOptionJ.toLowerCase().includes("add")) ? "Total to Send (L)" : "Net Cash to Give (M)";
-      
-      body += `
-        <div class="detail-item" style="background: rgba(33, 150, 243, 0.1);">
-          <span>${label}</span>
-          <div class="detail-value"><b>₱${finalCashOut}</b><button class="copy-btn" onclick="copyToClipboard('${finalCashOut}')">COPY</button></div>
-        </div>`;
-    }
+    // --- PROOFS SECTION (Walang tinanggal) ---
+    body += `<div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">`;
 
-    body += `<div class="detail-item"><span>Consent</span><b>${consentP}</b></div>`;
-
-    // --- CASHOUT SECTION ---
     if (type.includes("out")) {
       body += `<div><span style="font-size:10px; color:var(--gold);">CASHOUT PROOFS:</span><br>`;
       body += viewS ? `<button onclick="window.open('${viewS}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW SENT PROOF</button>` : "";
       body += viewU ? `<button onclick="window.open('${viewU}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW VOUCHER</button>` : "";
       body += `</div>`;
-    } 
-    // --- CASHIN SECTION ---
-    else {
+    } else {
       body += `<div><span style="font-size:10px; color:var(--gold);">CASHIN PROOF:</span><br>`;
       if (viewT) {
         body += `<button onclick="window.open('${viewT}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:12px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">✅ VIEW RECEIPT</button>`;
@@ -373,7 +361,7 @@
     `;
 
     document.getElementById('details-modal').style.display = 'block';
-  }
+}
   
   // --- OTHERS REMAIN THE SAME ---
   async function updateStatus(q, s) {
