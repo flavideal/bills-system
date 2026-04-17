@@ -1,0 +1,22 @@
+{
+  "name": "JERRIC TV MONITOR",
+  "short_name": "TV Kiosk",
+  "description": "Live Status Monitor for JERRIC KIOSK",
+  "start_url": "/tv.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#051106",
+  "theme_color": "#1b431c",
+  "icons": [
+    {
+      "src": "https://jerrickiosk.flavideal.com/logo/tv.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://jerrickiosk.flavideal.com/logo/tv.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
