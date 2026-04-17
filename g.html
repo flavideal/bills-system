@@ -221,16 +221,27 @@
             <div id="reviewContent"></div>
 
             <div id="qrReviewArea" style="display:none;">
-                <div class="qr-box">
-                    <p style="font-weight: bold; color: var(--dark-green); margin: 0;">STEP 1: SCAN TO PAY VIA GCASH</p>
-                    <img src="https://jerrickiosk.flavideal.com/qr/gc.png" style="width: 180px; margin-top: 10px; border-radius: 10px;">
-                    <p id="qrInstructionReview" style="font-size: 11px; margin-top: 5px; color: #d32f2f; font-weight: bold;"></p>
-                </div>
-                <div class="field-group">
-                    <label>Step 2: Upload Proof of Receipt</label>
-                    <input type="file" id="proofUpload" accept="image/*" style="padding: 5px; font-size: 12px;">
-                </div>
-            </div>
+    <div class="qr-box">
+        <p style="font-weight: bold; color: var(--dark-green); margin: 0;">STEP 1: SCAN TO PAY VIA GCASH</p>
+        
+        <img src="https://jerrickiosk.flavideal.com/qr/gc.png" id="gcashQR" style="width: 180px; margin-top: 10px; border-radius: 10px;">
+        
+        <div style="margin-top: 10px;">
+            <a href="https://jerrickiosk.flavideal.com/qr/gc.png" download="Jerric_GCash_QR.png" style="text-decoration: none;">
+                <button type="button" style="background: var(--dark-green); color: white; border: none; padding: 8px 15px; border-radius: 5px; font-size: 12px; cursor: pointer; font-weight: bold;">
+                    📥 DOWNLOAD QR CODE
+                </button>
+            </a>
+        </div>
+
+        <p id="qrInstructionReview" style="font-size: 11px; margin-top: 8px; color: #d32f2f; font-weight: bold;"></p>
+    </div>
+    
+    <div class="field-group">
+        <label>Step 2: Upload Proof of Receipt <span style="color:red;">(REQUIRED)</span></label>
+        <input type="file" id="proofUpload" accept="image/*" style="padding: 5px; font-size: 12px;">
+    </div>
+</div>
 
             <div id="termsContainer" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
                 <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY POLICY</h4>
@@ -727,18 +738,23 @@ function showStep(stepId) {
         return; 
     }
 
-    // --- [FILE UPLOAD LOGIC] ---
+    // --- [FILE UPLOAD LOGIC - REQUIRED FOR CASH OUT] ---
     const fileInput = document.getElementById('proofUpload');
     let base64File = "";
     let fileName = "";
     let fileType = "";
+
+    // VALIDATION: Kung Cash Out, kailangan may file.
+    if (currentMode === 'Cash Out' && (!fileInput.files || fileInput.files.length === 0)) {
+        alert("⚠️ REQUIRED: Please upload your Proof of Transfer / Receipt before getting a number.");
+        return; // Hihinto ang script dito, hindi magse-send sa database.
+    }
 
     if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
         fileName = file.name;
         fileType = file.type;
         
-        // Convert to Base64
         base64File = await new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
