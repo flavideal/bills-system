@@ -274,16 +274,21 @@
     const gcashNum = row[6] ? row[6].toString().replace(/'/g, "") : "";
     
     const accName = row[5] || "No Name";
-    const amountH = row[7] || 0;
-    const feeI = row[8] || 0;
-    const feeOptionJ = row[9] || "N/A";
-    const totalK = row[10] || 0;
-    const cashL = row[11] || 0;
-    const consentP = row[15] || "N/A"; // Column P na ang basehan
+    const amountH = row[7] || 0; // Column H (Amount)
+    const feeI = row[8] || 0;    // Column I (Fee)
+    const feeOptionJ = row[9] || "N/A"; // Column J (Fee Option)
+    
+    // MGA BAGONG MAPPING PARA SA LOGIC MO:
+    const cashInK = row[10] || 0;    // Column K (CASH IN - Gross)
+    const cashOutAddL = row[11] || 0; // Column L (CASH OUT - Add-on)
+    const cashOutDedM = row[12] || 0; // Column M (CASH OUT - Deduct)
+    const sukliO = row[14] || 0;      // Column O (SUKLI / NET)
+    
+    const consentP = row[15] || "N/A";
     const timeStampC = row[2] || "N/A";
 
-    // --- BAGONG COLUMN MAPPING ---
-    const viewS = row[18] || ""; // Customer Receipt
+    // --- FILE LINKS ---
+    const viewS = row[18] || ""; // Customer Proof
     const viewT = row[19] || ""; // Admin Receipt
     const viewU = row[20] || ""; // Signature/Voucher
     
@@ -291,7 +296,6 @@
     
     let body = `
       <div class="detail-item"><span>Timestamp</span><b>${timeStampC}</b></div>
-      <div class="detail-item"><span>Provider</span><b>${row[3] || ""}</b></div>
       <div class="detail-item"><span>Type</span><b>${row[4] || ""}</b></div>
       
       <div class="detail-item">
@@ -305,23 +309,37 @@
       </div>
 
       <div class="detail-item">
-        <span>Amount</span>
+        <span>Amount (Base)</span>
         <div class="detail-value"><b>₱${amountH}</b><button class="copy-btn" onclick="copyToClipboard('${amountH}')">COPY</button></div>
       </div>
 
-      <div class="detail-item"><span>Fee</span><b>₱${feeI}</b></div>
       <div class="detail-item"><span>Fee Option</span><b>${feeOptionJ}</b></div>
-      <div class="detail-item"><span>Amount (cash na matatanggap o papasok sa account)</span><b>₱${totalK}</b></div>
-
-      <div class="detail-item">
-        <span>Amount Sukli or (Cash na ibibigay sa cashout/ Cash na e-send sa account niya)</span>
-        <div class="detail-value"><b>₱${cashL}</b><button class="copy-btn" onclick="copyToClipboard('${cashL}')">COPY</button></div>
-      </div>
-
-      <div class="detail-item"><span>Consent</span><b>${consentP}</b></div>
+      <div class="detail-item"><span>Fee Amount</span><b>₱${feeI}</b></div>
     `;
 
-    body += `<div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">`;
+    // DINAMIKONG LOGIC BASE SA COLUMN K, L, M, O
+    if (type.includes("in")) {
+      body += `
+        <div class="detail-item" style="background: rgba(76, 175, 80, 0.1);">
+          <span>Cash In Received (K)</span><b>₱${cashInK}</b>
+        </div>
+        <div class="detail-item">
+          <span>Sukli to Customer (O)</span>
+          <div class="detail-value"><b>₱${sukliO}</b><button class="copy-btn" onclick="copyToClipboard('${sukliO}')">COPY</button></div>
+        </div>`;
+    } else {
+      // CASH OUT DISPLAY
+      let finalCashOut = (feeOptionJ.toLowerCase().includes("add")) ? cashOutAddL : cashOutDedM;
+      let label = (feeOptionJ.toLowerCase().includes("add")) ? "Total to Send (L)" : "Net Cash to Give (M)";
+      
+      body += `
+        <div class="detail-item" style="background: rgba(33, 150, 243, 0.1);">
+          <span>${label}</span>
+          <div class="detail-value"><b>₱${finalCashOut}</b><button class="copy-btn" onclick="copyToClipboard('${finalCashOut}')">COPY</button></div>
+        </div>`;
+    }
+
+    body += `<div class="detail-item"><span>Consent</span><b>${consentP}</b></div>`;
 
     // --- CASHOUT SECTION ---
     if (type.includes("out")) {
