@@ -257,6 +257,11 @@
         <div id="stepSuccess" class="overlay-screen" style="display: none; text-align: center;">
             <div style="font-size: 50px;">✅</div>
             <h2 style="color: var(--dark-green);">SUCCESS!</h2>
+
+            <p id="cashOutNoteSuccess" style="display:none; color:red; font-weight:bold; font-size:12px; border: 1px solid red; padding: 10px; border-radius: 8px; margin: 10px 0;">
+        ⚠️ REQUIRED: Please present 1 Valid ID to the teller for Cash Out verification.
+    </p>
+            
             <p style="margin-bottom: 0;">YOUR QUEUE NUMBER:</p>
             <div id="numberDisplay" class="que-number">G-000</div>
 
@@ -669,6 +674,11 @@ function showStep(stepId) {
 
     let reviewHTML = `
         <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
+        ${currentMode === 'Cash Out' ? `
+            <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; border: 1px solid #ffeeba; margin-bottom: 15px; font-size: 13px; font-weight: bold; text-align: center;">
+                ⚠️ REQUIRED: Please present 1 Valid ID to the teller for Cash Out verification.
+            </div>
+        ` : ''}
         <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
         <div class="review-item"><span>GCash Account:</span><strong>${accName}</strong></div>
         <div class="review-item"><span>GCash Number:</span><strong>${accNo}</strong></div>
@@ -824,6 +834,11 @@ function showStep(stepId) {
 
             document.getElementById('numberDisplay').innerText = myQueueNumber;
             showStep('stepSuccess');
+
+            const idNote = document.getElementById('cashOutNoteSuccess');
+            if (idNote) {
+                idNote.style.display = (currentMode === 'Cash Out') ? 'block' : 'none';
+            }
             
             statusInterval = setInterval(checkMyStatus, 5000);
         } else {
