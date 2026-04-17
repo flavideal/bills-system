@@ -213,7 +213,7 @@
 
     allData.forEach((row, index) => {
       const qNo = row[1].toString();
-      const status = (row[13] || "NEW").toUpperCase();
+      const status = (row[16] || "NEW").toUpperCase(); // Column Q na ang Status ngayon
       
       // --- STEP 2: Kunin ang Timestamp sa Column C (row[2]) ---
       // Halimbawa ng row[2]: "17/04/2026, 02:06:58"
@@ -282,11 +282,11 @@
     const consentM = row[12] || "N/A";
     const timeStampC = row[2] || "N/A";
 
-    // Column Mapping: P=15, Q=16, R=17
-    const viewP = row[15] || ""; 
-    const viewQ = row[16] || ""; 
-    const viewR = row[17] || "";
-
+    // --- BAGONG COLUMN MAPPING ---
+    const viewS = row[18] || ""; // Customer Receipt
+    const viewT = row[19] || ""; // Admin Receipt
+    const viewU = row[20] || ""; // Signature/Voucher
+    
     document.getElementById('mod-queue').innerText = row[1] + " - " + row[0];
     
     let body = `
@@ -323,18 +323,18 @@
 
     body += `<div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">`;
 
-    // --- CASHOUT SECTION (P and R) ---
+    // --- CASHOUT SECTION ---
     if (type.includes("out")) {
       body += `<div><span style="font-size:10px; color:var(--gold);">CASHOUT PROOFS:</span><br>`;
-      body += viewP ? `<button onclick="window.open('${viewP}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW SENT PROOF</button>` : "";
-      body += viewR ? `<button onclick="window.open('${viewR}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW VOUCHER</button>` : "";
+      body += viewS ? `<button onclick="window.open('${viewS}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW SENT PROOF</button>` : "";
+      body += viewU ? `<button onclick="window.open('${viewU}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW VOUCHER</button>` : "";
       body += `</div>`;
     } 
-    // --- CASHIN SECTION (Q with Upload) ---
+    // --- CASHIN SECTION ---
     else {
       body += `<div><span style="font-size:10px; color:var(--gold);">CASHIN PROOF:</span><br>`;
-      if (viewQ) {
-        body += `<button onclick="window.open('${viewQ}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:12px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">✅ VIEW RECEIPT</button>`;
+      if (viewT) {
+        body += `<button onclick="window.open('${viewT}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:12px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">✅ VIEW RECEIPT</button>`;
       }
       body += `
         <div class="upload-box">
