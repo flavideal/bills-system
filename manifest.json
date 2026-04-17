@@ -1,9 +1,10 @@
 {
+  "id": "jerric-kiosk-main",
   "name": "JERRIC KIOSK",
   "short_name": "Kiosk",
   "description": "Digital Kiosk for Cash In, Cash Out, and Bills Payment",
   "start_url": "/index.html",
-  "scope": "/index.html",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#1b431c",
@@ -12,12 +13,14 @@
     {
       "src": "https://jerrickiosk.flavideal.com/logo/main.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "https://jerrickiosk.flavideal.com/logo/main.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
