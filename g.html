@@ -183,9 +183,6 @@
             <div class="mode-selector">
                 <div id="btnIn" class="mode-btn active" onclick="setMode('Cash In')">CASH IN</div>
                 <div id="btnOut" class="mode-btn" onclick="setMode('Cash Out')">CASH OUT</div>
-                <div id="cashOutNotice" style="display: none; background: #fff3cd; color: #856404; padding: 12px; border-radius: 10px; border: 1px solid #ffeeba; margin-bottom: 15px; font-size: 13px; text-align: center;">
-    ⚠️ <b>ID REQUIRED:</b> Please present 1 Valid ID to the teller for Cash Out verification.
-</div>
             </div>
 
             
@@ -568,30 +565,24 @@ function getMousePos(canvasDom, event) {
 function setMode(mode) {
     currentMode = mode;
     localStorage.setItem('savedMode', mode);
-    
+
     const btnIn = document.getElementById('btnIn');
     const btnOut = document.getElementById('btnOut');
+
+    // --- DAGDAG NA LOGIC DITO ---
     const nameLabel = document.getElementById('nameLabel');
     const custInput = document.getElementById('custName');
-    const notice = document.getElementById('cashOutNotice'); // Kunin ang notice element
-    
-    if (mode === 'Cash In') {
-        if(notice) notice.style.display = 'none'; // Tago notice sa Cash In
-        if(nameLabel) nameLabel.innerText = "Customer Name (Personally Transacting)";
-        if(custInput) custInput.placeholder = "Pangalan ng nag-transact personally";
-    } else {
-        if(notice) notice.style.display = 'block'; // PAKITA NOTICE SA CASH OUT
-        if(nameLabel) nameLabel.innerText = "FULL NAME (KUKUHA NG CASH)";
-        if(custInput) custInput.placeholder = "Buong Pangalan niyo po na tatanggap";
+
+
+    if (nameLabel && custInput) {
+        if (mode === 'Cash In') {
+            nameLabel.innerText = "Customer Name (Personally Transacting)";
+            custInput.placeholder = "Pangalan ng nag-transact personally";
+        } else {
+            nameLabel.innerText = "FULL NAME (KUKUHA NG CASH)";
+            custInput.placeholder = "Buong Pangalan niyo po na tatanggap";
+        }
     }
-    
-    if(btnIn) btnIn.classList.toggle('active', mode === 'Cash In');
-    if(btnOut) btnOut.classList.toggle('active', mode === 'Cash Out');
-    
-    if(document.getElementById('stepForm').style.display !== 'none') {
-        calculateFee();
-    }
-}
     // ----------------------------
     
     if(btnIn) btnIn.classList.toggle('active', mode === 'Cash In');
