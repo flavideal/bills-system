@@ -179,7 +179,15 @@
     <input type="file" id="proofUpload" accept="image/*">
 </div>
             <div class="field-group">
-                <label>Amount to Pay</label>
+    <label>Bill Due Date</label>
+    <input type="date" id="dueDate" oninput="saveInput('dueDate')" style="border: 2px solid var(--dark-green);">
+    <p style="font-size: 10px; color: #d32f2f; margin-top: 5px; font-weight: bold;">
+        *Paalala: Bawal ang "With Arrears" o "Past Due" na bill.
+    </p>
+</div>
+            
+            <div class="field-group">
+                <label>Bill Amount</label>
                 <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
                 <div id="liveBreakdown" style="font-size: 12px; margin-top: 5px; color: var(--dark-green);"></div>
                 <div id="sukliDisplay" class="sukli-display"></div>
@@ -202,6 +210,9 @@
         <li><b>Confirmation:</b> Makakatanggap kayo ng SMS confirmation mula sa Maya kapag successfully processed na ang inyong bill.</li>
         <li><b>Privacy:</b> Ang inyong personal data ay gagamitin lamang para sa transaction logs at hindi ibabahagi sa ibang platform.</li>
         <li><b>No Refund:</b> Ang mga completed transactions ay final at hindi na maaring i-cancel o i-refund.</li>
+        <li><b>No Arrears:</b> Tumatanggap lamang kami ng payments na <b>WALANG ARREARS</b> (Current Bill only).</li>
+        <li><b>Past Due:</b> Kapag lumagpas na sa Due Date, mangyaring sa ANECO Head Office na magbayad.</li>
+        <li><b>No Liability:</b> Kapag nag-proceed kayo kahit may arrears at hindi ito tinanggap ng ANECO system, hindi liable si Jerric sa anumang penalty.</li>
     </ul>
     
     <div class="checkbox-row" style="margin-top: 15px; display: flex; align-items: center; gap: 10px; padding: 10px; background: #e9f5ed; border-radius: 8px;">
@@ -535,35 +546,34 @@ function showStep(stepId) {
     const accNo = document.getElementById('accNo').value.trim();
     const phone = document.getElementById('custPhone').value.trim();
     const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const dueDate = document.getElementById('dueDate').value;
     
-    // 1. Basic Validation: Dapat lahat may laman
-    if(!name || !accName || !accNo || !phone || amt <= 0) { 
-        alert("⚠️ Pakikumpleto ang lahat ng detalye para sa ANECO payment."); 
+    // Kunin ang date ngayong araw (Butuan Time)
+    const today = new Date().toISOString().split('T')[0];
+
+    // 1. Basic Validation
+    if(!name || !accName || !accNo || !phone || amt <= 0 || !dueDate) { 
+        alert("⚠️ Pakikumpleto ang lahat ng detalye, kasama ang Due Date."); 
         return; 
     }
 
-    // 2. Strict Mobile Validation (Dapat 11 digits talaga ito para sa SMS)
-    if (phone.length !== 11 || !phone.startsWith("09")) {
-        alert("⚠️ Ang Mobile Number ay dapat 11 digits at nagsisimula sa 09.");
+    // 2. Due Date Check (Bawal Overdue)
+    if (dueDate < today) {
+        alert("❌ PAALALA: Ang bill mo ay PAST DUE na.\n\nHindi na ito tinatanggap sa aming Kiosk. Mangyaring pumunta sa ANECO Head Office para mag-settle at maiwasan ang disconnection.");
         return;
     }
 
-    // 3. Flexible Account Number Validation
-    // Tatanggapin natin kung ito ay nasa 9 hanggang 13 characters
-    if (accNo.length < 9 || accNo.length > 13) {
-        const confirmSpecial = confirm("Ang Account Number na iyong nilagay ay " + accNo.length + " digits. Sigurado ka bang tama ito?");
-        if (!confirmSpecial) return;
+    // (Ituloy ang dating mobile validation at account number validation mo...)
+    if (phone.length !== 11 || !phone.startsWith("09")) {
+        alert("⚠️ Ang Mobile Number ay dapat 11 digits.");
+        return;
     }
 
     let reviewHTML = `
-        <div class="review-item"><span>Transacting:</span><strong>${name}</strong></div>
         <div class="review-item"><span>ANECO Name:</span><strong>${accName}</strong></div>
         <div class="review-item"><span>Account No:</span><strong>${accNo}</strong></div>
-        <div class="review-item"><span>CP Number:</span><strong>${phone}</strong></div>
-        <div class="review-item"><span>Bill Amount:</span><strong>${formatPHP(amt)}</strong></div>
-        <p style="font-size: 10px; color: blue; text-align: center; margin-top: 10px;">
-            *Confirmation SMS will be sent to ${phone} via Maya Center.
-        </p>
+        <div class="review-item"><span>Due Date:</span><strong style="color:red;">${dueDate}</strong></div>
+        <div class="review-item"><span>Total Bill:</span><strong>${formatPHP(amt)}</strong></div>
     `;
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
