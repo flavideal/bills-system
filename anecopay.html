@@ -593,8 +593,16 @@ function showStep(stepId) {
 
     // I-render ang Review Screen
     let reviewHTML = `
-        <div class="review-item"><span>ANECO Name:</span><strong>${accName}</strong></div>
-        <div class="review-item"><span>Account No:</span><strong>${accNo}</strong></div>
+        <div class="review-item"><span>Customer Name:</span><strong>${name}</strong></div>
+        <div class="review-item">
+            <span>Cellphone No:</span>
+            <div style="text-align: right;">
+                <strong>${phone}</strong><br>
+                <small style="font-size: 9px; color: #666; display: block;">*Dito isesend ang confirmation SMS</small>
+            </div>
+        </div>
+        <div style="height: 10px;"></div> <div class="review-item"><span>ANECO Bill Name:</span><strong>${accName}</strong></div>
+        <div class="review-item"><span>ANECO Bill Account No:</span><strong>${accNo}</strong></div>
         <div class="review-item"><span>Due Date:</span><strong style="color:red;">${formattedDate}</strong></div>
         <div class="review-item"><span>Total Bill:</span><strong>${formatPHP(amt)}</strong></div>
     `;
