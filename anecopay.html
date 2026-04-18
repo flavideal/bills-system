@@ -168,50 +168,43 @@
             <div style="background: var(--dark-green); padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center;">
     
     <h2 style="color: #ffc267; margin: 0; font-size: 22px; letter-spacing: 2px; text-transform: uppercase; font-weight: 800;">
-        JERRIC
+        ANECO
     </h2>
-    
-    <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; opacity: 0.9;">
-        PERSONAL ASSISTANCE SERVICE
+    <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 11px; font-weight: bold; letter-spacing: 1px;">
+        ELECTRIC BILL PAYMENT
     </p>
-
     <div style="height: 1px; background: rgba(255,194,103,0.3); width: 50%; margin: 10px auto;"></div>
-
     <p style="color: #ffffff; font-size: 13px; margin: 5px 0 0 0; font-style: italic;">
-        GCash Transaction Support
+        Jerric Personal Assistance Service
     </p>
 </div>
-            
-            <div class="mode-selector">
-                <div id="btnIn" class="mode-btn active" onclick="setMode('Cash In')">CASH IN</div>
-                <div id="btnOut" class="mode-btn" onclick="setMode('Cash Out')">CASH OUT</div>
-            </div>
-
-            
 
             <div id="stepForm">
     
     <div class="field-group">
-    <label id="nameLabel">Customer Name (Personally Transacting)</label>
-<input type="text" id="custName" oninput="saveInput('custName')">
+    <label>Name ng Personally Transacting</label>
+    <input type="text" id="custName" placeholder="Pangalan ng nagbabayad dito" oninput="saveInput('custName')">
 </div>
 
-    <div class="field-group">
-        <label id="accLabel">GCash Account Name</label>
-        <input type="text" id="accName" placeholder="Juan Dela Cruz o J***N D. C**Z" oninput="saveInput('accName')">
-    </div>
+<div class="field-group">
+    <label>ANECO Account Name</label>
+    <input type="text" id="accName" placeholder="Pangalan sa Bill" oninput="saveInput('accName')">
+</div>
 
-    <div class="field-group">
-        <label>GCash Number</label>
-        <input type="number" id="accNo" placeholder="09123456789" 
-               oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11); saveInput('accNo');">
-    </div>
+<div class="field-group">
+    <label>ANECO Account Number</label>
+    <input type="number" id="accNo" placeholder="10-digit Account Number" oninput="saveInput('accNo')">
+</div>
 
-    <div class="field-group">
-        <label>Amount</label>
-        <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
-        <div id="liveBreakdown" style="font-size: 13px; margin-top: 8px; color: #555; display: none; background: #f9f9f9; padding: 10px; border-radius: 8px;">
-        </div>
+<div class="field-group">
+    <label>Customer Cellphone Number</label>
+    <input type="number" id="custPhone" placeholder="Para sa Maya confirmation" oninput="saveInput('custPhone')">
+</div>
+
+<div class="field-group">
+    <label>Amount to Pay</label>
+    <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
+</div>
     </div>
 </div>
 
@@ -257,13 +250,12 @@
 
             <div id="termsContainer" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
                 <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY POLICY</h4>
-                <ul style="font-size: 11px; color: #555; padding-left: 18px; line-height: 1.4;">
-                    <li>This is a <b>Personal Service</b> only. </li>
-                    <li>A <b>1% Service Fee</b> is applied based on your chosen option.</li>
-                    <li><b>Privacy:</b> Your details (Name & GCash No.) are collected solely to process this specific transaction.</li>
-                    <li>Data is used <b>once</b> and will not be shared or used for marketing.</li>
-                    <li>Please verify the GCash number. Jerric is not liable for wrong account inputs.</li>
-                </ul>
+               <ul style="font-size: 11px; color: #555; padding-left: 18px; line-height: 1.4;">
+    <li>Siguraduhing tama ang <b>Account Number</b> at <b>Amount</b>.</li>
+    <li>Makakatanggap kayo ng confirmation message mula sa <b>Maya Center</b> kapag kumpleto na ang payment.</li>
+    <li>Ang service fee ay <b>1%</b> ng inyong bill.</li>
+    <li>Ang data na kinokolekta ay para lamang sa pag-proseso ng inyong ANECO bill.</li>
+</ul>
                 
                 <div class="checkbox-row">
                     <input type="checkbox" id="termsAgree" style="width: 20px; height: 20px; cursor: pointer;">
@@ -686,56 +678,30 @@ function showStep(stepId) {
 
    function showReview() {
     const name = document.getElementById('custName').value;
-    const accNo = document.getElementById('accNo').value;
     const accName = document.getElementById('accName').value;
+    const accNo = document.getElementById('accNo').value;
+    const phone = document.getElementById('custPhone').value;
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     
-    if(!name || !accNo || !accName || amt <= 0) { 
-        alert("Pakikumpleto ang lahat ng detalye kasama ang Account Name."); 
+    // Bagong Validation
+    if(!name || !accName || !accNo || !phone || amt <= 0) { 
+        alert("Pakikumpleto ang lahat ng detalye para sa ANECO payment."); 
         return; 
     }
 
     let reviewHTML = `
-        <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
-        ${currentMode === 'Cash Out' ? `
-            <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; border: 1px solid #ffeeba; margin-bottom: 15px; font-size: 13px; font-weight: bold; text-align: center;">
-                ⚠️ REQUIRED: Please present 1 Valid ID to the teller for Cash Out verification.
-            </div>
-        ` : ''}
-        <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
-        <div class="review-item"><span>GCash Account:</span><strong>${accName}</strong></div>
-        <div class="review-item"><span>GCash Number:</span><strong>${accNo}</strong></div>
-        <div class="review-item"><span>Amount:</span><strong>${formatPHP(amt)}</strong></div>
-        
-        <div class="field-group" style="margin-top:15px;">
-            <label style="font-size:10px;">Select Fee Option:</label>
-            <select id="reviewFeeOption" onchange="updateReviewTotal()" style="padding:8px; font-size:14px;">
-                <option value="add">ADD-ON (Dagdag sa amount)</option>
-                <option value="deduct">DEDUCT (Bawas sa amount)</option>
-            </select>
-        </div>
-        <div id="finalBreakdown" style="margin-top:10px; border-top: 1px dashed #ccc; padding-top:10px;"></div>
+        <div class="review-item"><span>Transacting:</span><strong>${name}</strong></div>
+        <div class="review-item"><span>ANECO Name:</span><strong>${accName}</strong></div>
+        <div class="review-item"><span>Account No:</span><strong>${accNo}</strong></div>
+        <div class="review-item"><span>CP Number:</span><strong>${phone}</strong></div>
+        <div class="review-item"><span>Bill Amount:</span><strong>${formatPHP(amt)}</strong></div>
+        <p style="font-size: 10px; color: blue; text-align: center; margin-top: 10px;">
+           *Confirmation SMS will be sent to ${phone} via Maya Center.
+        </p>
     `;
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
-    
-    // --- ITO ANG CORRECT LOGIC ---
-    const qrArea = document.getElementById('qrReviewArea');
-    if (qrArea) {
-        if (currentMode === 'Cash Out') {
-            qrArea.style.setProperty('display', 'block', 'important'); // Pakita sa Cash Out
-        } else {
-            qrArea.style.setProperty('display', 'none', 'important');  // Tago sa Cash In
-            // Linisin ang input para sigurado
-            const fileInput = document.getElementById('proofUpload');
-            if(fileInput) fileInput.value = "";
-        }
-    }
-    // ------------------------------
-
-    showStep('stepReview'); // Ito na lang ang ititira mo 
-   document.getElementById('stepReview').scrollTop = 0;
-    
+    showStep('stepReview');
     updateReviewTotal();
 }
     
