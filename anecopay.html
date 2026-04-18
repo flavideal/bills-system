@@ -194,16 +194,23 @@
             <div id="finalBreakdown" style="margin-top: 15px;"></div>
 
             <div id="termsContainer" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
-                <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY</h4>
-                <ul style="font-size: 11px; color: #555; padding-left: 18px;">
-                    <li>Siguraduhing tama ang Account Number at Amount.</li>
-                    <li>Ang service fee ay 1% ng inyong bill.</li>
-                </ul>
-                <div class="checkbox-row">
-                    <input type="checkbox" id="termsAgree">
-                    <label for="termsAgree">I agree to the terms above.</label>
-                </div>
-            </div>
+    <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY</h4>
+    <ul style="font-size: 11px; color: #555; padding-left: 18px; line-height: 1.4;">
+        <li><b>Accuracy:</b> Siguraduhing tama ang Account Number at Amount. Hindi liable ni JERRIC ang maling input ng customer.</li>
+        <li><b>Fees:</b> May fixed <b>Biller Convenience Fee na ₱10.00</b> at <b>Service Fee na 1%</b> (rounded up) sa bawat transaction.</li>
+        <li><b>Processing:</b> Ang payment ay ipapasa sa ANECO via <b>Maya Business</b>. Ang pag-reflect ng payment sa inyong record ay depende sa billing cycle ng ANECO.</li>
+        <li><b>Confirmation:</b> Makakatanggap kayo ng SMS confirmation mula sa Maya kapag successfully processed na ang inyong bill.</li>
+        <li><b>Privacy:</b> Ang inyong personal data ay gagamitin lamang para sa transaction logs at hindi ibabahagi sa ibang platform.</li>
+        <li><b>No Refund:</b> Ang mga completed transactions ay final at hindi na maaring i-cancel o i-refund.</li>
+    </ul>
+    
+    <div class="checkbox-row" style="margin-top: 15px; display: flex; align-items: center; gap: 10px; padding: 10px; background: #e9f5ed; border-radius: 8px;">
+        <input type="checkbox" id="termsAgree" style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--dark-green);">
+        <label for="termsAgree" style="font-size: 13px; font-weight: bold; color: var(--dark-green); cursor: pointer; user-select: none;">
+            I agree to the terms and privacy policy.
+        </label>
+    </div>
+</div>
 
             <button onclick="generateNumber()" class="btn-main">GET A NUMBER</button>
             <button onclick="hideReview()" style="background: none; border: none; color: #888; width: 100%; margin-top: 10px; cursor: pointer;">Edit Details</button>
