@@ -165,12 +165,15 @@
             </div>
             <div class="field-group">
                 <label>ANECO Account Number</label>
-                <input type="number" id="accNo" placeholder="10-digit Account Number" oninput="saveInput('accNo')">
+                <input type="tel" id="accNo" placeholder="Account Number sa Bill" oninput="saveInput('accNo')">
             </div>
             <div class="field-group">
-                <label>Cellphone Number</label>
-                <input type="number" id="custPhone" placeholder="Para sa confirmation" oninput="saveInput('custPhone')">
-            </div>
+    <label>Cellphone Number</label>
+    <input type="tel" id="custPhone" 
+           placeholder="09123456789" 
+           oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11); saveInput('custPhone')"
+           onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+</div>
             <div class="field-group">
     <label>Upload Proof (Optional)</label>
     <input type="file" id="proofUpload" accept="image/*">
@@ -504,16 +507,29 @@ function showStep(stepId) {
 }
 
    function showReview() {
-    const name = document.getElementById('custName').value;
-    const accName = document.getElementById('accName').value;
-    const accNo = document.getElementById('accNo').value;
-    const phone = document.getElementById('custPhone').value;
+    const name = document.getElementById('custName').value.trim();
+    const accName = document.getElementById('accName').value.trim();
+    const accNo = document.getElementById('accNo').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     
-    // Bagong Validation
+    // 1. Basic Validation: Dapat lahat may laman
     if(!name || !accName || !accNo || !phone || amt <= 0) { 
-        alert("Pakikumpleto ang lahat ng detalye para sa ANECO payment."); 
+        alert("⚠️ Pakikumpleto ang lahat ng detalye para sa ANECO payment."); 
         return; 
+    }
+
+    // 2. Strict Mobile Validation (Dapat 11 digits talaga ito para sa SMS)
+    if (phone.length !== 11 || !phone.startsWith("09")) {
+        alert("⚠️ Ang Mobile Number ay dapat 11 digits at nagsisimula sa 09.");
+        return;
+    }
+
+    // 3. Flexible Account Number Validation
+    // Tatanggapin natin kung ito ay nasa 9 hanggang 13 characters
+    if (accNo.length < 9 || accNo.length > 13) {
+        const confirmSpecial = confirm("Ang Account Number na iyong nilagay ay " + accNo.length + " digits. Sigurado ka bang tama ito?");
+        if (!confirmSpecial) return;
     }
 
     let reviewHTML = `
@@ -523,7 +539,7 @@ function showStep(stepId) {
         <div class="review-item"><span>CP Number:</span><strong>${phone}</strong></div>
         <div class="review-item"><span>Bill Amount:</span><strong>${formatPHP(amt)}</strong></div>
         <p style="font-size: 10px; color: blue; text-align: center; margin-top: 10px;">
-           *Confirmation SMS will be sent to ${phone} via Maya Center.
+            *Confirmation SMS will be sent to ${phone} via Maya Center.
         </p>
     `;
 
