@@ -546,7 +546,9 @@ function showStep(stepId) {
     const accNo = document.getElementById('accNo').value.trim();
     const phone = document.getElementById('custPhone').value.trim();
     const amt = parseFloat(document.getElementById('amount').value) || 0;
-    const dueDate = document.getElementById('dueDate').value;
+   const rawDate = new Date(document.getElementById('dueDate').value);
+const formattedDate = rawDate.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+// Gamitin ang formattedDate sa transType
     
     // Kunin ang date ngayong araw (Butuan Time)
     const today = new Date().toISOString().split('T')[0];
@@ -650,7 +652,7 @@ const formData = {
     timestamp: new Date().toLocaleString(),
     
     // Identity ng transaction
-    transType: "Bill Payment", 
+    transType: "Bill Payment | Due: " + document.getElementById('dueDate').value, 
     provider: "ANECO", 
     
     // Mapping para sa iyong Google Sheets columns
