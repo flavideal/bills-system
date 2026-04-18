@@ -172,6 +172,10 @@
                 <input type="number" id="custPhone" placeholder="Para sa confirmation" oninput="saveInput('custPhone')">
             </div>
             <div class="field-group">
+    <label>Upload Proof (Optional)</label>
+    <input type="file" id="proofUpload" accept="image/*">
+</div>
+            <div class="field-group">
                 <label>Amount to Pay</label>
                 <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
                 <div id="liveBreakdown" style="font-size: 12px; margin-top: 5px; color: var(--dark-green);"></div>
