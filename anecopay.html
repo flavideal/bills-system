@@ -165,7 +165,9 @@
             </div>
             <div class="field-group">
                 <label>ANECO Account Number</label>
-                <input type="tel" id="accNo" placeholder="Account Number sa Bill" oninput="saveInput('accNo')">
+                <input type="text" id="accNo" placeholder="Ex: B000011100020" 
+       style="text-transform: uppercase;"
+       oninput="this.value = this.value.toUpperCase(); saveInput('accNo')">
             </div>
             <div class="field-group">
     <label>Cellphone Number</label>
@@ -543,38 +545,54 @@ function showStep(stepId) {
    function showReview() {
     const name = document.getElementById('custName').value.trim();
     const accName = document.getElementById('accName').value.trim();
-    const accNo = document.getElementById('accNo').value.trim();
+    const accNo = document.getElementById('accNo').value.trim().toUpperCase(); // Naka-auto Caps na para sa "B"
     const phone = document.getElementById('custPhone').value.trim();
     const amt = parseFloat(document.getElementById('amount').value) || 0;
-   const rawDate = new Date(document.getElementById('dueDate').value);
-const formattedDate = rawDate.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
-// Gamitin ang formattedDate sa transType
+    
+    // Kunin ang raw value ng date para sa validation
+    const dueDateInput = document.getElementById('dueDate').value;
+    const rawDate = new Date(dueDateInput);
+    const formattedDate = rawDate.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
     
     // Kunin ang date ngayong araw (Butuan Time)
     const today = new Date().toISOString().split('T')[0];
 
-    // 1. Basic Validation
-    if(!name || !accName || !accNo || !phone || amt <= 0 || !dueDate) { 
+    // 1. Basic Validation (Inayos ang dueDate check)
+    if(!name || !accName || !accNo || !phone || amt <= 0 || !dueDateInput) { 
         alert("⚠️ Pakikumpleto ang lahat ng detalye, kasama ang Due Date."); 
         return; 
     }
 
     // 2. Due Date Check (Bawal Overdue)
-    if (dueDate < today) {
-        alert("❌ PAALALA: Ang bill mo ay PAST DUE na.\n\nHindi na ito tinatanggap sa aming Kiosk. Mangyaring pumunta sa ANECO Head Office para mag-settle at maiwasan ang disconnection.");
+    if (dueDateInput < today) {
+        alert("❌ PAALALA: Ang bill mo ay PAST DUE na.\n\nHindi na ito tinatanggap sa aming Kiosk. Mangyaring pumunta sa ANECO Head Office para mag-settle.");
         return;
     }
 
-    // (Ituloy ang dating mobile validation at account number validation mo...)
+    // 3. Mobile Validation
     if (phone.length !== 11 || !phone.startsWith("09")) {
-        alert("⚠️ Ang Mobile Number ay dapat 11 digits.");
+        alert("⚠️ Ang Mobile Number ay dapat 11 digits at nagsisimula sa 09.");
         return;
     }
 
+    // 4. ANECO Account Number Validation (Allow letters like 'B')
+    // Regex: Tatanggap ng letters at numbers, bawal space o special characters
+    const alphanumericRegex = /^[A-Z0-9]+$/;
+    if (!alphanumericRegex.test(accNo)) {
+        alert("⚠️ Ang Account Number ay dapat letters at numbers lamang. Huwag lagyan ng space o symbols.");
+        return;
+    }
+    
+    if (accNo.length < 10) {
+        alert("⚠️ Siguraduhing tama ang Account Number. Karaniwan itong 10 characters o higit pa.");
+        return;
+    }
+
+    // I-render ang Review Screen
     let reviewHTML = `
         <div class="review-item"><span>ANECO Name:</span><strong>${accName}</strong></div>
         <div class="review-item"><span>Account No:</span><strong>${accNo}</strong></div>
-        <div class="review-item"><span>Due Date:</span><strong style="color:red;">${dueDate}</strong></div>
+        <div class="review-item"><span>Due Date:</span><strong style="color:red;">${formattedDate}</strong></div>
         <div class="review-item"><span>Total Bill:</span><strong>${formatPHP(amt)}</strong></div>
     `;
 
