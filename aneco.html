@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JERRIC Personal Assistance Service</title>
+
+    <link rel="icon" type="image/png" href="https://jerrickiosk.flavideal.com/logo/jpsk..png?v=2">
+
+<link rel="apple-touch-icon" href="https://jerrickiosk.flavideal.com/logo/main.png?v=2">
+<link rel="manifest" href="manifest.json?v=2">
+
+
+    <style>
+        :root { --dark-green: #1b431c; --orange-yellow: #ffc267; --bg: #f0f2f5; }
+        body { 
+        font-family: 'Segoe UI', sans-serif; 
+        background: var(--bg); 
+        padding: 15px; 
+        display: flex; 
+        justify-content: center; 
+        min-height: 100vh;
+        overflow-x: hidden; 
+    }
+        .kiosk-container { width: 100%; max-width: 500px; }
+        .card { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 20px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+    border-top: 8px solid var(--dark-green); 
+    position: relative;
+    /* Siguraduhin na WALANG overflow: hidden dito */
+}
+        .field-group { margin-bottom: 15px; }
+        label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .mode-btn { padding: 15px; border: 2px solid #eee; border-radius: 10px; text-align: center; cursor: pointer; font-weight: bold; }
+        .mode-btn.active { background: var(--dark-green); color: white; border-color: var(--dark-green); }
+        .qr-box { background: #fff9e6; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; border: 2px solid var(--dark-green); }
+        .back-btn { background: none; border: none; color: var(--dark-green); font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        /* Siguradong clickable ang mga checkbox na nililikha ng Script */
+.cash-logic-box input[type="checkbox"] {
+    width: 25px;
+    height: 25px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+        .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 10px; font-weight: bold; color: var(--dark-green); }
+        .sukli-display { font-size: 18px; font-weight: 900; color: #d32f2f; margin-top: 5px; }
+        
+        /* Review & Success Screens */
+      .overlay-screen {  
+    display: none;  
+    position: fixed; 
+    top: 0;  
+    left: 0;  
+    width: 100%;  
+    height: 100%; 
+    background: white;  
+    padding: 20px;  
+    box-sizing: border-box;  
+    z-index: 2000; /* Taasan natin para laging nasa ibabaw */
+    overflow-y: auto;
+}
+        #stepSuccess {
+    padding-bottom: 40px;
+    z-index: 1100 !important; /* Dapat mas mataas ito sa Review Screen (999) */
+    background: white;
+}
+            
+        .review-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .review-item strong { color: var(--dark-green); }
+        .que-number { font-size: 48px; font-weight: 900; color: var(--dark-green); margin: 20px 0; }
+        .btn-main { width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+    .status-badge {
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-weight: bold;
+    display: none;
+}
+.status-waiting { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.status-calling { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; animation: blink 1s infinite; }
+.status-completed { background: #cce5ff; color: #004085; border: 1px solid #b8daff; }
+
+@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+#adminReceipt {
+    width: 100%;
+    height: auto;
+    display: none;
+    margin: 15px 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    border: 2px solid #eee;
+    object-fit: contain; /* Para mapanatili ang aspect ratio */
+}
+
+/* Idagdag sa loob ng <style> tag mo */
+.force-reset-trigger {
+    position: absolute;
+    top: 5px;
+    right: 15px;
+    font-size: 10px;
+    color: #f0f0f0; /* Mas invisible sa puting background */
+    cursor: pointer;
+    z-index: 100;
+    padding: 10px;
+    user-select: none;
+}
+.force-reset-trigger:hover {
+    color: #ccc; /* Lilitaw lang ng bahagya pag tinapatan mo */
+}
+    #stepReview {
+    z-index: 999;
+}
+/* FIX PARA SA CHECKBOX SA REVIEW SCREEN */
+#reviewIsExact, 
+.checkbox-row input[type="checkbox"] {
+    position: relative;
+    z-index: 1010 !important; /* Siguradong nasa ibabaw */
+    cursor: pointer;
+    width: 20px !important;  /* Lakihan konti para madaling tamaan */
+    height: 20px !important;
+    pointer-events: auto !important; /* Siguradong tumatanggap ng click */
+}
+
+/* Para maging clickable din yung mismong label text */
+.checkbox-row label {
+    cursor: pointer;
+    user-select: none;
+    padding: 5px;
+}
+#reviewIsExact {
+    width: 25px !important;
+    height: 25px !important;
+    accent-color: var(--dark-green);
+    cursor: pointer;
+}
+
+/* Fix para sa Signature Pad */
+#signature-pad {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    cursor: crosshair;
+    touch-action: none;
+}
+        
+.sig-wrapper {
+    position: relative;
+    z-index: 2500; /* Mas mataas sa overlay para sure na clickable */
+}
+    </style>
+</head>
+<body>
+
+<div class="kiosk-container">
+    <button class="back-btn" onclick="window.location.href='index.html'">← BACK TO MENU</button>
+    
+    <div class="card" id="formCard">
+        <div class="force-reset-trigger" onclick="adminForceReset()">RESET</div>
+        
+        <div id="stepForm">
+            <div style="background: var(--dark-green); padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center;">
+    
+    <h2 style="color: #ffc267; margin: 0; font-size: 22px; letter-spacing: 2px; text-transform: uppercase; font-weight: 800;">
+        JERRIC
+    </h2>
+    
+    <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; opacity: 0.9;">
+        PERSONAL ASSISTANCE SERVICE
+    </p>
+
+    <div style="height: 1px; background: rgba(255,194,103,0.3); width: 50%; margin: 10px auto;"></div>
+
+    <p style="color: #ffffff; font-size: 13px; margin: 5px 0 0 0; font-style: italic;">
+        GCash Transaction Support
+    </p>
+</div>
+            
+            <div class="mode-selector">
+                <div id="btnIn" class="mode-btn active" onclick="setMode('Cash In')">CASH IN</div>
+                <div id="btnOut" class="mode-btn" onclick="setMode('Cash Out')">CASH OUT</div>
+            </div>
+
+            
+
+            <div id="stepForm">
+    
+    <div class="field-group">
+    <label id="nameLabel">Customer Name (Personally Transacting)</label>
+<input type="text" id="custName" oninput="saveInput('custName')">
+</div>
+
+    <div class="field-group">
+        <label id="accLabel">GCash Account Name</label>
+        <input type="text" id="accName" placeholder="Juan Dela Cruz o J***N D. C**Z" oninput="saveInput('accName')">
+    </div>
+
+    <div class="field-group">
+        <label>GCash Number</label>
+        <input type="number" id="accNo" placeholder="09123456789" 
+               oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11); saveInput('accNo');">
+    </div>
+
+    <div class="field-group">
+        <label>Amount</label>
+        <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
+        <div id="liveBreakdown" style="font-size: 13px; margin-top: 8px; color: #555; display: none; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+        </div>
+    </div>
+</div>
+
+            <button onclick="showReview()" class="btn-main">REVIEW DETAILS</button>
+        </div>
+
+        <div id="stepReview" class="overlay-screen" style="display: none;">
+            <h3 style="color: var(--dark-green); text-align: center;">REVIEW YOUR DETAILS</h3>
+            <div id="reviewContent"></div>
+
+            <div id="qrReviewArea" style="display:none;">
+    <div class="qr-box">
+        <p style="font-weight: bold; color: var(--dark-green); margin: 0;">STEP 1: SCAN TO PAY VIA GCASH</p>
+        
+        <img src="https://jerrickiosk.flavideal.com/qr/gc.png" id="gcashQR" style="width: 180px; margin-top: 10px; border-radius: 10px;">
+        
+        <div id="amountToCopyContainer" style="background: #fff; border: 1px solid var(--dark-green); padding: 10px; border-radius: 8px; margin: 10px auto; width: 80%;">
+            <p style="font-size: 10px; color: #666; margin: 0; text-transform: uppercase;">Amount to Send:</p>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+                <span id="displayAmountToSend" style="font-size: 18px; font-weight: bold; color: #d32f2f;">₱0.00</span>
+                <button type="button" onclick="copyAmount()" style="background: var(--dark-green); color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">
+                    COPY
+                </button>
+            </div>
+        </div>
+
+        <div style="margin-top: 5px;">
+            <a href="https://jerrickiosk.flavideal.com/qr/gc.png" download="Jerric_GCash_QR.png" style="text-decoration: none;">
+                <button type="button" style="background: var(--dark-green); color: white; border: none; padding: 8px 15px; border-radius: 5px; font-size: 12px; cursor: pointer; font-weight: bold;">
+                    📥 DOWNLOAD QR
+                </button>
+            </a>
+        </div>
+
+        <p id="qrInstructionReview" style="font-size: 11px; margin-top: 8px; color: #d32f2f; font-weight: bold; line-height: 1.4;"></p>
+    </div>
+    
+    <div class="field-group">
+        <label>Step 2: Upload Proof of Receipt <span style="color:red;">(REQUIRED)</span></label>
+        <input type="file" id="proofUpload" accept="image/*" style="padding: 5px; font-size: 12px;">
+    </div>
+</div>
+
+            <div id="termsContainer" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
+                <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY POLICY</h4>
+                <ul style="font-size: 11px; color: #555; padding-left: 18px; line-height: 1.4;">
+                    <li>This is a <b>Personal Service</b> only. </li>
+                    <li>A <b>1% Service Fee</b> is applied based on your chosen option.</li>
+                    <li><b>Privacy:</b> Your details (Name & GCash No.) are collected solely to process this specific transaction.</li>
+                    <li>Data is used <b>once</b> and will not be shared or used for marketing.</li>
+                    <li>Please verify the GCash number. Jerric is not liable for wrong account inputs.</li>
+                </ul>
+                
+                <div class="checkbox-row">
+                    <input type="checkbox" id="termsAgree" style="width: 20px; height: 20px; cursor: pointer;">
+                    <label for="termsAgree" style="text-transform: none; font-size: 13px; cursor: pointer; font-weight: bold;">
+                        I have read and agree to the terms above.
+                    </label>
+                </div>
+            </div>
+
+            <button onclick="generateNumber()" class="btn-main">GET A NUMBER</button>
+            <button onclick="hideReview()" style="background: none; border: none; color: #888; width: 100%; margin-top: 10px; cursor: pointer;">Edit Details</button>
+        </div>
+
+        <div id="stepSuccess" class="overlay-screen" style="display: none; text-align: center;">
+            <div style="font-size: 50px;">✅</div>
+            <h2 style="color: var(--dark-green);">SUCCESS!</h2>
+
+            <p id="cashOutNoteSuccess" style="display:none; color:red; font-weight:bold; font-size:12px; border: 1px solid red; padding: 10px; border-radius: 8px; margin: 10px 0;">
+        ⚠️ REQUIRED: Please present 1 Valid ID to the teller for Cash Out verification.
+    </p>
+            
+            <p style="margin-bottom: 0;">YOUR QUEUE NUMBER:</p>
+            <div id="numberDisplay" class="que-number">G-000</div>
+
+            <div id="liveStatusBox" class="status-badge status-waiting">
+                STATUS: WAITING IN QUEUE
+            </div>
+            
+            <p id="instructionText" style="font-weight: bold; color: #555; margin-top: 15px; padding: 10px; border-radius: 10px; background: #f9f9f9;">
+                Checking status, please wait...
+            </p>
+
+            <div id="completedDetails" style="display:none; margin-top:15px; text-align:center;">
+                <p style="font-weight:bold; color:var(--dark-green); font-size: 18px; margin-bottom: 5px;">
+                    TRANSACTION COMPLETED
+                </p>
+
+                <div id="cashOutVerify" style="display:none; background: #fff9e6; padding: 15px; border-radius: 12px; border: 1px solid #ffc267; margin-bottom: 15px;">
+                    <p style="font-size: 13px; font-weight: bold; color: #1b431c; margin-bottom: 8px; text-transform: uppercase;">Acknowledgement Receipt</p>
+                    <div style="text-align: left; font-size: 12px; color: #333; line-height: 1.4; margin-bottom: 10px;">
+                        I, <strong id="sigCustName"></strong>, confirm that I have received the full cash amount of 
+                        <strong id="sigAmt"></strong> for my GCash Cash-Out transaction today, <span id="sigDate"></span>.
+                    </div>
+                    
+                    <div class="sig-wrapper" style="width: 100%; height: 180px; background: white; border-radius: 8px; border: 2px dashed #1b431c;">
+                        <canvas id="signature-pad" style="touch-action: none; width: 100%; height: 180px;"></canvas> 
+                    </div>
+                    
+                    <button type="button" onclick="clearSignature()" style="background:none; border:none; color:#d32f2f; font-size:11px; margin-top:10px; cursor:pointer;">[ CLEAR SIGNATURE ]</button>
+                </div>
+
+                <div id="cashInVerify">
+                    <p style="font-size: 13px; color: #555; margin-bottom: 15px;">
+                        Please see your transaction slip below.
+                    </p>
+                    <div id="adminNote" style="font-size: 14px; margin-bottom: 10px; font-style: italic; color: #333;"></div>
+                    <img id="adminReceipt" src="" alt="Admin Receipt" style="width: 100%; border-radius: 12px; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                </div>
+
+                <div id="customerProofPreview" style="display:none; text-align:center; margin-top:20px;">
+    <p style="font-weight:bold; color:green;">Transaction Voucher Generated:</p>
+    <img id="myProofImg" src="" style="width:100%; max-width:350px; border:2px solid #ddd; border-radius:10px;">
+    <p style="font-size:11px; color:#666;">You can screenshot this as your copy.</p>
+</div>
+
+                <p style="color: red; font-weight: bold; font-size: 12px; margin-top: 10px;">
+                    Paalala: Huwag kalimutang i-click ang DONE button kung tapos muna ito.
+                </p>
+
+                <button id="finishBtn" onclick="processFinalDone()" class="btn-main" disabled style="opacity: 0.5; cursor: not-allowed;">DONE / NEW TRANSACTION</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.addEventListener('beforeunload', function (e) {
+    const isWaiting = localStorage.getItem('isWaiting');
+    // Kung isWaiting ay true, lalabas ang "Confirm Navigation" pop-up
+    if (isWaiting === 'true') {
+        e.preventDefault();
+        e.returnValue = ''; // Standard ito para lumabas ang warning sa browser
+    }
+}); 
+ 
+let myQueueNumber = "";
+let statusInterval;
+let canvas;
+let ctx;
+let drawing = false;
+let currentMode = "Cash In"; // Siguraduhing nasa taas ito ng script
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+
+window.onload = function() {
+    // I-restore ang Mode (Cash In/Cash Out)
+    currentMode = localStorage.getItem('savedMode') || 'Cash In';
+    setMode(currentMode); 
+
+    // ETO YUNG MAGBABALIK NG DATA SA MGA INPUT BOXES
+    const inputsToRestore = ['custName', 'accNo', 'accName', 'amount'];
+    inputsToRestore.forEach(id => {
+        const savedValue = localStorage.getItem('input_' + id);
+        const inputElement = document.getElementById(id);
+        if (savedValue !== null && inputElement) {
+            inputElement.value = savedValue;
+        }
+    });
+
+    // Ituloy ang dating logic (Routing)
+    const savedNumber = localStorage.getItem('savedQueueNumber');
+    const isWaiting = localStorage.getItem('isWaiting');
+    if (savedNumber && isWaiting === 'true') {
+        myQueueNumber = savedNumber;
+        document.getElementById('numberDisplay').innerText = myQueueNumber;
+        showStep('stepSuccess');
+        statusInterval = setInterval(checkMyStatus, 5000);
+        checkMyStatus(); 
+    } else {
+        showStep('stepForm');
+    }
+
+    // I-recompute ang fee kung may laman na ang amount
+    if (document.getElementById('amount').value > 0) {
+        calculateFee();
+    }
+};
+    
+
+async function checkMyStatus() {
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+    
+    try {
+        const response = await fetch(`${WEB_APP_URL}?checkStatus=${myQueueNumber}`);
+        const result = await response.json();
+        
+        const statusBox = document.getElementById('liveStatusBox');
+        const instruction = document.getElementById('instructionText');
+        const completedArea = document.getElementById('completedDetails');
+
+        // --- STATUS: NEW (Waiting) ---
+        if (result.status === "NEW") {
+            statusBox.style.display = "block";
+            statusBox.className = "status-badge status-waiting";
+            statusBox.innerText = "STATUS: WAITING IN QUEUE";
+            
+            instruction.style.color = "#d32f2f"; 
+            instruction.innerHTML = "<b>Please wait, huwag muna po aalis.</b><br>Lalabas dito sa screen kung ikaw ay tinatawag na.";
+            instruction.style.display = "block";
+            completedArea.style.display = "none"; // Tago ang button
+        } 
+        
+        // --- STATUS: CALLING (In Counter) ---
+        else if (result.status === "CALLING") {
+            statusBox.style.display = "block";
+            statusBox.className = "status-badge status-calling";
+            statusBox.innerText = "📣 PUMUNTA NA SA COUNTER";
+            
+            instruction.style.color = "#1b431c";
+            instruction.innerHTML = "<b>Ang iyong transaction ay pino-process na.</b><br>Paki-antay po na mag-complete para lumabas dito ang iyong transaction slip.";
+            instruction.style.display = "block";
+            completedArea.style.display = "none"; // Tago pa rin ang button
+        } 
+        
+// --- STATUS: COMPLETED (Tapos na) ---
+else if (result.status === "COMPLETED") {
+    statusBox.style.display = "block";
+    statusBox.className = "status-badge status-completed";
+    statusBox.innerText = "✅ TRANSACTION FINISHED";
+
+    instruction.style.display = "none"; 
+    completedArea.style.display = "block"; 
+
+    if (!localStorage.getItem('sessionStartTime')) {
+        localStorage.setItem('sessionStartTime', new Date().getTime());
+    }
+
+    const finishBtn = document.getElementById('finishBtn');
+
+    if (currentMode === "Cash Out") {
+        // --- SIGNATURE LOGIC PARA SA CASHOUT ---
+        document.getElementById('cashOutVerify').style.display = "block";
+        document.getElementById('cashInVerify').style.display = "none";
+        
+        finishBtn.disabled = true;
+        finishBtn.style.opacity = "0.5";
+        finishBtn.style.cursor = "not-allowed";
+
+        const rawAmount = parseFloat(document.getElementById('amount').value) || 0;
+        const fee = rawAmount * 0.01;
+        const savedFeeOption = localStorage.getItem('feeOption') || "add";
+
+        let finalCash = (savedFeeOption === "deduct") ? (rawAmount - fee) : rawAmount;
+
+        document.getElementById('sigCustName').innerText = document.getElementById('custName').value.toUpperCase();
+        document.getElementById('sigAmt').innerText = formatPHP(finalCash); // Ginamit ang formatPHP function
+        document.getElementById('sigDate').innerText = new Date().toLocaleDateString();
+        // ---------------------------------
+        
+        // [FIX] Mas siguradong initialization ng Signature Pad
+        setTimeout(() => {
+            if (typeof initSignaturePad === "function") {
+                initSignaturePad(); // Tawagin ang main init
+                
+                const canvasEl = document.getElementById('signature-pad');
+                if(canvasEl) {
+                    // Force set ng sukat base sa container
+                    canvasEl.width = canvasEl.parentElement.offsetWidth;
+                    canvasEl.height = 180;
+                    
+                    // Re-bind ang context globally para makapag-drawing
+                    ctx = canvasEl.getContext('2d');
+                    ctx.strokeStyle = "#000";
+                    ctx.lineWidth = 3;
+                    ctx.lineCap = "round";
+                    
+                    console.log("Canvas Re-initialized after refresh");
+                }
+            }
+        }, 800); 
+        
+    } else {
+        // --- CASH IN LOGIC (NO CHANGES) ---
+        document.getElementById('cashOutVerify').style.display = "none";
+        document.getElementById('cashInVerify').style.display = "block";
+
+        finishBtn.disabled = false;
+        finishBtn.style.opacity = "1";
+        finishBtn.style.cursor = "pointer";
+
+        document.getElementById('adminNote').innerHTML = `
+            <div style="margin-bottom: 10px;">
+                <strong style="color: var(--dark-green);">Salamat sa pagtitiwala!</strong><br>
+                <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
+            </div>
+        `;
+
+        const receiptImg = document.getElementById('adminReceipt');
+        if (result.receipt && result.receipt.toString().toLowerCase().includes("http")) {
+            let finalLink = result.receipt.toString().trim();
+            if (finalLink.includes("drive.google.com")) {
+                let fileId = "";
+                if (finalLink.includes("/file/d/")) {
+                    fileId = finalLink.split("/file/d/")[1].split("/")[0];
+                } else if (finalLink.includes("id=")) {
+                    fileId = finalLink.split("id=")[1].split("&")[0];
+                }
+                if(fileId) finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1200";
+            }
+            receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+            receiptImg.style.display = "block";
+        } else {
+            receiptImg.style.display = "none";
+        }
+    }
+
+    clearInterval(statusInterval);
+}
+    } catch (e) {
+        console.error("Error checking status:", e);
+    }
+}
+
+function initSignaturePad() {
+    canvas = document.getElementById('signature-pad');
+    if (!canvas) return;
+    
+    ctx = canvas.getContext('2d');
+    canvas.width = canvas.parentElement.offsetWidth;
+    canvas.height = 180; 
+
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+
+    // Mouse
+    canvas.onmousedown = startDraw;
+    canvas.onmousemove = moveDraw;
+    window.onmouseup = stopDraw;
+
+    // Touch - Mas matatag na paraan para sa mobile refresh
+    canvas.addEventListener("touchstart", function (e) {
+        if (e.target == canvas) e.preventDefault();
+        startDraw(e);
+    }, { passive: false });
+
+    canvas.addEventListener("touchmove", function (e) {
+        if (e.target == canvas) e.preventDefault();
+        moveDraw(e);
+    }, { passive: false });
+
+    canvas.addEventListener("touchend", function (e) {
+        stopDraw();
+    }, { passive: false });
+}
+    
+function startDraw(e) {
+    drawing = true;
+    ctx.beginPath();
+    const pos = getMousePos(canvas, e);
+    ctx.moveTo(pos.x, pos.y);
+}
+
+function moveDraw(e) {
+    if (!drawing) return;
+    const pos = getMousePos(canvas, e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    checkSig(); // Binubuhay ang DONE button kapag may guhit na
+}
+
+function stopDraw() {
+    drawing = false;
+}
+
+function getMousePos(canvasDom, event) {
+    const rect = canvasDom.getBoundingClientRect();
+    // Support para sa mouse at touch
+    const clientX = event.clientX || (event.touches && event.touches[0].clientX);
+    const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+    
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
+function setMode(mode) {
+    currentMode = mode;
+    localStorage.setItem('savedMode', mode);
+
+    const btnIn = document.getElementById('btnIn');
+    const btnOut = document.getElementById('btnOut');
+
+    // --- DAGDAG NA LOGIC DITO ---
+    const nameLabel = document.getElementById('nameLabel');
+    const custInput = document.getElementById('custName');
+
+
+    if (nameLabel && custInput) {
+        if (mode === 'Cash In') {
+            nameLabel.innerText = "Customer Name (Personally Transacting)";
+            custInput.placeholder = "Pangalan ng nag-transact personally";
+        } else {
+            nameLabel.innerText = "FULL NAME (KUKUHA NG CASH)";
+            custInput.placeholder = "Buong Pangalan niyo po na tatanggap";
+        }
+    }
+    // ----------------------------
+    
+    if(btnIn) btnIn.classList.toggle('active', mode === 'Cash In');
+    if(btnOut) btnOut.classList.toggle('active', mode === 'Cash Out');
+    
+    if(document.getElementById('stepForm').style.display !== 'none') {
+        calculateFee();
+    }
+}
+    
+
+function formatPHP(number) {
+return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 2
+    }).format(number);
+}
+
+    function toggleExact() {
+        const isExact = document.getElementById('isExact').checked;
+        document.getElementById('cashInputGroup').style.display = isExact ? 'none' : 'block';
+        calculateFee();
+    }
+
+    function calculateFee() {
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const fee = amt * 0.01;
+    const totalToPay = amt + fee; 
+    const liveBreakdown = document.getElementById('liveBreakdown');
+
+    if (amt > 0) {
+        liveBreakdown.style.display = 'block';
+        liveBreakdown.innerHTML = `
+            Estimated Fee (1%): <b>${formatPHP(fee)}</b><br>
+            Estimated Total: <b>${formatPHP(totalToPay)}</b>
+        `;
+    } else {
+        liveBreakdown.style.display = 'none';
+    }
+
+    const cashIn = parseFloat(document.getElementById('cashReceived').value) || 0;
+    const sukliDiv = document.getElementById('sukliDisplay');
+    
+    if (!document.getElementById('isExact').checked && cashIn > 0) {
+        if (cashIn < totalToPay) {
+            sukliDiv.style.color = "#d32f2f"; // Pula kung kulang
+            sukliDiv.innerHTML = "KULANG NG: " + formatPHP(totalToPay - cashIn);
+        } else {
+            sukliDiv.style.color = "#1b431c"; // Green kung may sukli
+            sukliDiv.innerHTML = "SUKLI: " + formatPHP(cashIn - totalToPay);
+        }
+    } else { 
+        sukliDiv.innerHTML = ""; 
+    }
+}
+
+function showStep(stepId) {
+    // Itago lahat
+    document.getElementById('stepForm').style.display = 'none';
+    document.getElementById('stepReview').style.display = 'none';
+    document.getElementById('stepSuccess').style.display = 'none';
+
+    // Ipakita ang target
+    const target = document.getElementById(stepId);
+    if (target) {
+        target.style.display = 'block';
+        
+        // ETO ANG PINAKA-IMPORTANTENG LINYA:
+        localStorage.setItem('currentStep', stepId); 
+    }
+}
+
+   function showReview() {
+    const name = document.getElementById('custName').value;
+    const accNo = document.getElementById('accNo').value;
+    const accName = document.getElementById('accName').value;
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    
+    if(!name || !accNo || !accName || amt <= 0) { 
+        alert("Pakikumpleto ang lahat ng detalye kasama ang Account Name."); 
+        return; 
+    }
+
+    let reviewHTML = `
+        <div class="review-item"><span>Mode:</span><strong>${currentMode}</strong></div>
+        ${currentMode === 'Cash Out' ? `
+            <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; border: 1px solid #ffeeba; margin-bottom: 15px; font-size: 13px; font-weight: bold; text-align: center;">
+                ⚠️ REQUIRED: Please present 1 Valid ID to the teller for Cash Out verification.
+            </div>
+        ` : ''}
+        <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
+        <div class="review-item"><span>GCash Account:</span><strong>${accName}</strong></div>
+        <div class="review-item"><span>GCash Number:</span><strong>${accNo}</strong></div>
+        <div class="review-item"><span>Amount:</span><strong>${formatPHP(amt)}</strong></div>
+        
+        <div class="field-group" style="margin-top:15px;">
+            <label style="font-size:10px;">Select Fee Option:</label>
+            <select id="reviewFeeOption" onchange="updateReviewTotal()" style="padding:8px; font-size:14px;">
+                <option value="add">ADD-ON (Dagdag sa amount)</option>
+                <option value="deduct">DEDUCT (Bawas sa amount)</option>
+            </select>
+        </div>
+        <div id="finalBreakdown" style="margin-top:10px; border-top: 1px dashed #ccc; padding-top:10px;"></div>
+    `;
+
+    document.getElementById('reviewContent').innerHTML = reviewHTML;
+    
+    // --- ITO ANG CORRECT LOGIC ---
+    const qrArea = document.getElementById('qrReviewArea');
+    if (qrArea) {
+        if (currentMode === 'Cash Out') {
+            qrArea.style.setProperty('display', 'block', 'important'); // Pakita sa Cash Out
+        } else {
+            qrArea.style.setProperty('display', 'none', 'important');  // Tago sa Cash In
+            // Linisin ang input para sigurado
+            const fileInput = document.getElementById('proofUpload');
+            if(fileInput) fileInput.value = "";
+        }
+    }
+    // ------------------------------
+
+    showStep('stepReview'); // Ito na lang ang ititira mo 
+   document.getElementById('stepReview').scrollTop = 0;
+    
+    updateReviewTotal();
+}
+    
+    function hideReview() {
+    showStep('stepForm');
+}
+    
+    async function generateNumber() {
+    // 1. Validation for Terms
+    if(!document.getElementById('termsAgree').checked) { 
+        alert("Paki-check ang box para sumang-ayon sa terms."); 
+        return; 
+    }
+
+    // --- [FILE UPLOAD LOGIC - REQUIRED FOR CASH OUT] ---
+    const fileInput = document.getElementById('proofUpload');
+    let base64File = "";
+    let fileName = "";
+    let fileType = "";
+
+    // VALIDATION: Kung Cash Out, kailangan may file.
+    if (currentMode === 'Cash Out' && (!fileInput.files || fileInput.files.length === 0)) {
+        alert("⚠️ REQUIRED: Please upload your Proof of Transfer / Receipt before getting a number.");
+        return; // Hihinto ang script dito, hindi magse-send sa database.
+    }
+
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileName = file.name;
+        fileType = file.type;
+        
+        base64File = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+        });
+    }
+    // -----------------------------------
+
+    // --- BAGONG VALIDATION LOGIC ---
+    const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+    const feeOption = document.getElementById('reviewFeeOption').value;
+    const exactCheckEl = document.getElementById('reviewIsExact');
+    const isExact = exactCheckEl ? exactCheckEl.checked : true;
+    const cashInputEl = document.getElementById('reviewCashReceived');
+    const cashInputValue = cashInputEl ? parseFloat(cashInputEl.value) : 0;
+    const fee = baseAmount * 0.01;
+    const totalWithFee = baseAmount + fee;
+
+    if (currentMode === 'Cash In' && feeOption === 'add' && !isExact) {
+        if (cashInputValue <= 0 || isNaN(cashInputValue)) {
+            alert("Pakilagay kung magkano ang iaabot mong cash.");
+            return;
+        }
+        if (cashInputValue < totalWithFee) {
+            alert("Kulang ang cash na iyong ilalagay para sa total amount.");
+            return;
+        }
+    }
+
+    const btn = document.querySelector("#stepReview .btn-main");
+    const originalText = "GET A NUMBER";
+    btn.innerText = "SENDING... PLEASE WAIT";
+    btn.disabled = true;
+
+    try {
+        const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
+
+        // Kukunin lang natin ang mga raw values mula sa form.
+        // Ang Apps Script na ang bahalang mag-sort sa K, L, M, N, at O.
+        const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+        const feeOption = document.getElementById('reviewFeeOption').value;
+        const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+        const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
+        const fee = baseAmount * 0.01;
+
+        const formData = {
+            customerName: document.getElementById('custName').value,
+            queueNo: generatedNum,
+            timestamp: new Date().toLocaleString(),
+            provider: "GCASH",
+            transType: currentMode,
+            gcashName: document.getElementById('accName').value,
+            gcashNo: document.getElementById('accNo').value,
+            amount: baseAmount,
+            feeAmount: fee,
+            feeOption: feeOption,
+            // IPAPASA NATIN ANG RAW VALUES PARA SA LOGIC NG SCRIPT
+            totalAmount: cashInputVal, // Inabot na cash (kung meron)
+            cashAmount: isExactVal ? 0 : (cashInputVal - (baseAmount + fee)), // Sukli (kung meron)
+            consent: "YES",
+            receiptFile: base64File,
+            receiptFileName: fileName,
+            receiptFileType: fileType
+        };
+
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+
+        localStorage.setItem('feeOption', feeOption);
+        
+        const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify(formData),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+
+        const result = await response.json();
+
+        if (result.result === "success") {
+            myQueueNumber = generatedNum; 
+            localStorage.setItem('savedQueueNumber', myQueueNumber);
+            localStorage.setItem('isWaiting', 'true');
+            localStorage.setItem('sessionStartTime', new Date().getTime());
+
+            // --- [DAGDAG: PHOTO PREVIEW SA SUCCESS SCREEN] ---
+            if (base64File) {
+                const previewImg = document.getElementById('myProofImg');
+                const previewContainer = document.getElementById('customerProofPreview');
+                if (previewImg && previewContainer) {
+                    previewImg.src = base64File;
+                    previewContainer.style.display = 'block';
+                }
+            }
+
+            document.getElementById('numberDisplay').innerText = myQueueNumber;
+            showStep('stepSuccess');
+
+            const idNote = document.getElementById('cashOutNoteSuccess');
+            if (idNote) {
+                idNote.style.display = (currentMode === 'Cash Out') ? 'block' : 'none';
+            }
+            
+            statusInterval = setInterval(checkMyStatus, 5000);
+        } else {
+            throw new Error(result.error || "Submission failed");
+        }
+
+    } catch (err) {
+        console.error("Critical Error:", err);
+        alert(err.message.includes("Kulang") ? err.message : "System Error: " + err.message);
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+    
+     function finishTransaction() {
+    // 1. Burahin ang mga sinave na input para malinis sa susunod na customer
+    ['custName', 'accNo', 'accName', 'amount', 'savedQueueNumber', 'isWaiting', 'currentStep', 'feeOption', 'sessionStartTime'].forEach(id => {
+        localStorage.removeItem(id);
+        localStorage.removeItem('input_' + id); // Para sa mga input fields
+    });
+
+    // 2. Itigil ang pag-check ng status kung meron man
+    if(statusInterval) clearInterval(statusInterval);
+
+    // 3. I-redirect sa index.html imbes na reload lang
+    window.location.href = 'index.html'; 
+}
+    
+    function updateReviewTotal() {
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const fee = amt * 0.01;
+    const feeOption = document.getElementById('reviewFeeOption').value;
+    const totalWithFee = amt + fee;
+
+    const oldCheckbox = document.getElementById('reviewIsExact');
+    const isExact = oldCheckbox ? oldCheckbox.checked : true;
+    const oldCashInput = document.getElementById('reviewCashReceived');
+    const oldCashValue = oldCashInput ? oldCashInput.value : "";
+
+    let breakdownHTML = `<div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>`;
+
+    if (currentMode === 'Cash In') {
+        if (feeOption === 'add') {
+            breakdownHTML += `
+                <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
+                    <span>Total na ibabayad (Cash):</span><strong>${formatPHP(totalWithFee)}</strong>
+                </div>
+                <div class="cash-logic-box">
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" ${isExact ? 'checked' : ''}> 
+                        Sakto ang iaabot ko (Exact)
+                    </label>
+                    <div id="reviewCashInputGroup" style="display: ${isExact ? 'none' : 'block'}">
+                        <label>Magkano ang cash na iaabot mo?</label>
+                        <input type="number" id="reviewCashReceived" oninput="updateReviewSukli()" placeholder="0.00" value="${oldCashValue}">
+                        <div id="reviewSukliDisplay" class="sukli-display"></div>
+                    </div>
+                </div>`;
+        } else {
+            const netToReceive = amt - fee;
+            breakdownHTML += `
+                <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
+                    <span>Total na ibabayad (Cash):</span><strong>${formatPHP(amt)}</strong>
+                </div>
+                <div style="margin-top:15px; padding:15px; background: #e3f2fd; border-radius:10px; text-align:center; border: 1px solid #2196f3;">
+                    <span style="font-size:12px; color:#555;">ANG PAPASOK SA GCASH MO:</span><br>
+                    <b style="font-size:24px; color:#1565c0;">${formatPHP(netToReceive)}</b><br>
+                    <small style="color:red;">(Bawas na ang ${formatPHP(fee)} service fee)</small>
+                </div>`;
+        }
+    } else {
+        // CASH OUT DISPLAY
+        const amountToReceive = (feeOption === 'deduct') ? (amt - fee) : amt;
+        const amountToSend = (feeOption === 'deduct') ? amt : (amt + fee);
+
+        breakdownHTML += `
+            <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: var(--dark-green);">
+                <span>Total to Send via GCash:</span><strong>${formatPHP(amountToSend)}</strong>
+            </div>
+            <div style="margin-top:15px; padding:15px; background: #e8f5e9; border-radius:10px; text-align:center;">
+                <span style="font-size:12px; color:#555;">CASH NA MATATANGGAP MO:</span><br>
+                <b style="font-size:24px; color:var(--dark-green);">${formatPHP(amountToReceive)}</b>
+                ${feeOption === 'deduct' ? `<br><small style="color:red;">(Bawas na ang service fee)</small>` : ''}
+            </div>`;
+    
+        // --- [BAGONG DAGDAG] PARA SA COPY AMOUNT AT QR NOTE ---
+        const qrInstruction = document.getElementById('qrInstructionReview');
+        const displayAmt = document.getElementById('displayAmountToSend');
+        
+        if (displayAmt) {
+            // Nililinis ang display amount para sa copy button
+            displayAmt.innerText = formatPHP(amountToSend);
+        }
+        
+        if (qrInstruction) {
+            qrInstruction.innerHTML = `PAALALA: Pakisend ang eksaktong <b style="color:black;">${formatPHP(amountToSend)}</b>.<br>I-upload ang screenshot ng Send Money confirmation sa baba.`;
+        }
+    }
+
+    document.getElementById('finalBreakdown').innerHTML = breakdownHTML;
+
+    if (currentMode === 'Cash In' && feeOption === 'add') {
+        updateReviewSukli();
+    }
+}
+
+// [DAGDAG DIN ITO SA BABA NG SCRIPT PARA GUMANA ANG COPY BUTTON]
+function copyAmount() {
+    const amtText = document.getElementById('displayAmountToSend').innerText;
+    // Number lang ang kukunin (aalisin ang ₱ at commas)
+    const cleanAmt = amtText.replace(/[^\d.-]/g, ''); 
+    
+    navigator.clipboard.writeText(cleanAmt).then(() => {
+        alert("Halagang nakopya: " + cleanAmt);
+    });
+}
+
+// 3. SEPARATE FUNCTION PARA SA SUKLI (Huwag i-rerender ang HTML dito)
+function updateReviewSukli() {
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const fee = amt * 0.01;
+    const totalWithFee = amt + fee;
+    
+    const cashInput = document.getElementById('reviewCashReceived');
+    const sukliDiv = document.getElementById('reviewSukliDisplay');
+    const isExact = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : false;
+
+    if (!sukliDiv || isExact) return;
+
+    const cashHanded = parseFloat(cashInput.value) || 0;
+    const computeSukli = cashHanded - totalWithFee;
+
+    if (cashHanded > 0) {
+        if (computeSukli < 0) {
+            sukliDiv.style.color = "red";
+            sukliDiv.innerHTML = "KULANG NG: " + formatPHP(Math.abs(computeSukli));
+        } else {
+            sukliDiv.style.color = "green";
+            sukliDiv.innerHTML = "SUKLI: " + formatPHP(computeSukli);
+        }
+    } else {
+        sukliDiv.innerHTML = "";
+    }
+}
+    
+function adminForceReset() {
+    const ADMIN_PIN = "430456"; 
+    const enteredPin = prompt("ADMIN ONLY: Enter 6-digit PIN to reset kiosk:");
+    
+    if (enteredPin === ADMIN_PIN) {
+        localStorage.clear(); // Burahin ang lahat
+        if(statusInterval) clearInterval(statusInterval);
+        
+        alert("System Reset! Redirecting to Home...");
+        // Ginagamit ang replace para burahin ang history entry
+        window.location.replace('index.html'); 
+    } else if (enteredPin !== null) {
+        alert("Maling PIN!");
+    }
+}
+
+
+
+    
+// --- BUTTON CONTROLS ---
+function clearSignature() {
+    if(!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const btn = document.getElementById('finishBtn');
+    btn.disabled = true;
+    btn.style.opacity = "0.5";
+}
+
+function checkSig() {
+    const btn = document.getElementById('finishBtn');
+    // I-enable lang ang button kapag may guhit na sa canvas
+    btn.disabled = false;
+    btn.style.opacity = "1";
+    btn.style.cursor = "pointer";
+}
+
+async function processFinalDone() {
+    const btn = document.getElementById('finishBtn');
+
+    if (currentMode === "Cash Out") {
+        btn.innerText = "GENERATING VOUCHER...";
+        btn.disabled = true;
+
+        // --- HIGH DPI SETTINGS (Para malinaw at hindi blur) ---
+        const vCanvas = document.createElement('canvas');
+        const scale = 2; // Doble ang linaw
+        vCanvas.width = 400 * scale; 
+        vCanvas.height = 650 * scale; // Tinalasan natin konti para sa fee summary
+        const vCtx = vCanvas.getContext('2d');
+        vCtx.scale(scale, scale); 
+        
+        // Background
+        vCtx.fillStyle = "white"; vCtx.fillRect(0,0,400,650);
+        
+        // Header
+        vCtx.fillStyle = "#1b4332"; 
+        vCtx.font = "bold 16px Arial"; 
+        vCtx.textAlign = "center";
+        vCtx.fillText("GCASH BY JERRIC PERSONAL SERVICE", 200, 45);
+        vCtx.font = "12px Arial";
+        vCtx.fillText("CASH-OUT ACKNOWLEDGMENT", 200, 65);
+        
+        vCtx.strokeStyle = "#ccc";
+        vCtx.lineWidth = 1;
+        vCtx.beginPath(); vCtx.moveTo(30, 80); vCtx.lineTo(370, 80); vCtx.stroke();
+        
+        // Basic Info
+        vCtx.textAlign = "left";
+        vCtx.fillStyle = "black";
+        vCtx.font = "13px Arial";
+        vCtx.fillText("Queue No:", 40, 110);
+        vCtx.font = "bold 13px Arial";
+        vCtx.fillText(myQueueNumber, 150, 110);
+        
+        vCtx.font = "13px Arial";
+        vCtx.fillText("Date/Time:", 40, 135);
+        vCtx.fillText(new Date().toLocaleString(), 150, 135);
+        
+        vCtx.fillText("Customer:", 40, 160);
+        vCtx.font = "bold 13px Arial";
+        const customerFullName = document.getElementById('custName').value.toUpperCase();
+        vCtx.fillText(customerFullName, 150, 160);
+
+        // --- TRANSACTION SUMMARY (Dito ang Fee Logic) ---
+        vCtx.strokeStyle = "#eee";
+        vCtx.strokeRect(35, 175, 330, 80);
+        
+        vCtx.font = "11px Arial";
+        vCtx.fillStyle = "#555";
+        const rawAmt = document.getElementById('amount').value || "0";
+        const feeAmt = (parseFloat(rawAmt) * 0.01).toFixed(2);
+        const feeOpt = localStorage.getItem('feeOption') || "add"; // Kunin kung add o deduct
+
+        vCtx.fillText("Transferred Amount:", 45, 195);
+        vCtx.textAlign = "right";
+        vCtx.fillText("₱" + rawAmt, 350, 195);
+        
+        vCtx.textAlign = "left";
+        vCtx.fillText("Service Fee (" + (feeOpt === 'add' ? 'Add-on' : 'Deduct') + "):", 45, 215);
+        vCtx.textAlign = "right";
+        vCtx.fillText(feeOpt === 'add' ? "+ ₱" + feeAmt : "- ₱" + feeAmt, 350, 215);
+
+        // Final Cash Received Highlight
+        vCtx.fillStyle = "#f8f9fa";
+        vCtx.fillRect(30, 225, 340, 45);
+        vCtx.fillStyle = "#d32f2f"; 
+        vCtx.font = "bold 18px Arial";
+        vCtx.textAlign = "left";
+        const finalCash = document.getElementById('sigAmt').innerText;
+        vCtx.fillText("NET CASH RECEIVED:", 50, 255);
+        vCtx.textAlign = "right";
+        vCtx.fillText(finalCash, 350, 255);
+        
+        // --- TERMS ---
+        vCtx.textAlign = "left";
+        vCtx.fillStyle = "#555";
+        vCtx.font = "italic 10px Arial";
+        
+        const lines = [
+            "By signing below, I acknowledge receipt of the", // Hati sa gitna
+            "exact amount stated above. I agree to the fees", // Hati uli
+            "and terms. This transaction is final and complete."
+        ];
+        
+        let yPos = 285; // Itinaas ng konti para magkasya ang 3 lines
+        lines.forEach(line => { 
+            vCtx.fillText(line, 45, yPos); // Naka-indent ng 45 para sentro tignan
+            yPos += 14; // Sakto ang space ng bawat linya
+        });
+        
+        // --- SIGNATURE AREA ---
+        const sigPad = document.getElementById('signature-pad');
+        if (sigPad) {
+            vCtx.drawImage(sigPad, 40, 320, 320, 140);
+        }
+        
+        vCtx.strokeStyle = "black";
+        vCtx.lineWidth = 1.5;
+        vCtx.beginPath(); 
+        vCtx.moveTo(80, 460); 
+        vCtx.lineTo(320, 460); 
+        vCtx.stroke();
+        
+        vCtx.font = "bold 14px Arial";
+        vCtx.fillStyle = "black";
+        vCtx.textAlign = "center";
+        vCtx.fillText(customerFullName, 200, 480); 
+        
+        vCtx.font = "10px Arial";
+        vCtx.fillStyle = "#666";
+        vCtx.fillText("CUSTOMER SIGNATURE", 200, 495);
+
+        // Footer
+        vCtx.font = "9px Arial";
+        vCtx.fillStyle = "#999";
+        vCtx.fillText("This is a system-generated voucher.", 200, 560);
+        vCtx.fillText("Thank you for trusting Jerric's Personal Service!", 200, 575);
+        
+        const voucherDataURL = vCanvas.toDataURL("image/png");
+
+        // Preview
+        document.getElementById('cashOutVerify').style.display = 'none';
+        const voucherPreview = document.getElementById('myProofImg'); 
+        const previewContainer = document.getElementById('customerProofPreview');
+        if (voucherPreview && previewContainer) {
+            voucherPreview.src = voucherDataURL;
+            previewContainer.style.display = 'block';
+            previewContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Save to Database
+        try {
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "saveSignature",
+                    queueNo: myQueueNumber,
+                    signature: voucherDataURL,
+                    finalCash: finalCash
+                }),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+
+            btn.innerText = "DONE - CLOSE SYSTEM";
+            btn.style.background = "#2e7d32";
+            btn.disabled = false;
+            btn.onclick = finishTransaction; 
+
+        } catch (e) { 
+            console.error("Voucher error:", e);
+            btn.innerText = "DONE - CLOSE";
+            btn.disabled = false;
+            btn.onclick = finishTransaction;
+        }
+    } else {
+        finishTransaction();
+    }
+}
+
+function saveInput(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        // Sine-save nito ang value sa browser memory (localStorage)
+        localStorage.setItem('input_' + id, el.value);
+    }
+}
+// I-expose sa window para kahit nasa loob ng ibang function, mababasa pa rin
+window.saveInput = saveInput;
+    
+</script>
+
+</body>
+</html>
