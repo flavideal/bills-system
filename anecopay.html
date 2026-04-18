@@ -343,9 +343,6 @@ window.addEventListener('beforeunload', function (e) {
  
 let myQueueNumber = "";
 let statusInterval;
-let canvas;
-let ctx;
-let drawing = false;
 let currentMode = "Cash In"; // Siguraduhing nasa taas ito ng script
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
@@ -476,96 +473,24 @@ async function checkMyStatus() {
     }
 }
 
-function initSignaturePad() {
-    canvas = document.getElementById('signature-pad');
-    if (!canvas) return;
-    
-    ctx = canvas.getContext('2d');
-    canvas.width = canvas.parentElement.offsetWidth;
-    canvas.height = 180; 
-
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 3;
-    ctx.lineCap = "round";
-
-    // Mouse
-    canvas.onmousedown = startDraw;
-    canvas.onmousemove = moveDraw;
-    window.onmouseup = stopDraw;
-
-    // Touch - Mas matatag na paraan para sa mobile refresh
-    canvas.addEventListener("touchstart", function (e) {
-        if (e.target == canvas) e.preventDefault();
-        startDraw(e);
-    }, { passive: false });
-
-    canvas.addEventListener("touchmove", function (e) {
-        if (e.target == canvas) e.preventDefault();
-        moveDraw(e);
-    }, { passive: false });
-
-    canvas.addEventListener("touchend", function (e) {
-        stopDraw();
-    }, { passive: false });
-}
-    
-function startDraw(e) {
-    drawing = true;
-    ctx.beginPath();
-    const pos = getMousePos(canvas, e);
-    ctx.moveTo(pos.x, pos.y);
-}
-
-function moveDraw(e) {
-    if (!drawing) return;
-    const pos = getMousePos(canvas, e);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-    checkSig(); // Binubuhay ang DONE button kapag may guhit na
-}
-
-function stopDraw() {
-    drawing = false;
-}
-
-function getMousePos(canvasDom, event) {
-    const rect = canvasDom.getBoundingClientRect();
-    // Support para sa mouse at touch
-    const clientX = event.clientX || (event.touches && event.touches[0].clientX);
-    const clientY = event.clientY || (event.touches && event.touches[0].clientY);
-    
-    return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
-    };
-}
 
 function setMode(mode) {
     currentMode = mode;
     localStorage.setItem('savedMode', mode);
 
-    const btnIn = document.getElementById('btnIn');
-    const btnOut = document.getElementById('btnOut');
-
-    // --- DAGDAG NA LOGIC DITO ---
     const nameLabel = document.getElementById('nameLabel');
     const custInput = document.getElementById('custName');
 
-
     if (nameLabel && custInput) {
-        if (mode === 'Cash In') {
-            nameLabel.innerText = "Customer Name (Personally Transacting)";
-            custInput.placeholder = "Pangalan ng nag-transact personally";
-        } else {
-            nameLabel.innerText = "FULL NAME (KUKUHA NG CASH)";
-            custInput.placeholder = "Buong Pangalan niyo po na tatanggap";
-        }
+        // Gawin nating generic na "Customer Name" dahil bills payment na ito
+        nameLabel.innerText = "Customer Name (Nag-transact)";
+        custInput.placeholder = "Pangalan ng nag-bayad";
     }
-    // ----------------------------
     
-    if(btnIn) btnIn.classList.toggle('active', mode === 'Cash In');
-    if(btnOut) btnOut.classList.toggle('active', mode === 'Cash Out');
-    
+    // Pwede mo nang burahin ang logic para sa btnIn/btnOut classes kung tinanggal mo na yung buttons sa HTML
+    const btnIn = document.getElementById('btnIn');
+    if(btnIn) btnIn.classList.add('active');
+
     if(document.getElementById('stepForm').style.display !== 'none') {
         calculateFee();
     }
@@ -720,22 +645,30 @@ function showStep(stepId) {
         const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
         // Pag-send ng Data sa Google Sheets
-        const formData = {
-            customerName: document.getElementById('custName').value,
-            queueNo: generatedNum,
-            timestamp: new Date().toLocaleString(),
-            transType: currentMode, // Halimbawa: "ANECO" o "Cash In"
-            gcashName: document.getElementById('accName').value, 
-            gcashNo: document.getElementById('accNo').value,     
-            amount: baseAmount,
-            feeAmount: fee,
-            totalAmount: totalWithFee, 
-            cashAmount: isExactVal ? totalWithFee : cashReceivedVal, // Pera na binigay ng customer
-            changeAmount: isExactVal ? 0 : (cashReceivedVal - totalWithFee), // Sukli
-            receiptFile: base64File,
-            receiptFileName: fileName,
-            receiptFileType: fileType
-        };
+const formData = {
+    customerName: document.getElementById('custName').value,
+    queueNo: generatedNum,
+    timestamp: new Date().toLocaleString(),
+    
+    // Dito natin lalakihan ang info para sa Sheets
+    transType: "Bill Payment", 
+    provider: "ANECO", // Para alam mo agad na ANECO ito sa monitoring
+    
+    // Panatilihin ang keys (gcashName/No) kung yan ang header sa Sheets mo, 
+    // pero ang laman ay galing sa ANECO inputs.
+    gcashName: document.getElementById('accName').value, // ANECO Account Name
+    gcashNo: document.getElementById('accNo').value,     // ANECO Account Number/Ref No
+    
+    amount: baseAmount,
+    feeAmount: fee,
+    totalAmount: totalWithFee, 
+    cashAmount: isExactVal ? totalWithFee : cashReceivedVal,
+    changeAmount: isExactVal ? 0 : (cashReceivedVal - totalWithFee),
+    
+    receiptFile: base64File,
+    receiptFileName: fileName,
+    receiptFileType: fileType
+};
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
@@ -828,16 +761,6 @@ function showStep(stepId) {
     updateReviewSukli();
 }
 
-// [DAGDAG DIN ITO SA BABA NG SCRIPT PARA GUMANA ANG COPY BUTTON]
-function copyAmount() {
-    const amtText = document.getElementById('displayAmountToSend').innerText;
-    // Number lang ang kukunin (aalisin ang ₱ at commas)
-    const cleanAmt = amtText.replace(/[^\d.-]/g, ''); 
-    
-    navigator.clipboard.writeText(cleanAmt).then(() => {
-        alert("Halagang nakopya: " + cleanAmt);
-    });
-}
 
 // 3. SEPARATE FUNCTION PARA SA SUKLI (Huwag i-rerender ang HTML dito)
 function updateReviewSukli() {
