@@ -1,7 +1,7 @@
 {
   "id": "jerric-kiosk-main",
   "name": "JERRIC KIOSK",
-  "short_name": "Kiosk",
+  "short_name": "Jerric Kiosk",
   "description": "Digital Kiosk for Cash In, Cash Out, and Bills Payment",
   "start_url": "/index.html",
   "scope": "/",
