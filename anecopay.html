@@ -564,21 +564,22 @@ const formData = {
     queueNo: generatedNum,
     timestamp: new Date().toLocaleString(),
     
-    // Dito natin lalakihan ang info para sa Sheets
+    // Identity ng transaction
     transType: "Bill Payment", 
-    provider: "ANECO", // Para alam mo agad na ANECO ito sa monitoring
+    provider: "ANECO", 
     
-    // Panatilihin ang keys (gcashName/No) kung yan ang header sa Sheets mo, 
-    // pero ang laman ay galing sa ANECO inputs.
+    // Mapping para sa iyong Google Sheets columns
     gcashName: document.getElementById('accName').value, // ANECO Account Name
-    gcashNo: document.getElementById('accNo').value,     // ANECO Account Number/Ref No
+    gcashNo: document.getElementById('accNo').value,     // ANECO Account Number
     
+    // --- UPDATED FINANCIALS ---
     amount: baseAmount,
-    feeAmount: fee,
+    feeAmount: totalFee, // Eto yung (10 pesos + Rounded 1%)
     totalAmount: totalWithFee, 
     cashAmount: isExactVal ? totalWithFee : cashReceivedVal,
     changeAmount: isExactVal ? 0 : (cashReceivedVal - totalWithFee),
     
+    // File attachments
     receiptFile: base64File,
     receiptFileName: fileName,
     receiptFileType: fileType
