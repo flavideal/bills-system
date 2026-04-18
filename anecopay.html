@@ -35,10 +35,7 @@
         .field-group { margin-bottom: 15px; }
         label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-transform: uppercase; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .mode-btn { padding: 15px; border: 2px solid #eee; border-radius: 10px; text-align: center; cursor: pointer; font-weight: bold; }
         .mode-btn.active { background: var(--dark-green); color: white; border-color: var(--dark-green); }
-        .qr-box { background: #fff9e6; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; border: 2px solid var(--dark-green); }
         .back-btn { background: none; border: none; color: var(--dark-green); font-weight: bold; cursor: pointer; margin-bottom: 10px; }
         /* Siguradong clickable ang mga checkbox na nililikha ng Script */
 .cash-logic-box input[type="checkbox"] {
@@ -140,24 +137,8 @@
     cursor: pointer;
 }
 
-/* Fix para sa Signature Pad */
-#signature-pad {
-    display: block;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    cursor: crosshair;
-    touch-action: none;
-}
-        
-.sig-wrapper {
-    position: relative;
-    z-index: 2500; /* Mas mataas sa overlay para sure na clickable */
-}
     </style>
 </head>
-<body>
-
 <div class="kiosk-container">
     <button class="back-btn" onclick="window.location.href='index.html'">← BACK TO MENU</button>
     
@@ -165,103 +146,53 @@
         <div class="force-reset-trigger" onclick="adminForceReset()">RESET</div>
         
         <div id="stepForm">
-            <div style="background: var(--dark-green); padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center;">
-    
-    <h2 style="color: #ffc267; margin: 0; font-size: 22px; letter-spacing: 2px; text-transform: uppercase; font-weight: 800;">
-        ANECO
-    </h2>
-    <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 11px; font-weight: bold; letter-spacing: 1px;">
-        ELECTRIC BILL PAYMENT
-    </p>
-    <div style="height: 1px; background: rgba(255,194,103,0.3); width: 50%; margin: 10px auto;"></div>
-    <p style="color: #ffffff; font-size: 13px; margin: 5px 0 0 0; font-style: italic;">
-        Jerric Personal Assistance Service
-    </p>
-</div>
+            <div style="background: var(--dark-green); padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center;">
+                <h2 style="color: #ffc267; margin: 0; font-size: 22px; text-transform: uppercase; font-weight: 800;">ANECO</h2>
+                <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 11px; font-weight: bold;">ELECTRIC BILL PAYMENT</p>
+                <div style="height: 1px; background: rgba(255,194,103,0.3); width: 50%; margin: 10px auto;"></div>
+                <p style="color: #ffffff; font-size: 13px; margin: 5px 0 0 0; font-style: italic;">Jerric Personal Assistance Service</p>
+            </div>
 
-            <div id="stepForm">
-    
-    <div class="field-group">
-    <label>Name ng Personally Transacting</label>
-    <input type="text" id="custName" placeholder="Pangalan ng nagbabayad dito" oninput="saveInput('custName')">
-</div>
-
-<div class="field-group">
-    <label>ANECO Account Name</label>
-    <input type="text" id="accName" placeholder="Pangalan sa Bill" oninput="saveInput('accName')">
-</div>
-
-<div class="field-group">
-    <label>ANECO Account Number</label>
-    <input type="number" id="accNo" placeholder="10-digit Account Number" oninput="saveInput('accNo')">
-</div>
-
-<div class="field-group">
-    <label>Customer Cellphone Number</label>
-    <input type="number" id="custPhone" placeholder="Para sa Maya confirmation" oninput="saveInput('custPhone')">
-</div>
-
-<div class="field-group">
-    <label>Amount to Pay</label>
-    <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
-</div>
-    </div>
-</div>
+            <div class="field-group">
+                <label>Name ng Nag-transact</label>
+                <input type="text" id="custName" placeholder="Pangalan ninyo" oninput="saveInput('custName')">
+            </div>
+            <div class="field-group">
+                <label>ANECO Account Name</label>
+                <input type="text" id="accName" placeholder="Pangalan sa Bill" oninput="saveInput('accName')">
+            </div>
+            <div class="field-group">
+                <label>ANECO Account Number</label>
+                <input type="number" id="accNo" placeholder="10-digit Account Number" oninput="saveInput('accNo')">
+            </div>
+            <div class="field-group">
+                <label>Cellphone Number</label>
+                <input type="number" id="custPhone" placeholder="Para sa confirmation" oninput="saveInput('custPhone')">
+            </div>
+            <div class="field-group">
+                <label>Amount to Pay</label>
+                <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
+                <div id="liveBreakdown" style="font-size: 12px; margin-top: 5px; color: var(--dark-green);"></div>
+                <div id="sukliDisplay" class="sukli-display"></div>
+            </div>
 
             <button onclick="showReview()" class="btn-main">REVIEW DETAILS</button>
         </div>
 
-        <div id="stepReview" class="overlay-screen" style="display: none;">
+        <div id="stepReview" class="overlay-screen">
             <h3 style="color: var(--dark-green); text-align: center;">REVIEW YOUR DETAILS</h3>
             <div id="reviewContent"></div>
-
-            <div id="qrReviewArea" style="display:none;">
-    <div class="qr-box">
-        <p style="font-weight: bold; color: var(--dark-green); margin: 0;">STEP 1: SCAN TO PAY VIA GCASH</p>
-        
-        <img src="https://jerrickiosk.flavideal.com/qr/gc.png" id="gcashQR" style="width: 180px; margin-top: 10px; border-radius: 10px;">
-        
-        <div id="amountToCopyContainer" style="background: #fff; border: 1px solid var(--dark-green); padding: 10px; border-radius: 8px; margin: 10px auto; width: 80%;">
-            <p style="font-size: 10px; color: #666; margin: 0; text-transform: uppercase;">Amount to Send:</p>
-            <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
-                <span id="displayAmountToSend" style="font-size: 18px; font-weight: bold; color: #d32f2f;">₱0.00</span>
-                <button type="button" onclick="copyAmount()" style="background: var(--dark-green); color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">
-                    COPY
-                </button>
-            </div>
-        </div>
-
-        <div style="margin-top: 5px;">
-            <a href="https://jerrickiosk.flavideal.com/qr/gc.png" download="Jerric_GCash_QR.png" style="text-decoration: none;">
-                <button type="button" style="background: var(--dark-green); color: white; border: none; padding: 8px 15px; border-radius: 5px; font-size: 12px; cursor: pointer; font-weight: bold;">
-                    📥 DOWNLOAD QR
-                </button>
-            </a>
-        </div>
-
-        <p id="qrInstructionReview" style="font-size: 11px; margin-top: 8px; color: #d32f2f; font-weight: bold; line-height: 1.4;"></p>
-    </div>
-    
-    <div class="field-group">
-        <label>Step 2: Upload Proof of Receipt <span style="color:red;">(REQUIRED)</span></label>
-        <input type="file" id="proofUpload" accept="image/*" style="padding: 5px; font-size: 12px;">
-    </div>
-</div>
+            <div id="finalBreakdown" style="margin-top: 15px;"></div>
 
             <div id="termsContainer" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
-                <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY POLICY</h4>
-               <ul style="font-size: 11px; color: #555; padding-left: 18px; line-height: 1.4;">
-    <li>Siguraduhing tama ang <b>Account Number</b> at <b>Amount</b>.</li>
-    <li>Makakatanggap kayo ng confirmation message mula sa <b>Maya Center</b> kapag kumpleto na ang payment.</li>
-    <li>Ang service fee ay <b>1%</b> ng inyong bill.</li>
-    <li>Ang data na kinokolekta ay para lamang sa pag-proseso ng inyong ANECO bill.</li>
-</ul>
-                
+                <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY</h4>
+                <ul style="font-size: 11px; color: #555; padding-left: 18px;">
+                    <li>Siguraduhing tama ang Account Number at Amount.</li>
+                    <li>Ang service fee ay 1% ng inyong bill.</li>
+                </ul>
                 <div class="checkbox-row">
-                    <input type="checkbox" id="termsAgree" style="width: 20px; height: 20px; cursor: pointer;">
-                    <label for="termsAgree" style="text-transform: none; font-size: 13px; cursor: pointer; font-weight: bold;">
-                        I have read and agree to the terms above.
-                    </label>
+                    <input type="checkbox" id="termsAgree">
+                    <label for="termsAgree">I agree to the terms above.</label>
                 </div>
             </div>
 
@@ -269,63 +200,21 @@
             <button onclick="hideReview()" style="background: none; border: none; color: #888; width: 100%; margin-top: 10px; cursor: pointer;">Edit Details</button>
         </div>
 
-        <div id="stepSuccess" class="overlay-screen" style="display: none; text-align: center;">
+        <div id="stepSuccess" class="overlay-screen" style="text-align: center;">
             <div style="font-size: 50px;">✅</div>
             <h2 style="color: var(--dark-green);">SUCCESS!</h2>
-
-            <p id="cashOutNoteSuccess" style="display:none; color:red; font-weight:bold; font-size:12px; border: 1px solid red; padding: 10px; border-radius: 8px; margin: 10px 0;">
-        ⚠️ REQUIRED: Please present 1 Valid ID to the teller for Cash Out verification.
-    </p>
-            
-            <p style="margin-bottom: 0;">YOUR QUEUE NUMBER:</p>
+            <p>YOUR QUEUE NUMBER:</p>
             <div id="numberDisplay" class="que-number">G-000</div>
+            <div id="liveStatusBox" class="status-badge status-waiting">STATUS: WAITING...</div>
+            <p id="instructionText">Checking status...</p>
 
-            <div id="liveStatusBox" class="status-badge status-waiting">
-                STATUS: WAITING IN QUEUE
-            </div>
-            
-            <p id="instructionText" style="font-weight: bold; color: #555; margin-top: 15px; padding: 10px; border-radius: 10px; background: #f9f9f9;">
-                Checking status, please wait...
-            </p>
-
-            <div id="completedDetails" style="display:none; margin-top:15px; text-align:center;">
-                <p style="font-weight:bold; color:var(--dark-green); font-size: 18px; margin-bottom: 5px;">
-                    TRANSACTION COMPLETED
-                </p>
-
-                <div id="cashOutVerify" style="display:none; background: #fff9e6; padding: 15px; border-radius: 12px; border: 1px solid #ffc267; margin-bottom: 15px;">
-                    <p style="font-size: 13px; font-weight: bold; color: #1b431c; margin-bottom: 8px; text-transform: uppercase;">Acknowledgement Receipt</p>
-                    <div style="text-align: left; font-size: 12px; color: #333; line-height: 1.4; margin-bottom: 10px;">
-                        I, <strong id="sigCustName"></strong>, confirm that I have received the full cash amount of 
-                        <strong id="sigAmt"></strong> for my GCash Cash-Out transaction today, <span id="sigDate"></span>.
-                    </div>
-                    
-                    <div class="sig-wrapper" style="width: 100%; height: 180px; background: white; border-radius: 8px; border: 2px dashed #1b431c;">
-                        <canvas id="signature-pad" style="touch-action: none; width: 100%; height: 180px;"></canvas> 
-                    </div>
-                    
-                    <button type="button" onclick="clearSignature()" style="background:none; border:none; color:#d32f2f; font-size:11px; margin-top:10px; cursor:pointer;">[ CLEAR SIGNATURE ]</button>
-                </div>
-
+            <div id="completedDetails" style="display:none;">
                 <div id="cashInVerify">
-                    <p style="font-size: 13px; color: #555; margin-bottom: 15px;">
-                        Please see your transaction slip below.
-                    </p>
-                    <div id="adminNote" style="font-size: 14px; margin-bottom: 10px; font-style: italic; color: #333;"></div>
-                    <img id="adminReceipt" src="" alt="Admin Receipt" style="width: 100%; border-radius: 12px; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <p style="font-size: 13px; color: #555;">Please see your transaction slip below.</p>
+                    <div id="adminNote" style="border-top: 1px dashed #ccc; padding-top: 10px;"></div>
+                    <img id="adminReceipt" src="" alt="Admin Receipt">
                 </div>
-
-                <div id="customerProofPreview" style="display:none; text-align:center; margin-top:20px;">
-    <p style="font-weight:bold; color:green;">Transaction Voucher Generated:</p>
-    <img id="myProofImg" src="" style="width:100%; max-width:350px; border:2px solid #ddd; border-radius:10px;">
-    <p style="font-size:11px; color:#666;">You can screenshot this as your copy.</p>
-</div>
-
-                <p style="color: red; font-weight: bold; font-size: 12px; margin-top: 10px;">
-                    Paalala: Huwag kalimutang i-click ang DONE button kung tapos muna ito.
-                </p>
-
-                <button id="finishBtn" onclick="processFinalDone()" class="btn-main" disabled style="opacity: 0.5; cursor: not-allowed;">DONE / NEW TRANSACTION</button>
+                <button id="finishBtn" onclick="finishTransaction()" class="btn-main">DONE / NEW TRANSACTION</button>
             </div>
         </div>
     </div>
