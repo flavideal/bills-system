@@ -408,29 +408,42 @@ return new Intl.NumberFormat('en-PH', {
 
     function calculateFee() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
-    const fee = amt * 0.01;
-    const totalToPay = amt + fee; 
+    
+    // 1. Kunin ang 1% ng bill
+    let rawPercentFee = amt * 0.01;
+    
+    // 2. Round up ang 1% (Example: 1.10 -> 2.00) para walang butal na cents
+    let serviceFee = Math.ceil(rawPercentFee); 
+    
+    // 3. Dagdag ang Fixed Biller Fee na 10 pesos
+    const fixedBillerFee = 10;
+    const totalFee = serviceFee + fixedBillerFee;
+    
+    const totalToPay = amt + totalFee; 
     const liveBreakdown = document.getElementById('liveBreakdown');
 
     if (amt > 0) {
         liveBreakdown.style.display = 'block';
         liveBreakdown.innerHTML = `
-            Estimated Fee (1%): <b>${formatPHP(fee)}</b><br>
+            Biller Convenience Fee: <b>${formatPHP(fixedBillerFee)}</b><br>
+            Service Fee (1%): <b>${formatPHP(serviceFee)}</b><br>
+            <span style="color:red; font-size:10px;">*Rounded up para walang butal na sukli</span><br>
             Estimated Total: <b>${formatPHP(totalToPay)}</b>
         `;
     } else {
         liveBreakdown.style.display = 'none';
     }
 
+    // Sukli Logic
     const cashIn = parseFloat(document.getElementById('cashReceived').value) || 0;
     const sukliDiv = document.getElementById('sukliDisplay');
     
     if (!document.getElementById('isExact').checked && cashIn > 0) {
         if (cashIn < totalToPay) {
-            sukliDiv.style.color = "#d32f2f"; // Pula kung kulang
+            sukliDiv.style.color = "#d32f2f";
             sukliDiv.innerHTML = "KULANG NG: " + formatPHP(totalToPay - cashIn);
         } else {
-            sukliDiv.style.color = "#1b431c"; // Green kung may sukli
+            sukliDiv.style.color = "#1b431c";
             sukliDiv.innerHTML = "SUKLI: " + formatPHP(cashIn - totalToPay);
         }
     } else { 
@@ -520,17 +533,23 @@ function showStep(stepId) {
             });
         }
 
-        // --- LOGIC: PAYMENT CALCULATION ---
+       // --- LOGIC: PAYMENT CALCULATION (UPDATED) ---
         const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
-        const isExactVal = document.getElementById('isExact') ? document.getElementById('isExact').checked : true;
-        const cashReceivedVal = document.getElementById('cashReceived') ? parseFloat(document.getElementById('cashReceived').value) : 0;
         
-        const fee = baseAmount * 0.01;
-        const totalWithFee = baseAmount + fee;
+        // Kunin ang 1% at i-round up (hal. 1.50 -> 2.00)
+        const serviceFee = Math.ceil(baseAmount * 0.01); 
+        const fixedBillerFee = 10;
+        const totalFee = serviceFee + fixedBillerFee;
+        
+        const totalWithFee = baseAmount + totalFee;
+
+        // Kunin ang value mula sa Review Screen checkboxes/inputs
+        const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+        const cashReceivedVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
 
         // Validation kung kulang ang bayad
         if (!isExactVal && cashReceivedVal < totalWithFee) {
-            alert("⚠️ Kulang ang cash na iyong ibabayad. Total: " + totalWithFee);
+            alert("⚠️ Kulang ang cash na iyong ibabayad.\nTotal to Pay: " + formatPHP(totalWithFee));
             btn.innerText = originalText;
             btn.disabled = false;
             return;
@@ -624,18 +643,21 @@ const formData = {
     
     function updateReviewTotal() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
-    const fee = amt * 0.01;
-    const totalWithFee = amt + fee;
+    const serviceFee = Math.ceil(amt * 0.01);
+    const fixedFee = 10;
+    const totalFee = serviceFee + fixedFee;
+    const totalWithFee = amt + totalFee;
 
     const oldCheckbox = document.getElementById('reviewIsExact');
     const isExact = oldCheckbox ? oldCheckbox.checked : true;
     const oldCashInput = document.getElementById('reviewCashReceived');
     const oldCashValue = oldCashInput ? oldCashInput.value : "";
 
-    // Header ng Breakdown
-    let breakdownHTML = `<div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(fee)}</strong></div>`;
+    let breakdownHTML = `
+        <div class="review-item"><span>Biller Fee:</span><strong>${formatPHP(fixedFee)}</strong></div>
+        <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(serviceFee)}</strong></div>
+    `;
 
-    // BILL PAYMENT / CASH IN LOGIC
     breakdownHTML += `
         <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: #1b4332;">
             <span>Total Amount to Pay:</span><strong>${formatPHP(totalWithFee)}</strong>
