@@ -716,18 +716,12 @@ function showStep(stepId) {
         return; 
     }
 
-    // --- [FILE UPLOAD LOGIC - REQUIRED FOR CASH OUT] ---
     const fileInput = document.getElementById('proofUpload');
     let base64File = "";
     let fileName = "";
     let fileType = "";
 
-    // VALIDATION: Kung Cash Out, kailangan may file.
-    if (currentMode === 'Cash Out' && (!fileInput.files || fileInput.files.length === 0)) {
-        alert("⚠️ REQUIRED: Please upload your Proof of Transfer / Receipt before getting a number.");
-        return; // Hihinto ang script dito, hindi magse-send sa database.
-    }
-
+    // --- LOGIC: OPTIONAL VS REQUIRED UPLOAD ---
     if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
         fileName = file.name;
@@ -738,65 +732,46 @@ function showStep(stepId) {
             reader.onload = () => resolve(reader.result);
             reader.readAsDataURL(file);
         });
+    } else {
+        // Kung Cash Out at walang file, harangin.
+        // Kung Cash In / Bills at walang file, PROCEED (Optional).
+        if (currentMode === 'Cash Out') {
+            alert("⚠️ REQUIRED: Please upload your Proof of Transfer before getting a number.");
+            return;
+        }
     }
-    // -----------------------------------
 
-    // --- BAGONG VALIDATION LOGIC ---
+    // --- LOGIC: EXACT AMOUNT OR NOT ---
     const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
-    const feeOption = document.getElementById('reviewFeeOption').value;
-    const exactCheckEl = document.getElementById('reviewIsExact');
-    const isExact = exactCheckEl ? exactCheckEl.checked : true;
-    const cashInputEl = document.getElementById('reviewCashReceived');
-    const cashInputValue = cashInputEl ? parseFloat(cashInputEl.value) : 0;
+    const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+    const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
     const fee = baseAmount * 0.01;
     const totalWithFee = baseAmount + fee;
 
-    if (currentMode === 'Cash In' && feeOption === 'add' && !isExact) {
-        if (cashInputValue <= 0 || isNaN(cashInputValue)) {
-            alert("Pakilagay kung magkano ang iaabot mong cash.");
-            return;
-        }
-        if (cashInputValue < totalWithFee) {
-            alert("Kulang ang cash na iyong ilalagay para sa total amount.");
+    // Validation kung hindi sakto ang pera
+    if (currentMode === 'Cash In' && !isExactVal) {
+        if (cashInputVal < totalWithFee) {
+            alert("Kulang ang cash na iyong ilalagay.");
             return;
         }
     }
 
-    const btn = document.querySelector("#stepReview .btn-main");
-    const originalText = "GET A NUMBER";
-    btn.innerText = "SENDING... PLEASE WAIT";
-    btn.disabled = true;
-
-    try {
-        const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
-
-        // Kukunin lang natin ang mga raw values mula sa form.
-        // Ang Apps Script na ang bahalang mag-sort sa K, L, M, N, at O.
-        const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
-        const feeOption = document.getElementById('reviewFeeOption').value;
-        const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
-        const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
-        const fee = baseAmount * 0.01;
-
-        const formData = {
-            customerName: document.getElementById('custName').value,
-            queueNo: generatedNum,
-            timestamp: new Date().toLocaleString(),
-            provider: "GCASH",
-            transType: currentMode,
-            gcashName: document.getElementById('accName').value,
-            gcashNo: document.getElementById('accNo').value,
-            amount: baseAmount,
-            feeAmount: fee,
-            feeOption: feeOption,
-            // IPAPASA NATIN ANG RAW VALUES PARA SA LOGIC NG SCRIPT
-            totalAmount: cashInputVal, // Inabot na cash (kung meron)
-            cashAmount: isExactVal ? 0 : (cashInputVal - (baseAmount + fee)), // Sukli (kung meron)
-            consent: "YES",
-            receiptFile: base64File,
-            receiptFileName: fileName,
-            receiptFileType: fileType
-        };
+    // Pag-send ng Data sa Google Sheets
+    const formData = {
+        customerName: document.getElementById('custName').value,
+        queueNo: "G-" + (Math.floor(Math.random() * 900) + 100),
+        timestamp: new Date().toLocaleString(),
+        transType: currentMode,
+        gcashName: document.getElementById('accName').value, // Ito yung ANECO Name
+        gcashNo: document.getElementById('accNo').value,     // Ito yung Account No
+        amount: baseAmount,
+        feeAmount: fee,
+        totalAmount: isExactVal ? totalWithFee : cashInputVal, // Amount na kinuha sa customer
+        cashAmount: isExactVal ? 0 : (cashInputVal - totalWithFee), // Sukli
+        receiptFile: base64File,
+        receiptFileName: fileName,
+        receiptFileType: fileType
+    };
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
