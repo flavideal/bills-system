@@ -200,7 +200,7 @@
     } else { alert("Invalid!"); }
   }
 
- async function loadData() {
+  async function loadData() {
   try {
     const response = await fetch(SCRIPT_URL, {
       method: "POST",
@@ -209,18 +209,21 @@
 
     const res = await response.json();
     if (res.result === "success") {
-      allData = res.data;
 
+      allData = res.data;
+      // --- LOGIC PARA SA NOTIFICATION ---
+      // Bilangin ang transactions na HINDI pa completed
       const currentActiveCount = allData.filter(row => (row[16] || "NEW").toUpperCase() !== "COMPLETED").length;
 
+      // Kung may nadagdag (halimbawa from 2 naging 3), trigger alert!
       if (!isFirstLoad && currentActiveCount > lastCount) {
         triggerAlert();
       }
 
-      lastCount = currentActiveCount;
-      isFirstLoad = false;
-
-      // ETO DAPAT: Siguraduhin na nandito ito para mag-refresh ang table sa screen
+      lastCount = currentActiveCount; // I-update ang count para sa susunod na check
+      isFirstLoad = false; // Tapos na ang unang load
+      
+      // ---------------------------------
       filterData(); 
     }
   } catch (e) { console.error(e); }
@@ -250,10 +253,15 @@
 
   function filterData() {
     const searchTerm = document.getElementById('searchQ').value.toUpperCase();
-    const searchDateInput = document.getElementById('searchDate').value; 
+    const searchDateInput = document.getElementById('searchDate').value; // Ito ay "2026-04-17"
+
     
-    // --- STEP 1: Gawing Date Object ang input para madaling i-compare ---
-    let searchDateStr = searchDateInput ? new Date(searchDateInput).toDateString() : null;
+    // --- STEP 1: I-convert ang Date Input (YYYY-MM-DD) para maging (DD/MM/YYYY) ---
+    let formattedSearchDate = "";
+    if (searchDateInput) {
+      const [y, m, d] = searchDateInput.split('-');
+      formattedSearchDate = `${d}/${m}/${y}`; // Magiging "17/04/2026"
+    }
 
     let activeHtml = "";
     let completedHtml = "";
@@ -261,42 +269,45 @@
     let transCount = 0;
 
     allData.forEach((row, index) => {
-        const qNo = row[1].toString();
-        const status = (row[16] || "NEW").toUpperCase();
-        const fee = parseFloat(row[8]) || 0;
+      const qNo = row[1].toString();
+      const status = (row[16] || "NEW").toUpperCase(); // Column Q na ang Status ngayon
 
-        // --- STEP 2: Kunin ang Date mula sa Sheet at gawin ding Date Object ---
-        // row[2] ay yung "4/19/2026 10:29:26"
-        let rowDateStr = row[2] ? new Date(row[2]).toDateString() : null;
+      // --- STEP 2: Kunin ang Timestamp sa Column C (row[2]) ---
+      // Halimbawa ng row[2]: "17/04/2026, 02:06:58"
 
-        // Filter Logic
-        const matchSearch = qNo.includes(searchTerm);
-        
-        // I-compare ang dalawang "toDateString()" (e.g. "Sun Apr 19 2026" === "Sun Apr 19 2026")
-        const matchDate = searchDateStr ? (rowDateStr === searchDateStr) : true;
+      const fullTimestamp = row[2] ? row[2].toString() : ""; 
 
-        if (matchSearch && matchDate) {
-            let rowHtml = `
-              <tr onclick="showDetails(${index})">
-                <td style="font-weight:bold; color:var(--gold); font-size:18px;">${row[1]}</td>
-                <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
-              </tr>`;
+      const fee = parseFloat(row[8]) || 0;
 
-            if (status === "COMPLETED") {
-                completedHtml += rowHtml;
-                totalFees += fee;
-                transCount++;
-            } else {
-                activeHtml += rowHtml;
-            }
+      // Filter Logic
+      const matchSearch = qNo.includes(searchTerm);
+
+      // I-check kung ang simula ng Timestamp sa Sheet ay kapareho ng ating formatted date
+      const matchDate = formattedSearchDate ? fullTimestamp.startsWith(formattedSearchDate) : true;
+
+      if (matchSearch && matchDate) {
+        let rowHtml = `
+          <tr onclick="showDetails(${index})">
+            <td style="font-weight:bold; color:var(--gold); font-size:18px;">${row[1]}</td>
+            <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
+          </tr>`;
+
+        if (status === "COMPLETED") {
+          completedHtml += rowHtml;
+          totalFees += fee;
+          transCount++;
+        } else {
+          activeHtml += rowHtml;
         }
+      }
     });
 
+    // Update Dashboard UI
     document.getElementById('table-body').innerHTML = activeHtml || "<tr><td>No active queue</td></tr>";
     document.getElementById('completed-body').innerHTML = completedHtml || "<tr><td>No completed yet</td></tr>";
     document.getElementById('stat-fees').innerText = "₱" + totalFees.toLocaleString();
     document.getElementById('stat-count').innerText = transCount;
-}
+  }
 
   function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
@@ -522,7 +533,7 @@
   }
 
   function closeModal() { document.getElementById('details-modal').style.display = 'none'; }
-  setInterval(() => { if(u) loadData(); }, 10000);
+   setInterval(() => { if(u) loadData(); }, 20000);
 </script>
 </body>
 </html>
