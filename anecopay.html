@@ -659,11 +659,10 @@ function showStep(stepId) {
     showStep('stepForm');
 }
     
-   async function generateNumber() {
+  async function generateNumber() {
     const btn = event.target; 
     const originalText = "GET QUEUE NUMBER";
 
-    // 1. Validation for Terms
     if(!document.getElementById('termsAgree').checked) { 
         alert("Paki-check ang box para sumang-ayon sa terms."); 
         return; 
@@ -673,7 +672,6 @@ function showStep(stepId) {
     btn.disabled = true;
 
     try {
-        // --- FILE UPLOAD LOGIC ---
         const fileInput = document.getElementById('proofUpload');
         let base64File = "";
         let fileName = "";
@@ -690,7 +688,6 @@ function showStep(stepId) {
             });
         }
 
-        // --- CALCULATIONS ---
         const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
         const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
 
@@ -706,40 +703,26 @@ function showStep(stepId) {
         const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
         const totalWithFee = baseAmount + totalFee;
 
-        // --- REVIEW SCREEN DATA ---
         const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
         const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
         const generatedNum = "A-" + (Math.floor(Math.random() * 900) + 100);
-
-        // --- DATA MAPPING FOR APPS SCRIPT ---
-       // Compute muna natin ang saktong babayaran (Bill + All Fees)
-        const totalWithFee = baseAmount + totalFee;
-        const method = document.getElementById('paymentMethod').value;
 
         const formData = {
             customerName: document.getElementById('custName').value,
             queueNo: generatedNum,
             timestamp: new Date().toLocaleString(),
             provider: "ANECO | Due Date: " + document.getElementById('dueDate').value,
-            
-            // Column E: Panatilihin ang "Bill Payment" para sa Apps Script Filter natin
             transType: "Bill Payment | " + methodLabel, 
-            
             gcashName: document.getElementById('accName').value,
             gcashNo: document.getElementById('accNo').value,
             
-            // --- FIX PARA SA COLUMN K ---
-            // Kung Cash, ginagawa nating 0 ang amount para HINDI magkalaman ang Column K.
-            // Pero kung Card/Spay/Billease, hinahayaan natin ang amount para sa records.
-            amount: (method === "Cash") ? 0 : baseAmount, 
-            feeAmount: (method === "Cash") ? 0 : totalFee,
+            // IBALIK NATIN ITO: Huwag gawing 0 para hindi mawala ang display sa screen!
+            amount: baseAmount, 
+            feeAmount: totalFee,
             
             feeOption: "add", 
 
-            // --- LOGIC PARA SA COLUMN N AT O ---
-            // 1. Kung Card/Spaylater/Billease: Sa N mapupunta ang (Amount + Fee), O is 0.
-            // 2. Kung Cash & Sakto: Sa N mapupunta ang (Amount + Fee), O is 0.
-            // 3. Kung Cash & May Sukli: Sa N mapupunta ang (Cash Received), O is (Sukli).
+            // LOGIC PARA SA N AT O (Monitoring)
             totalAmount: (method !== "Cash" || isExactVal) ? totalWithFee : cashInputVal, 
             cashAmount: (method !== "Cash" || isExactVal) ? 0 : (cashInputVal - totalWithFee), 
             
