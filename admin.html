@@ -384,28 +384,39 @@
       <div class="detail-item" style="border-bottom: 2px solid var(--gold);"><span>Sukli / Net</span><b>₱${sukliNetO}</b></div>
     `;
 
-    // --- PROOFS SECTION (Walang tinanggal) ---
-    body += `<div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">`;
+    // --- PROOFS SECTION (CASH IN: S at T LANG) ---
+    body += `<div style="margin-top:15px; border-top: 1px solid #333; padding-top: 15px; display: grid; gap: 10px;">`;
 
-    if (type.includes("out")) {
-      body += `<div><span style="font-size:10px; color:var(--gold);">CASHOUT PROOFS:</span><br>`;
-      body += viewS ? `<button onclick="window.open('${viewS}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW SENT PROOF</button>` : "";
-      body += viewU ? `<button onclick="window.open('${viewU}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW VOUCHER</button>` : "";
-      body += `</div>`;
-    } else {
-      body += `<div><span style="font-size:10px; color:var(--gold);">CASHIN PROOF:</span><br>`;
-      if (viewT) {
-        body += `<button onclick="window.open('${viewT}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:12px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">✅ VIEW RECEIPT</button>`;
-      }
-      body += `
-        <div class="upload-box">
-          <input type="file" id="admin-file" accept="image/*" style="display:block; margin:10px 0; font-size:12px;">
-          <button id="up-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:10px; font-size:12px; border-radius:5px; width:100%; font-weight:bold;">UPLOAD PROOF OF RECEIPT</button>
-        </div>`;
-      body += `</div>`;
-    }
+    if (type.includes("out")) {
+      // Panatilihin ang dati mong logic para sa Cash Out (S at U)
+      body += `<div><span style="font-size:10px; color:var(--gold);">CASHOUT PROOFS:</span><br>`;
+      body += viewS ? `<button onclick="window.open('${viewS}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW SENT PROOF</button>` : "";
+      body += viewU ? `<button onclick="window.open('${viewU}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:10px; width:48%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW VOUCHER</button>` : "";
+      body += `</div>`;
+    } else {
+      // CUSTOM LOGIC PARA SA CASH IN (Column S at T)
+      body += `<div><span style="font-size:10px; color:var(--gold);">CASHIN ATTACHMENTS:</span><br>`;
+      
+      // Column S - Customer Proof (Kung meron silang in-upload sa kiosk)
+      if (viewS) {
+        body += `<button onclick="window.open('${viewS}')" style="background:#333; color:var(--gold); border:1px solid var(--gold); padding:12px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">📂 VIEW CUSTOMER PROOF (S)</button>`;
+      }
 
-    body += `</div>`; 
+      // Column T - Admin Receipt (Yung upload mo)
+      if (viewT) {
+        body += `<button onclick="window.open('${viewT}')" style="background:#1b431c; color:white; border:1px solid #4CAF50; padding:12px; width:100%; border-radius:8px; margin-top:5px; font-weight:bold; cursor:pointer;">✅ VIEW MY RECEIPT (T)</button>`;
+      }
+      
+      // Upload Box para sa Admin (Column T)
+      body += `
+        <div class="upload-box">
+          <input type="file" id="admin-file" accept="image/*" style="display:block; margin:10px 0; font-size:12px;">
+          <button id="up-btn" onclick="uploadAdminProof('${row[1]}')" style="background:var(--gold); color:black; padding:10px; font-size:12px; border-radius:5px; width:100%; font-weight:bold;">UPLOAD ADMIN RECEIPT (T)</button>
+        </div>`;
+      body += `</div>`;
+    }
+
+    body += `</div>`; 
 
     document.getElementById('modal-body').innerHTML = body;
 
