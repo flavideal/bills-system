@@ -218,7 +218,7 @@
 
     <div style="display: flex; justify-content: center; align-items: center; gap: 15px; border-top: 1px solid #f0f0f0; padding-top: 12px;">
         <img src="https://errihoportal.flavideal.com/images/visa.png" alt="Visa" style="height: 20px; object-fit: contain;">
-        <img src="https://errihoportal.flavideal.com/images/mc.png" alt="Mastercard" style="height: 20px; object-fit: contain;">
+        <img src="https://errihoportal.flavideal.com/images/mc.png" alt="Mastercard" style="height: 25px; object-fit: contain;">
     </div>
     
     <p style="font-size: 9px; color: #d32f2f; margin-top: 12px; font-style: italic; font-weight: 600;">
@@ -731,7 +731,7 @@ const totalWithFee = baseAmount + totalFee;
         }
 
         // Pag-generate ng Queue Number
-        const generatedNum = "ANC-" + (Math.floor(Math.random() * 900) + 100);
+        const generatedNum = "A-" + (Math.floor(Math.random() * 900) + 100);
 
         // Pag-send ng Data sa Google Sheets
 // Pag-send ng Data sa Google Sheets (Updated Version)
@@ -744,22 +744,24 @@ const formData = {
     transType: "Bill Payment | " + methodLabel, 
     
     // 2. Dito pagsasamahin ang ANECO at Due Date (hal. ANECO | Due: 2026-05-15)
-    provider: "ANECO | Due: " + document.getElementById('dueDate').value, 
+    provider: "ANECO | Due Date: " + document.getElementById('dueDate').value, 
     
     // Mapping para sa iyong Google Sheets columns
     gcashName: document.getElementById('accName').value,
     gcashNo: document.getElementById('accNo').value,
     
-    // --- UPDATED FINANCIALS ---
-amount: baseAmount,
-feeAmount: totalFee, 
-totalAmount: totalWithFee, 
+    // --- UPDATED FINANCIALS (DO NOT CHANGE VARIABLE NAMES) ---
+    amount: baseAmount,
+    feeAmount: totalFee, 
+    totalAmount: totalWithFee, 
 
-// Column N: Cash Amount (If Cash+Sukli, use Cash Received. If Exact/Digital, use Total+Fee)
-cashAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
+    // Column N: Cash Amount
+    // Logic: If Cash & Not Exact -> use cashReceivedVal. Otherwise (Exact/Digital) -> use totalWithFee.
+    cashAmount: (method === "Cash" && isExactVal === false) ? cashReceivedVal : totalWithFee, 
 
-// Column O: Sukli (Only compute if Cash and Not Exact, otherwise 0)
-changeAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
+    // Column O: Sukli
+    // Logic: Only compute if Cash and Not Exact, otherwise 0.
+    changeAmount: (method === "Cash" && isExactVal === false) ? (cashReceivedVal - totalWithFee) : 0,
     
     // File attachments
     receiptFile: base64File,
