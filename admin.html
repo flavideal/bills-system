@@ -252,62 +252,67 @@
   function showDashboard() { document.getElementById('login-box').style.display='none'; document.getElementById('dashboard').style.display='block'; }
 
   function filterData() {
-    const searchTerm = document.getElementById('searchQ').value.toUpperCase();
-    const searchDateInput = document.getElementById('searchDate').value; // Ito ay "2026-04-17"
+  const searchTerm = document.getElementById('searchQ').value.toUpperCase();
+  const searchDateInput = document.getElementById('searchDate').value; 
 
+  let activeHtml = "";
+  let completedHtml = "";
+  let totalFees = 0;
+  let transCount = 0;
+
+  // Kunin natin ang "Today" sa format na gamit sa Kiosk/Sheets para sa auto-sync
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, '0');
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const yyyy = today.getFullYear();
+  
+  // Gagawa tayo ng dalawang format para sigurado
+  const fmt1 = `${dd}/${mm}/${yyyy}`; // 19/04/2026
+  const fmt2 = `${mm}/${dd}/${yyyy}`; // 04/19/2026
+
+  allData.forEach((row, index) => {
+    const qNo = row[1].toString();
+    const status = (row[16] || "NEW").toUpperCase();
+    const fullTimestamp = row[2] ? row[2].toString() : ""; 
+    const fee = parseFloat(row[8]) || 0;
+
+    const matchSearch = qNo.includes(searchTerm);
     
-    // --- STEP 1: I-convert ang Date Input (YYYY-MM-DD) para maging (DD/MM/YYYY) ---
-    let formattedSearchDate = "";
+    // --- FLEXIBLE DATE LOGIC ---
+    let matchDate = false;
     if (searchDateInput) {
+      // Kung may piniling date sa calendar filter
       const [y, m, d] = searchDateInput.split('-');
-      formattedSearchDate = `${d}/${m}/${y}`; // Magiging "17/04/2026"
+      const selected = `${d}/${m}/${y}`;
+      const selectedAlt = `${parseInt(m)}/${parseInt(d)}/${y}`; // M/D/YYYY (no leading zeros)
+      matchDate = fullTimestamp.includes(selected) || fullTimestamp.includes(selectedAlt);
+    } else {
+      // DEFAULT: Ipakita lahat ng entries na may petsa ngayong araw (kahit anong format)
+      matchDate = fullTimestamp.includes(fmt1) || fullTimestamp.includes(fmt2) || fullTimestamp.includes(yyyy);
     }
 
-    let activeHtml = "";
-    let completedHtml = "";
-    let totalFees = 0;
-    let transCount = 0;
+    if (matchSearch && matchDate) {
+      let rowHtml = `
+        <tr onclick="showDetails(${index})">
+          <td style="font-weight:bold; color:var(--gold); font-size:18px;">${row[1]}</td>
+          <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
+        </tr>`;
 
-    allData.forEach((row, index) => {
-      const qNo = row[1].toString();
-      const status = (row[16] || "NEW").toUpperCase(); // Column Q na ang Status ngayon
-
-      // --- STEP 2: Kunin ang Timestamp sa Column C (row[2]) ---
-      // Halimbawa ng row[2]: "17/04/2026, 02:06:58"
-
-      const fullTimestamp = row[2] ? row[2].toString() : ""; 
-
-      const fee = parseFloat(row[8]) || 0;
-
-      // Filter Logic
-      const matchSearch = qNo.includes(searchTerm);
-
-      // I-check kung ang simula ng Timestamp sa Sheet ay kapareho ng ating formatted date
-      const matchDate = formattedSearchDate ? fullTimestamp.startsWith(formattedSearchDate) : true;
-
-      if (matchSearch && matchDate) {
-        let rowHtml = `
-          <tr onclick="showDetails(${index})">
-            <td style="font-weight:bold; color:var(--gold); font-size:18px;">${row[1]}</td>
-            <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
-          </tr>`;
-
-        if (status === "COMPLETED") {
-          completedHtml += rowHtml;
-          totalFees += fee;
-          transCount++;
-        } else {
-          activeHtml += rowHtml;
-        }
+      if (status === "COMPLETED") {
+        completedHtml += rowHtml;
+        totalFees += fee;
+        transCount++;
+      } else {
+        activeHtml += rowHtml;
       }
-    });
+    }
+  });
 
-    // Update Dashboard UI
-    document.getElementById('table-body').innerHTML = activeHtml || "<tr><td>No active queue</td></tr>";
-    document.getElementById('completed-body').innerHTML = completedHtml || "<tr><td>No completed yet</td></tr>";
-    document.getElementById('stat-fees').innerText = "₱" + totalFees.toLocaleString();
-    document.getElementById('stat-count').innerText = transCount;
-  }
+  document.getElementById('table-body').innerHTML = activeHtml || "<tr><td>No active queue</td></tr>";
+  document.getElementById('completed-body').innerHTML = completedHtml || "<tr><td>No completed yet</td></tr>";
+  document.getElementById('stat-fees').innerText = "₱" + totalFees.toLocaleString();
+  document.getElementById('stat-count').innerText = transCount;
+}
 
   function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
