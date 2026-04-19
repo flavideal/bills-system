@@ -373,13 +373,22 @@ async function checkMyStatus() {
         if (result.status === "NEW") {
             statusBox.style.display = "block";
             statusBox.className = "status-badge status-waiting";
-            statusBox.innerText = "STATUS: WAITING IN QUEUE";
+            statusBox.innerText = "⏳ NASA QUEUE KA NA";
             
-            instruction.style.color = "#d32f2f"; 
-            instruction.innerHTML = "<b>Please wait, huwag muna po aalis.</b><br>Lalabas dito sa screen kung ikaw ay tinatawag na.";
+            instruction.style.color = "#1565c0"; // Blue para sa "Processing/Info"
+            instruction.innerHTML = `
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 5px solid #2196f3; text-align: left;">
+                    <b style="font-size: 1.1em; color: #0d47a1;">Sinisuri na ang iyong Transaction...</b><br><br>
+                    Paki-antay lang po at <b>huwag muna i-exit</b> ang page na ito.<br>
+                    Lalabas dito sa screen ang notification kapag tinatawag ka na para magbayad sa counter.
+                </div>
+                <div style="margin-top: 10px; font-size: 0.85em; color: #666;">
+                    <i>Tip: Maaari mong i-screenshot ang iyong Queue Number habang nag-aantay.</i>
+                </div>
+            `;
             instruction.style.display = "block";
-            completedArea.style.display = "none"; // Tago ang button
-        } 
+            completedArea.style.display = "none";
+        }
         
         // --- STATUS: CALLING (In Counter) ---
         else if (result.status === "CALLING") {
