@@ -424,8 +424,8 @@ async function checkMyStatus() {
                 adminNote.innerHTML = `
                     <div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; text-align: left;">
                         <strong style="color: #1b4332; font-size: 16px;">${noteTitle}</strong><br>
-                        <span style="font-size: 13px; color: #333;">Account: <b>${accNameValue}</b></span><br>
-                        <span style="font-size: 13px; color: #333;">Ref No: <b>${accNoValue}</b></span>
+                        <span style="font-size: 13px; color: #333;">Biller Account Name: <b>${accNameValue}</b></span><br>
+                        <span style="font-size: 13px; color: #333;">Biller Account No: <b>${accNoValue}</b></span>
                     </div>
                     <div style="margin-top: 5px; text-align: center;">
                         <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
@@ -722,9 +722,9 @@ const totalWithFee = baseAmount + totalFee;
         const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
         const cashReceivedVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
 
-        // Validation kung kulang ang bayad
-        if (!isExactVal && cashReceivedVal < totalWithFee) {
-            alert("⚠️ Kulang ang cash na iyong ibabayad.\nTotal to Pay: " + formatPHP(totalWithFee));
+        // Validation kung kulang ang bayad (Dapat check lang kung Cash ang gamit)
+        if (method === "Cash" && !isExactVal && cashReceivedVal < totalWithFee) {
+            alert("⚠️ Kulang ang cash na iyong ibabayad.\nTotal to Pay: ₱" + totalWithFee.toLocaleString());
             btn.innerText = originalText;
             btn.disabled = false;
             return;
@@ -755,11 +755,10 @@ amount: baseAmount,
 feeAmount: totalFee, 
 totalAmount: totalWithFee, 
 
-// Logic para sa Column N (Cash Amount) at Column O (Change)
-// 1. Kapag "Cash" at hiningi ang sukli (not exact): Column N = cashReceivedVal, Column O = sukli
-// 2. Kapag "Cash" pero Sakto (Exact): Column N = totalWithFee, Column O = 0
-// 3. Kapag Card/SpayLater/Billease: Column N = totalWithFee, Column O = 0
+// Column N: Cash Amount (If Cash+Sukli, use Cash Received. If Exact/Digital, use Total+Fee)
 cashAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
+
+// Column O: Sukli (Only compute if Cash and Not Exact, otherwise 0)
 changeAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
     
     // File attachments
