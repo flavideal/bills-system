@@ -718,14 +718,16 @@ const formData = {
     gcashNo: document.getElementById('accNo').value,
     
     // --- UPDATED FINANCIALS ---
-    amount: baseAmount,
-    feeAmount: totalFee, 
-    totalAmount: totalWithFee, 
-    
-    // Logic para sa Column N (Cash Amount) at Column O (Change)
-    // Kapag HINDI cash ang payment method, automatic na "Total" ang ilalagay sa Cash Amount
-    cashAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
-    changeAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
+amount: baseAmount,
+feeAmount: totalFee, 
+totalAmount: totalWithFee, 
+
+// Logic para sa Column N (Cash Amount) at Column O (Change)
+// 1. Kapag "Cash" at hiningi ang sukli (not exact): Column N = cashReceivedVal, Column O = sukli
+// 2. Kapag "Cash" pero Sakto (Exact): Column N = totalWithFee, Column O = 0
+// 3. Kapag Card/SpayLater/Billease: Column N = totalWithFee, Column O = 0
+cashAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
+changeAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
     
     // File attachments
     receiptFile: base64File,
