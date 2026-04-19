@@ -388,10 +388,17 @@ async function checkMyStatus() {
             statusBox.innerText = "📣 PUMUNTA NA SA COUNTER";
             
             instruction.style.color = "#1b431c";
-            instruction.innerHTML = "<b>Ang iyong transaction ay pino-process na.</b><br>Paki-antay po na mag-complete para lumabas dito ang iyong transaction slip.";
+            instruction.innerHTML = `
+                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 5px solid #2e7d32;">
+                    <b style="font-size: 1.1em;">Kasalukuyang pino-process ang iyong bayad.</b><br><br>
+                    <span style="color: #d32f2f;">⚠️ <b>HUWAG I-CLOSE O I-EXIT ANG PAGE NA ITO.</b></span><br>
+                    Dito lalabas ang iyong <b>Official Transaction Receipt</b> kapag tapos na.<br><br>
+                    <small>📧 Makakatanggap din kayo ng <b>SMS Confirmation</b> mula sa <b>MAYA CENTER</b> bilang patunay ng inyong transaction.</small>
+                </div>
+            `;
             instruction.style.display = "block";
-            completedArea.style.display = "none"; // Tago pa rin ang button
-        } 
+            completedArea.style.display = "none"; // Siguradong tago muna ang download button
+        }
         
 // --- STATUS: COMPLETED (Tapos na) ---
         else if (result.status === "COMPLETED") {
