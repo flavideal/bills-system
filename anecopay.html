@@ -663,15 +663,15 @@ function showStep(stepId) {
     const btn = event.target; 
     const originalText = "GET QUEUE NUMBER";
 
+    if(!document.getElementById('termsAgree').checked) { 
+        alert("Paki-check ang box para sumang-ayon sa terms."); 
+        return; 
+    }
+
+    btn.innerText = "Processing...";
+    btn.disabled = true;
+
     try {
-        if(!document.getElementById('termsAgree').checked) { 
-            alert("Paki-check ang box para sumang-ayon sa terms."); 
-            return; 
-        }
-
-        btn.innerText = "Processing...";
-        btn.disabled = true;
-
         const fileInput = document.getElementById('proofUpload');
         let base64File = "";
         let fileName = "";
@@ -681,7 +681,6 @@ function showStep(stepId) {
             const file = fileInput.files[0];
             fileName = file.name;
             fileType = file.type;
-            
             base64File = await new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = () => resolve(reader.result);
@@ -692,59 +691,40 @@ function showStep(stepId) {
         const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
         const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
 
+        // --- COMPUTE FEES ---
         let payFeeRate = 0;
         let methodLabel = "Cash";
-
-        if (method === "Card") {
-            payFeeRate = 0.032; 
-            methodLabel = "Card+3.2%";
-        } else if (method === "Spaylater") {
-            payFeeRate = 0.01;
-            methodLabel = "Spaylater+1%";
-        } else if (method === "Billease") {
-            payFeeRate = 0.01;
-            methodLabel = "Billease+1%";
-        }
+        if (method === "Card") { payFeeRate = 0.032; methodLabel = "Card+3.2%"; }
+        else if (method === "Spaylater") { payFeeRate = 0.01; methodLabel = "Spaylater+1%"; }
+        else if (method === "Billease") { payFeeRate = 0.01; methodLabel = "Billease+1%"; }
 
         const serviceFee = Math.ceil(baseAmount * 0.01); 
         const fixedBillerFee = 10;
         const paymentGatewayFee = baseAmount * payFeeRate; 
-
         const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
-        const totalWithFee = baseAmount + totalFee;
 
-        // KINUKUHA ANG VALUES MULA SA REVIEW SCREEN
-        const isExactCheck = document.getElementById('reviewIsExact');
-        const isExactVal = isExactCheck ? isExactCheck.checked : true;
-        const cashInputBox = document.getElementById('reviewCashReceived');
-        const cashReceivedVal = cashInputBox ? parseFloat(cashInputBox.value) || 0 : 0;
-
-        if (method === "Cash" && !isExactVal && cashReceivedVal < totalWithFee) {
-            alert("⚠️ Kulang ang cash na iyong ibabayad.\nTotal to Pay: ₱" + totalWithFee.toLocaleString());
-            btn.innerText = originalText;
-            btn.disabled = false;
-            return;
-        }
-
+        // --- ETO ANG SINUNOD NATIN SA G.HTML ---
+        const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+        const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
         const generatedNum = "A-" + (Math.floor(Math.random() * 900) + 100);
 
-        // --- ITO ANG SAKTONG MAPPING PARA SA BRAIN (APPS SCRIPT) ---
         const formData = {
             customerName: document.getElementById('custName').value,
             queueNo: generatedNum,
-            timestamp: new Date().toLocaleString('en-US'), // Standard US format para basang-basa ng Google Sheets
-            transType: "Bill Payment | " + methodLabel, 
-            provider: "ANECO | Due Date: " + document.getElementById('dueDate').value, 
+            timestamp: new Date().toLocaleString(),
+            provider: "ANECO | Due Date: " + document.getElementById('dueDate').value,
+            transType: "Bill Payment | " + methodLabel,
             gcashName: document.getElementById('accName').value,
             gcashNo: document.getElementById('accNo').value,
             amount: baseAmount,
-            feeAmount: totalFee, 
+            feeAmount: totalFee,
+            
+            // KRITIKAL: Pinapasa natin ang 'add' para basahin ng Brain mo ang N at O
+            feeOption: "add", 
 
-            // Column N: Dito papasok ang Inabot na Pera
-            totalAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
-
-            // Column O: Dito papasok ang Sukli
-            cashAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
+            // IPAPASA NATIN ANG RAW VALUES GAYA NG NASA G.HTML
+            totalAmount: isExactVal ? (baseAmount + totalFee) : cashInputVal, 
+            cashAmount: isExactVal ? 0 : (cashInputVal - (baseAmount + totalFee)), 
             
             consent: "YES",
             receiptFile: base64File,
