@@ -285,13 +285,10 @@
         <img id="adminReceipt" src="" alt="Admin Receipt">
 
         <div style="margin-top: 15px; padding: 10px; border: 1px solid #eee; border-radius: 10px; background: #fafafa;">
-            <p style="font-size: 12px; color: #444; margin-bottom: 10px;">
-                📸 <b>You can screenshot or download the receipt for your copy.</b>
-            </p>
-            <button onclick="downloadReceipt()" style="background: #1b431c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold;">
-                📥 DOWNLOAD RECEIPT
-            </button>
-        </div>
+                <p style="font-size: 12px; color: #444; margin-bottom: 0px;">
+                    📸 <b>You can screenshot the receipt for your copy.</b>
+                </p>
+            </div>
 
         <div style="margin: 20px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
             <strong style="color: var(--dark-green); font-size: 15px;">
@@ -958,34 +955,6 @@ function adminForceReset() {
         window.location.replace('index.html'); 
     } else if (enteredPin !== null) {
         alert("Maling PIN!");
-    }
-}
-
-async function downloadReceipt() {
-    const img = document.getElementById('adminReceipt');
-    if (!img || !img.src || img.style.display === "none") {
-        alert("Wait lang, wala pang resibong lilitaw.");
-        return;
-    }
-
-    try {
-        const response = await fetch(img.src);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        
-        // Pangalan ng file na mada-download
-        const accName = document.getElementById('accName').value || "Customer";
-        a.download = `Receipt_${accName}_${new Date().getTime()}.png`;
-        
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-    } catch (error) {
-        console.error("Download failed:", error);
-        alert("Hindi ma-download ang image. Please take a screenshot na lang po.");
     }
 }
 
