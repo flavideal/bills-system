@@ -755,13 +755,11 @@ const formData = {
     feeAmount: totalFee, 
     totalAmount: totalWithFee, 
 
-    // Column N: Cash Amount
-    // Logic: If Cash & Not Exact -> use cashReceivedVal. Otherwise (Exact/Digital) -> use totalWithFee.
-    cashAmount: (method === "Cash" && isExactVal === false) ? cashReceivedVal : totalWithFee, 
+    // Column N: Dito papasok ang "Cash Amount" (Inabot na pera o Total Amount)
+cashAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
 
-    // Column O: Sukli
-    // Logic: Only compute if Cash and Not Exact, otherwise 0.
-    changeAmount: (method === "Cash" && isExactVal === false) ? (cashReceivedVal - totalWithFee) : 0,
+// Column O: Dito papasok ang "Change" (Sukli)
+changeAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
     
     // File attachments
     receiptFile: base64File,
