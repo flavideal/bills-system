@@ -125,20 +125,21 @@
         }
 
         .menu-item { 
-            background: var(--white); 
-            padding: 25px 15px; 
-            border-radius: 20px; 
-            text-align: center; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            cursor: pointer; 
-            text-decoration: none; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
+    background: var(--white); 
+    padding: 15px; /* Binawasan ang padding para mas magkasya */
+    border-radius: 20px; 
+    text-align: center; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+    cursor: pointer; 
+    text-decoration: none; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    min-height: 140px; /* Siniguro nating sapat ang taas para sa logos at badges */
+}
 
         .menu-item:active {
             transform: scale(0.95);
@@ -250,54 +251,54 @@
             </div>
         </div>
         <div class="menu-grid">
-    <a href="g.html" class="menu-item active-link" style="border-color: var(--dark-green); background: #ffffff; text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 15px;">
-        <img src="logo/g.png" alt="GCash" style="height: 25px; margin-bottom: 8px;">
-        <span class="service-name" style="color: var(--dark-green); font-weight: 900;">GCASH</span>
+    <a href="g.html" class="menu-item active-link" style="border-color: var(--premium-green); background: #ffffff;">
+        <img src="logo/g.png" alt="GCash" style="height: 25px; width: auto; margin-bottom: 8px; object-fit: contain;">
+        <span class="service-name" style="color: var(--premium-green); font-weight: 900;">GCASH</span>
         
-        <div style="margin-top: 8px; display: flex; gap: 5px;">
-            <span style="font-size: 9px; background: var(--dark-green); color: #ffffff; padding: 2px 8px; border-radius: 4px; font-weight: bold;">CASH IN</span>
-            <span style="font-size: 9px; background: #ffffff; color: var(--dark-green); padding: 2px 8px; border-radius: 4px; font-weight: bold; border: 1px solid var(--dark-green);">CASH OUT</span>
+        <div style="margin-top: 8px; display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;">
+            <span style="font-size: 8px; background: var(--premium-green); color: #ffffff; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase;">CASH IN</span>
+            <span style="font-size: 8px; background: #ffffff; color: var(--premium-green); padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid var(--premium-green); text-transform: uppercase;">CASH OUT</span>
         </div>
 
-        <span class="fee-note" style="color: #666; font-size: 10px; margin-top: 10px;">As low as 1% Service Fee</span>
+        <span class="fee-note" style="color: #666; font-size: 10px; margin-top: 10px;">As low as 1% Fee</span>
     </a>
 
-    <div class="menu-item coming-soon" style="opacity: 0.6; display: flex; flex-direction: column; align-items: center; padding: 15px;">
-        <span class="service-name" style="color: #888;">MAYA</span>
-        <span class="status-tag" style="font-size: 9px; background: #eee; color: #888; padding: 2px 8px; border-radius: 4px; margin-top: 5px;">COMING SOON</span>
+    <div class="menu-item coming-soon">
+        <span class="service-name" style="color: #999;">MAYA</span>
+        <span class="status-tag">COMING SOON</span>
     </div>
 
-    <a href="anecopay.html" class="menu-item active-link" style="border-color: #ffc267; background: #ffffff; text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 15px; border-width: 2px;">
-        <img src="logo/aneco.png" alt="ANECO" style="height: 25px; margin-bottom: 8px;">
-        <span class="service-name" style="color: var(--dark-green); font-weight: 900;">ANECO</span>
+    <a href="anecopay.html" class="menu-item active-link" style="border-color: var(--gold); background: #ffffff; border-width: 2px;">
+        <img src="logo/aneco.png" alt="ANECO" style="height: 25px; width: auto; margin-bottom: 8px; object-fit: contain;">
+        <span class="service-name" style="color: var(--premium-green); font-weight: 900;">ANECO</span>
         
         <div style="margin-top: 8px;">
-            <span style="font-size: 9px; background: #ffc267; color: var(--dark-green); padding: 2px 10px; border-radius: 4px; font-weight: bold; border: 1px solid #e6b800;">
+            <span style="font-size: 8px; background: var(--gold); color: var(--premium-green); padding: 2px 10px; border-radius: 4px; font-weight: bold; border: 1px solid #e6b800; text-transform: uppercase;">
                 ELECTRIC BILL
             </span>
         </div>
         
-        <span class="fee-note" style="color: var(--dark-green); font-weight: bold; margin-top: 10px; font-size: 9px; display: block;">
-            ₱10.00 Fee + 1% Service Fee
+        <span class="fee-note" style="color: var(--premium-green); font-weight: bold; margin-top: 10px; font-size: 9px;">
+            ₱10 Fee + 1% Service
         </span>
     </a>
 
-    <div class="menu-item coming-soon" style="opacity: 0.6; display: flex; flex-direction: column; align-items: center; padding: 15px;">
-        <span class="service-name" style="color: #888;">PALAWAN</span>
-        <span class="status-tag" style="font-size: 9px; background: #eee; color: #888; padding: 2px 8px; border-radius: 4px; margin-top: 5px;">COMING SOON</span>
+    <div class="menu-item coming-soon">
+        <span class="service-name">PALAWAN</span>
+        <span class="status-tag">COMING SOON</span>
     </div>
 
-    <div class="menu-item coming-soon" style="opacity: 0.6; display: flex; flex-direction: column; align-items: center; padding: 15px;">
-        <span class="service-name" style="color: #888;">WATER</span>
-        <span class="status-tag" style="font-size: 9px; background: #eee; color: #888; padding: 2px 8px; border-radius: 4px; margin-top: 5px;">COMING SOON</span>
+    <div class="menu-item coming-soon">
+        <span class="service-name">WATER</span>
+        <span class="status-tag">COMING SOON</span>
     </div>
 
-    <div class="menu-item coming-soon" style="opacity: 0.6; display: flex; flex-direction: column; align-items: center; padding: 15px;">
-        <span class="service-name" style="color: #888;">E-LOAD</span>
-        <span class="status-tag" style="font-size: 9px; background: #eee; color: #888; padding: 2px 8px; border-radius: 4px; margin-top: 5px;">COMING SOON</span>
+    <div class="menu-item coming-soon">
+        <span class="service-name">E-LOAD</span>
+        <span class="status-tag">COMING SOON</span>
     </div>
 </div>
-
+        
       <div class="faq-section" style="background: white; border-radius: 20px; padding: 20px; margin-top: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
     <h3 style="color: var(--premium-green); text-align: center; margin-bottom: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Information Hub</h3>
 
