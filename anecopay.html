@@ -660,17 +660,15 @@ function showStep(stepId) {
 }
     
     async function generateNumber() {
-    const btn = event.target; // O kung paano mo tinatawag ang button
+    const btn = event.target; 
     const originalText = "GET QUEUE NUMBER";
 
     try {
-        // 1. Validation for Terms
         if(!document.getElementById('termsAgree').checked) { 
             alert("Paki-check ang box para sumang-ayon sa terms."); 
             return; 
         }
 
-        // Loading State
         btn.innerText = "Processing...";
         btn.disabled = true;
 
@@ -679,7 +677,6 @@ function showStep(stepId) {
         let fileName = "";
         let fileType = "";
 
-        // --- LOGIC: OPTIONAL UPLOAD (Lahat ng mode ay optional na) ---
         if (fileInput && fileInput.files.length > 0) {
             const file = fileInput.files[0];
             fileName = file.name;
@@ -692,37 +689,33 @@ function showStep(stepId) {
             });
         }
 
-      // --- LOGIC: PAYMENT CALCULATION (CLEAN VERSION) ---
-const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
-const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
+        const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+        const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
 
-let payFeeRate = 0;
-let methodLabel = "Cash";
+        let payFeeRate = 0;
+        let methodLabel = "Cash";
 
-if (method === "Card") {
-    payFeeRate = 0.032; 
-    methodLabel = "Card+3.2%";
-} else if (method === "Spaylater") {
-    payFeeRate = 0.01;
-    methodLabel = "Spaylater+1%";
-} else if (method === "Billease") {
-    payFeeRate = 0.01;
-    methodLabel = "Billease+1%";
-}
+        if (method === "Card") {
+            payFeeRate = 0.032; 
+            methodLabel = "Card+3.2%";
+        } else if (method === "Spaylater") {
+            payFeeRate = 0.01;
+            methodLabel = "Spaylater+1%";
+        } else if (method === "Billease") {
+            payFeeRate = 0.01;
+            methodLabel = "Billease+1%";
+        }
 
-const serviceFee = Math.ceil(baseAmount * 0.01); 
-const fixedBillerFee = 10;
-const paymentGatewayFee = baseAmount * payFeeRate; 
+        const serviceFee = Math.ceil(baseAmount * 0.01); 
+        const fixedBillerFee = 10;
+        const paymentGatewayFee = baseAmount * payFeeRate; 
 
-// Eto ang final values na ipapasa sa Google Sheets
-const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
-const totalWithFee = baseAmount + totalFee;
+        const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
+        const totalWithFee = baseAmount + totalFee;
 
-        // Kunin ang value mula sa Review Screen checkboxes/inputs
         const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
         const cashReceivedVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
 
-        // Validation kung kulang ang bayad (Dapat check lang kung Cash ang gamit)
         if (method === "Cash" && !isExactVal && cashReceivedVal < totalWithFee) {
             alert("⚠️ Kulang ang cash na iyong ibabayad.\nTotal to Pay: ₱" + totalWithFee.toLocaleString());
             btn.innerText = originalText;
@@ -730,43 +723,34 @@ const totalWithFee = baseAmount + totalFee;
             return;
         }
 
-        // Pag-generate ng Queue Number
         const generatedNum = "A-" + (Math.floor(Math.random() * 900) + 100);
 
-        // Pag-send ng Data sa Google Sheets
-// Pag-send ng Data sa Google Sheets (Updated Version)
-const formData = {
-    customerName: document.getElementById('custName').value,
-    queueNo: generatedNum,
-    timestamp: new Date().toLocaleString(),
-    
-    // 1. Dito lalabas kung ano ang payment method (hal. Bill Payment | Spaylater+1%)
-    transType: "Bill Payment | " + methodLabel, 
-    
-    // 2. Dito pagsasamahin ang ANECO at Due Date (hal. ANECO | Due: 2026-05-15)
-    provider: "ANECO | Due Date: " + document.getElementById('dueDate').value, 
-    
-    // Mapping para sa iyong Google Sheets columns
-    gcashName: document.getElementById('accName').value,
-    gcashNo: document.getElementById('accNo').value,
-    
-    // --- UPDATED FINANCIALS (DO NOT CHANGE VARIABLE NAMES) ---
-    amount: baseAmount,
-    feeAmount: totalFee, 
-    totalAmount: totalWithFee, 
+        // --- ITO ANG KRITIKAL NA MAPPING PARA SA GOOGLE SHEETS ---
+        const formData = {
+            customerName: document.getElementById('custName').value,
+            queueNo: generatedNum,
+            timestamp: new Date().toLocaleString(),
+            transType: "Bill Payment | " + methodLabel, 
+            provider: "ANECO | Due Date: " + document.getElementById('dueDate').value, 
+            gcashName: document.getElementById('accName').value,
+            gcashNo: document.getElementById('accNo').value,
+            amount: baseAmount,
+            feeAmount: totalFee, 
+            totalAmount: totalWithFee, 
 
-    // Column N: Dito papasok ang "Cash Amount" (Inabot na pera o Total Amount)
-cashAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
+            // Column N: "Cash Received"
+            // Kung Cash at hindi sakto, ilalagay ang inabot na pera.
+            // Kung Digital o Sakto, ilalagay ang mismong Total With Fee.
+            cashAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
 
-// Column O: Dito papasok ang "Change" (Sukli)
-changeAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
-    
-    // File attachments
-    receiptFile: base64File,
-    receiptFileName: fileName,
-    receiptFileType: fileType
-};
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+            // Column O: "Change" (Sukli)
+            // Kung Cash at hindi sakto, computation ng sukli. Kung hindi, 0.
+            changeAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
+            
+            receiptFile: base64File,
+            receiptFileName: fileName,
+            receiptFileType: fileType
+        };
 
         const response = await fetch(WEB_APP_URL, {
             method: "POST",
@@ -780,22 +764,8 @@ changeAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithF
             myQueueNumber = generatedNum; 
             localStorage.setItem('savedQueueNumber', myQueueNumber);
             localStorage.setItem('isWaiting', 'true');
-            localStorage.setItem('sessionStartTime', new Date().getTime());
-
-            // --- PHOTO PREVIEW SA SUCCESS SCREEN ---
-            if (base64File) {
-                const previewImg = document.getElementById('myProofImg');
-                const previewContainer = document.getElementById('customerProofPreview');
-                if (previewImg && previewContainer) {
-                    previewImg.src = base64File;
-                    previewContainer.style.display = 'block';
-                }
-            }
-
             document.getElementById('numberDisplay').innerText = myQueueNumber;
             showStep('stepSuccess');
-            
-            // Simulan ang auto-check ng status
             statusInterval = setInterval(checkMyStatus, 5000);
         } else {
             throw new Error(result.error || "Submission failed");
