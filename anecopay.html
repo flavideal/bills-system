@@ -713,8 +713,11 @@ function showStep(stepId) {
         const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
         const totalWithFee = baseAmount + totalFee;
 
-        const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
-        const cashReceivedVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
+        // KINUKUHA ANG VALUES MULA SA REVIEW SCREEN
+        const isExactCheck = document.getElementById('reviewIsExact');
+        const isExactVal = isExactCheck ? isExactCheck.checked : true;
+        const cashInputBox = document.getElementById('reviewCashReceived');
+        const cashReceivedVal = cashInputBox ? parseFloat(cashInputBox.value) || 0 : 0;
 
         if (method === "Cash" && !isExactVal && cashReceivedVal < totalWithFee) {
             alert("⚠️ Kulang ang cash na iyong ibabayad.\nTotal to Pay: ₱" + totalWithFee.toLocaleString());
@@ -725,11 +728,11 @@ function showStep(stepId) {
 
         const generatedNum = "A-" + (Math.floor(Math.random() * 900) + 100);
 
-        // --- ITO ANG KRITIKAL NA MAPPING PARA SA GOOGLE SHEETS ---
+        // --- ITO ANG SAKTONG MAPPING PARA SA BRAIN (APPS SCRIPT) ---
         const formData = {
             customerName: document.getElementById('custName').value,
             queueNo: generatedNum,
-            timestamp: new Date().toLocaleString(),
+            timestamp: new Date().toLocaleString('en-US'), // Standard US format para basang-basa ng Google Sheets
             transType: "Bill Payment | " + methodLabel, 
             provider: "ANECO | Due Date: " + document.getElementById('dueDate').value, 
             gcashName: document.getElementById('accName').value,
@@ -737,14 +740,13 @@ function showStep(stepId) {
             amount: baseAmount,
             feeAmount: totalFee, 
 
-            // --- ETO ANG SAKTONG MAPPING PARA SA COLUMN N at O ---
-    
-    // Column N (totalAmount sa Apps Script) = Inabot na pera
-    totalAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
+            // Column N: Dito papasok ang Inabot na Pera
+            totalAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
 
-    // Column O (cashAmount sa Apps Script) = Sukli
-    cashAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
+            // Column O: Dito papasok ang Sukli
+            cashAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
             
+            consent: "YES",
             receiptFile: base64File,
             receiptFileName: fileName,
             receiptFileType: fileType
