@@ -659,16 +659,15 @@ function showStep(stepId) {
             });
         }
 
-       // --- LOGIC: PAYMENT CALCULATION (UPDATED WITH PAYMENT FEES) ---
+      // --- LOGIC: PAYMENT CALCULATION (CLEAN VERSION) ---
 const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
 const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
 
-// Multipliers
 let payFeeRate = 0;
 let methodLabel = "Cash";
 
 if (method === "Card") {
-    payFeeRate = 0.032; // 3.2%
+    payFeeRate = 0.032; 
     methodLabel = "Card+3.2%";
 } else if (method === "Spaylater") {
     payFeeRate = 0.01;
@@ -678,19 +677,13 @@ if (method === "Card") {
     methodLabel = "Billease+1%";
 }
 
-const serviceFee = Math.ceil(baseAmount * 0.01); // 1% Service Fee mo
+const serviceFee = Math.ceil(baseAmount * 0.01); 
 const fixedBillerFee = 10;
-const paymentGatewayFee = baseAmount * payFeeRate; // Dagdag na bawas ng provider
+const paymentGatewayFee = baseAmount * payFeeRate; 
 
+// Eto ang final values na ipapasa sa Google Sheets
 const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
 const totalWithFee = baseAmount + totalFee;
-        
-        // Kunin ang 1% at i-round up (hal. 1.50 -> 2.00)
-        const serviceFee = Math.ceil(baseAmount * 0.01); 
-        const fixedBillerFee = 10;
-        const totalFee = serviceFee + fixedBillerFee;
-        
-        const totalWithFee = baseAmount + totalFee;
 
         // Kunin ang value mula sa Review Screen checkboxes/inputs
         const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
@@ -847,11 +840,19 @@ const formData = {
 
 function updateReviewSukli() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
-    
-    // DAPAT PAREHO ANG COMPUTATION DITO AT SA GENERATE NUMBER
+    const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
+
+    // Kunin ang extra fee rate para parehas sila ng generateNumber
+    let extraRate = 0;
+    if (method === "Card") extraRate = 0.032;
+    else if (method === "Spaylater" || method === "Billease") extraRate = 0.01;
+
     const serviceFee = Math.ceil(amt * 0.01);
     const fixedFee = 10;
-    const totalWithFee = amt + serviceFee + fixedFee; // <--- Eto dapat ang basehan
+    const paymentGatewayFee = amt * extraRate;
+    
+    // Eto ang tamang total na dapat bayaran ng customer
+    const totalWithFee = amt + serviceFee + fixedFee + paymentGatewayFee;
     
     const cashInput = document.getElementById('reviewCashReceived');
     const sukliDiv = document.getElementById('reviewSukliDisplay');
@@ -868,10 +869,10 @@ function updateReviewSukli() {
     if (cashHanded > 0) {
         if (computeSukli < 0) {
             sukliDiv.style.color = "red";
-            sukliDiv.innerHTML = "KULANG NG: " + formatPHP(Math.abs(computeSukli));
+            sukliDiv.innerHTML = "❌ KULANG NG: " + formatPHP(Math.abs(computeSukli));
         } else {
             sukliDiv.style.color = "green";
-            sukliDiv.innerHTML = "SUKLI: " + formatPHP(computeSukli);
+            sukliDiv.innerHTML = "✅ SUKLI: " + formatPHP(computeSukli);
         }
     } else {
         sukliDiv.innerHTML = "";
