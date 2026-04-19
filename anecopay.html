@@ -659,10 +659,11 @@ function showStep(stepId) {
     showStep('stepForm');
 }
     
-    async function generateNumber() {
+   async function generateNumber() {
     const btn = event.target; 
     const originalText = "GET QUEUE NUMBER";
 
+    // 1. Validation for Terms
     if(!document.getElementById('termsAgree').checked) { 
         alert("Paki-check ang box para sumang-ayon sa terms."); 
         return; 
@@ -672,6 +673,7 @@ function showStep(stepId) {
     btn.disabled = true;
 
     try {
+        // --- FILE UPLOAD LOGIC ---
         const fileInput = document.getElementById('proofUpload');
         let base64File = "";
         let fileName = "";
@@ -688,10 +690,10 @@ function showStep(stepId) {
             });
         }
 
+        // --- CALCULATIONS ---
         const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
         const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
 
-        // --- COMPUTE FEES ---
         let payFeeRate = 0;
         let methodLabel = "Cash";
         if (method === "Card") { payFeeRate = 0.032; methodLabel = "Card+3.2%"; }
@@ -702,27 +704,33 @@ function showStep(stepId) {
         const fixedBillerFee = 10;
         const paymentGatewayFee = baseAmount * payFeeRate; 
         const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
+        const totalWithFee = baseAmount + totalFee;
 
-        // --- ETO ANG SINUNOD NATIN SA G.HTML ---
+        // --- REVIEW SCREEN DATA ---
         const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
         const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
         const generatedNum = "A-" + (Math.floor(Math.random() * 900) + 100);
 
+        // --- DATA MAPPING FOR APPS SCRIPT ---
         const formData = {
             customerName: document.getElementById('custName').value,
             queueNo: generatedNum,
             timestamp: new Date().toLocaleString(),
+            
+            // DITO NATIN ILALAGAY ANG DETALYE NG BILLER PARA HINDI MAWALA
             provider: "ANECO | Due Date: " + document.getElementById('dueDate').value,
-            transType: "Bill Payment | " + methodLabel,
+            
+            // DITO NATIN "BABALIGTARIN" ANG LOGIC:
+            // Dapat magsimula sa "Cash In" para pumasok sa logic ng Apps Script mo (Line 132)
+            transType: "Cash In | Bill Payment | " + methodLabel, 
+            
             gcashName: document.getElementById('accName').value,
             gcashNo: document.getElementById('accNo').value,
             amount: baseAmount,
             feeAmount: totalFee,
-            
-            // KRITIKAL: Pinapasa natin ang 'add' para basahin ng Brain mo ang N at O
             feeOption: "add", 
 
-            // IPAPASA NATIN ANG RAW VALUES GAYA NG NASA G.HTML
+            // Eto ang magiging Column N at O
             totalAmount: isExactVal ? (baseAmount + totalFee) : cashInputVal, 
             cashAmount: isExactVal ? 0 : (cashInputVal - (baseAmount + totalFee)), 
             
