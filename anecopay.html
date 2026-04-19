@@ -712,38 +712,43 @@ function showStep(stepId) {
         const generatedNum = "A-" + (Math.floor(Math.random() * 900) + 100);
 
         // --- DATA MAPPING FOR APPS SCRIPT ---
-       const formData = {
+       // Compute muna natin ang saktong babayaran (Bill + All Fees)
+        const totalWithFee = baseAmount + totalFee;
+        const method = document.getElementById('paymentMethod').value;
+
+        const formData = {
             customerName: document.getElementById('custName').value,
             queueNo: generatedNum,
             timestamp: new Date().toLocaleString(),
-            
-            // Column D: Detalye ng Biller
             provider: "ANECO | Due Date: " + document.getElementById('dueDate').value,
             
-            // Column E: Transaction Type
-            // IMPORTANTE: Dapat may "Bill Payment" na salita para basahin ng bagong Apps Script logic
+            // Column E: Panatilihin ang "Bill Payment" para sa Apps Script Filter natin
             transType: "Bill Payment | " + methodLabel, 
             
             gcashName: document.getElementById('accName').value,
             gcashNo: document.getElementById('accNo').value,
-            amount: baseAmount,
-            feeAmount: totalFee,
             
-            // Column J: Para pumasok sa calculation ng N at O
+            // --- FIX PARA SA COLUMN K ---
+            // Kung Cash, ginagawa nating 0 ang amount para HINDI magkalaman ang Column K.
+            // Pero kung Card/Spay/Billease, hinahayaan natin ang amount para sa records.
+            amount: (method === "Cash") ? 0 : baseAmount, 
+            feeAmount: (method === "Cash") ? 0 : totalFee,
+            
             feeOption: "add", 
 
-            // Column N: Cash na binayad ng customer
-            totalAmount: isExactVal ? (baseAmount + totalFee) : cashInputVal, 
-            
-            // Column O: Sukli
-            cashAmount: isExactVal ? 0 : (cashInputVal - (baseAmount + totalFee)), 
+            // --- LOGIC PARA SA COLUMN N AT O ---
+            // 1. Kung Card/Spaylater/Billease: Sa N mapupunta ang (Amount + Fee), O is 0.
+            // 2. Kung Cash & Sakto: Sa N mapupunta ang (Amount + Fee), O is 0.
+            // 3. Kung Cash & May Sukli: Sa N mapupunta ang (Cash Received), O is (Sukli).
+            totalAmount: (method !== "Cash" || isExactVal) ? totalWithFee : cashInputVal, 
+            cashAmount: (method !== "Cash" || isExactVal) ? 0 : (cashInputVal - totalWithFee), 
             
             consent: "YES",
             receiptFile: base64File,
             receiptFileName: fileName,
             receiptFileType: fileType
         };
-
+        
         const response = await fetch(WEB_APP_URL, {
             method: "POST",
             body: JSON.stringify(formData),
