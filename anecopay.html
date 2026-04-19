@@ -389,15 +389,21 @@ async function checkMyStatus() {
             
             instruction.style.color = "#1b431c";
             instruction.innerHTML = `
-                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 5px solid #2e7d32;">
-                    <b style="font-size: 1.1em;">Kasalukuyang pino-process ang iyong bayad.</b><br><br>
-                    <span style="color: #d32f2f;">⚠️ <b>HUWAG I-CLOSE O I-EXIT ANG PAGE NA ITO.</b></span><br>
-                    Dito lalabas ang iyong <b>Official Transaction Receipt</b> kapag tapos na.<br><br>
-                    <small>📧 Makakatanggap din kayo ng <b>SMS Confirmation</b> mula sa <b>MAYA CENTER</b> bilang patunay ng inyong transaction.</small>
+                <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 5px solid #ff9800; text-align: left;">
+                    <b style="font-size: 1.2em; color: #e65100;">STEP 1: MAGBAYAD SA COUNTER</b><br>
+                    Ipakita ang iyong Queue Number at i-abot ang bayad sa cashier.<br><br>
+                    
+                    <b style="font-size: 1.2em; color: #2e7d32;">STEP 2: HUWAG MUNA UMALIS</b><br>
+                    Pagkatapos magbayad, <b>paki-antay na lumabas dito</b> ang iyong Digital Receipt. 
+                    <span style="color: #d32f2f;">⚠️ Huwag i-close o i-exit ang page na ito.</span><br><br>
+                    
+                    <small style="display: block; border-top: 1px solid #ccc; pt: 10px; margin-top: 10px;">
+                        📢 Makakatanggap din kayo ng SMS mula sa <b>MAYA CENTER</b> kapag tapos na ang transaction.
+                    </small>
                 </div>
             `;
             instruction.style.display = "block";
-            completedArea.style.display = "none"; // Siguradong tago muna ang download button
+            completedArea.style.display = "none"; 
         }
         
 // --- STATUS: COMPLETED (Tapos na) ---
