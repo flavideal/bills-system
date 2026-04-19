@@ -736,16 +736,14 @@ function showStep(stepId) {
             gcashNo: document.getElementById('accNo').value,
             amount: baseAmount,
             feeAmount: totalFee, 
-            totalAmount: totalWithFee, 
 
-            // Column N: "Cash Received"
-            // Kung Cash at hindi sakto, ilalagay ang inabot na pera.
-            // Kung Digital o Sakto, ilalagay ang mismong Total With Fee.
-            cashAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
+            // --- ETO ANG SAKTONG MAPPING PARA SA COLUMN N at O ---
+    
+    // Column N (totalAmount sa Apps Script) = Inabot na pera
+    totalAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
 
-            // Column O: "Change" (Sukli)
-            // Kung Cash at hindi sakto, computation ng sukli. Kung hindi, 0.
-            changeAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
+    // Column O (cashAmount sa Apps Script) = Sukli
+    cashAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
             
             receiptFile: base64File,
             receiptFileName: fileName,
