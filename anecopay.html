@@ -605,6 +605,16 @@ function showStep(stepId) {
         <div class="review-item"><span>ANECO Bill Account No:</span><strong>${accNo}</strong></div>
         <div class="review-item"><span>Due Date:</span><strong style="color:red;">${formattedDate}</strong></div>
         <div class="review-item"><span>Total Bill:</span><strong>${formatPHP(amt)}</strong></div>
+
+        <div style="margin-top:15px; background:#f9f9f9; padding:10px; border:1px solid #ddd; border-radius:5px;">
+        <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:5px;">PILIIN ANG PARAAN NG PAGBAYAD:</label>
+        <select id="paymentMethod" onchange="updateReviewTotal()" style="width:100%; padding:8px; font-weight:bold; border-radius:5px;">
+            <option value="Cash">CASH (Dito sa Counter)</option>
+            <option value="Card">CREDIT/DEBIT CARD (Tap to Pay - 3.2%)</option>
+            <option value="Spaylater">SPAYLATER (Scan to Pay - 1%)</option>
+            <option value="Billease">BILLEASE (Scan to Pay - 1%)</option>
+        </select>
+    </div>
     `;
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
@@ -649,8 +659,31 @@ function showStep(stepId) {
             });
         }
 
-       // --- LOGIC: PAYMENT CALCULATION (UPDATED) ---
-        const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+       // --- LOGIC: PAYMENT CALCULATION (UPDATED WITH PAYMENT FEES) ---
+const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
+
+// Multipliers
+let payFeeRate = 0;
+let methodLabel = "Cash";
+
+if (method === "Card") {
+    payFeeRate = 0.032; // 3.2%
+    methodLabel = "Card+3.2%";
+} else if (method === "Spaylater") {
+    payFeeRate = 0.01;
+    methodLabel = "Spaylater+1%";
+} else if (method === "Billease") {
+    payFeeRate = 0.01;
+    methodLabel = "Billease+1%";
+}
+
+const serviceFee = Math.ceil(baseAmount * 0.01); // 1% Service Fee mo
+const fixedBillerFee = 10;
+const paymentGatewayFee = baseAmount * payFeeRate; // Dagdag na bawas ng provider
+
+const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
+const totalWithFee = baseAmount + totalFee;
         
         // Kunin ang 1% at i-round up (hal. 1.50 -> 2.00)
         const serviceFee = Math.ceil(baseAmount * 0.01); 
@@ -675,32 +708,37 @@ function showStep(stepId) {
         const generatedNum = "G-" + (Math.floor(Math.random() * 900) + 100);
 
         // Pag-send ng Data sa Google Sheets
+// Pag-send ng Data sa Google Sheets (Updated Version)
 const formData = {
     customerName: document.getElementById('custName').value,
     queueNo: generatedNum,
     timestamp: new Date().toLocaleString(),
     
-    // Identity ng transaction
-    transType: "Bill Payment | Due: " + document.getElementById('dueDate').value, 
-    provider: "ANECO", 
+    // 1. Dito lalabas kung ano ang payment method (hal. Bill Payment | Spaylater+1%)
+    transType: "Bill Payment | " + methodLabel, 
+    
+    // 2. Dito pagsasamahin ang ANECO at Due Date (hal. ANECO | Due: 2026-05-15)
+    provider: "ANECO | Due: " + document.getElementById('dueDate').value, 
     
     // Mapping para sa iyong Google Sheets columns
-    gcashName: document.getElementById('accName').value, // ANECO Account Name
-    gcashNo: document.getElementById('accNo').value,     // ANECO Account Number
+    gcashName: document.getElementById('accName').value,
+    gcashNo: document.getElementById('accNo').value,
     
     // --- UPDATED FINANCIALS ---
     amount: baseAmount,
     feeAmount: totalFee, 
     totalAmount: totalWithFee, 
-    cashAmount: isExactVal ? totalWithFee : cashReceivedVal, // Eto ang Column N
-    changeAmount: isExactVal ? 0 : (cashReceivedVal - totalWithFee), // Eto ang Column O
+    
+    // Logic para sa Column N (Cash Amount) at Column O (Change)
+    // Kapag HINDI cash ang payment method, automatic na "Total" ang ilalagay sa Cash Amount
+    cashAmount: (method === "Cash" && !isExactVal) ? cashReceivedVal : totalWithFee, 
+    changeAmount: (method === "Cash" && !isExactVal) ? (cashReceivedVal - totalWithFee) : 0,
     
     // File attachments
     receiptFile: base64File,
     receiptFileName: fileName,
     receiptFileType: fileType
 };
-
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
         const response = await fetch(WEB_APP_URL, {
@@ -760,36 +798,47 @@ const formData = {
     
     function updateReviewTotal() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
-    const serviceFee = Math.ceil(amt * 0.01);
-    const fixedFee = 10;
-    const totalFee = serviceFee + fixedFee;
-    const totalWithFee = amt + totalFee;
+    const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
+    
+    // --- COMPUTATION NG FEES ---
+    let extraFeePercent = 0;
+    if (method === "Card") extraFeePercent = 0.032; // 3.20%
+    else if (method === "Spaylater" || method === "Billease") extraFeePercent = 0.01; // 1%
+    
+    const serviceFee = Math.ceil(amt * 0.01); // 1% na default service fee mo
+    const paymentGatewayFee = amt * extraFeePercent; // Ang dagdag na fee base sa payment method
+    const fixedFee = 10; // Biller Fee
+    
+    const totalWithFee = amt + serviceFee + fixedFee + paymentGatewayFee;
 
-    const oldCheckbox = document.getElementById('reviewIsExact');
-    const isExact = oldCheckbox ? oldCheckbox.checked : true;
-    const oldCashInput = document.getElementById('reviewCashReceived');
-    const oldCashValue = oldCashInput ? oldCashInput.value : "";
-
+    // --- HTML RENDER ---
     let breakdownHTML = `
         <div class="review-item"><span>Biller Fee:</span><strong>${formatPHP(fixedFee)}</strong></div>
         <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(serviceFee)}</strong></div>
+        ${extraFeePercent > 0 ? `<div class="review-item"><span>Payment Fee (${(extraFeePercent*100).toFixed(1)}%):</span><strong>${formatPHP(paymentGatewayFee)}</strong></div>` : ''}
+        <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: #1b4332;">
+            <span>Total to Pay:</span><strong>${formatPHP(totalWithFee)}</strong>
+        </div>
     `;
 
-    breakdownHTML += `
-        <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: #1b4332;">
-            <span>Total Amount to Pay:</span><strong>${formatPHP(totalWithFee)}</strong>
-        </div>
-        <div class="cash-logic-box">
-            <label class="checkbox-row">
-                <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" ${isExact ? 'checked' : ''}> 
-                Sakto ang ibabayad ko (Exact)
-            </label>
-            <div id="reviewCashInputGroup" style="display: ${isExact ? 'none' : 'block'}">
-                <label>Magkano ang cash na iaabot?</label>
-                <input type="number" id="reviewCashReceived" oninput="updateReviewSukli()" placeholder="0.00" value="${oldCashValue}">
-                <div id="reviewSukliDisplay" class="sukli-display"></div>
-            </div>
-        </div>`;
+    // --- SAKTO/CASH LOGIC (Lalabas lang kung Cash ang pinili) ---
+    if (method === "Cash") {
+        const isExact = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+        breakdownHTML += `
+            <div class="cash-logic-box">
+                <label class="checkbox-row">
+                    <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" ${isExact ? 'checked' : ''}> 
+                    Sakto ang ibabayad ko (Exact Cash)
+                </label>
+                <div id="reviewCashInputGroup" style="display: ${isExact ? 'none' : 'block'}">
+                    <label>Magkano ang cash na iaabot?</label>
+                    <input type="number" id="reviewCashReceived" oninput="updateReviewSukli()" placeholder="0.00">
+                    <div id="reviewSukliDisplay" class="sukli-display"></div>
+                </div>
+            </div>`;
+    } else {
+        breakdownHTML += `<div style="text-align:center; padding:10px; color:#666; font-style:italic;">I-ready ang App o Card sa counter para sa processing.</div>`;
+    }
 
     document.getElementById('finalBreakdown').innerHTML = breakdownHTML;
     updateReviewSukli();
