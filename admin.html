@@ -377,7 +377,7 @@
     const viewU = row[20] || ""; // Signature/Voucher
     
     // row[1] is Queue, row[0] is Customer Name (o kung ano man ang index 0 mo)
-document.getElementById('mod-queue').innerHTML = `Q-${row[1]} <br> <small style="color:white; font-size: 14px; font-weight: normal;">${row[0]}</small>`;
+document.getElementById('mod-queue').innerHTML = `QUE#: ${row[1]} <br> <small style="color:white; font-size: 14px; font-weight: normal;">${row[0]}</small>`;
     
     let body = `
       <div class="detail-item"><span>Timestamp</span><b>${timeStampC}</b></div>
