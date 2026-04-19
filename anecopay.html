@@ -712,26 +712,30 @@ function showStep(stepId) {
         const generatedNum = "A-" + (Math.floor(Math.random() * 900) + 100);
 
         // --- DATA MAPPING FOR APPS SCRIPT ---
-        const formData = {
+       const formData = {
             customerName: document.getElementById('custName').value,
             queueNo: generatedNum,
             timestamp: new Date().toLocaleString(),
             
-            // DITO NATIN ILALAGAY ANG DETALYE NG BILLER PARA HINDI MAWALA
+            // Column D: Detalye ng Biller
             provider: "ANECO | Due Date: " + document.getElementById('dueDate').value,
             
-            // DITO NATIN "BABALIGTARIN" ANG LOGIC:
-            // Dapat magsimula sa "Cash In" para pumasok sa logic ng Apps Script mo (Line 132)
-            transType: "Cash In | Bill Payment | " + methodLabel, 
+            // Column E: Transaction Type
+            // IMPORTANTE: Dapat may "Bill Payment" na salita para basahin ng bagong Apps Script logic
+            transType: "Bill Payment | " + methodLabel, 
             
             gcashName: document.getElementById('accName').value,
             gcashNo: document.getElementById('accNo').value,
             amount: baseAmount,
             feeAmount: totalFee,
+            
+            // Column J: Para pumasok sa calculation ng N at O
             feeOption: "add", 
 
-            // Eto ang magiging Column N at O
+            // Column N: Cash na binayad ng customer
             totalAmount: isExactVal ? (baseAmount + totalFee) : cashInputVal, 
+            
+            // Column O: Sukli
             cashAmount: isExactVal ? 0 : (cashInputVal - (baseAmount + totalFee)), 
             
             consent: "YES",
