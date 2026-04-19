@@ -609,10 +609,10 @@ function showStep(stepId) {
         <div style="margin-top:15px; background:#f9f9f9; padding:10px; border:1px solid #ddd; border-radius:5px;">
         <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:5px;">PILIIN ANG PARAAN NG PAGBAYAD:</label>
         <select id="paymentMethod" onchange="updateReviewTotal()" style="width:100%; padding:8px; font-weight:bold; border-radius:5px;">
-            <option value="Cash">CASH (Dito sa Counter)</option>
-            <option value="Card">CREDIT/DEBIT CARD (Tap to Pay - 3.2%)</option>
-            <option value="Spaylater">SPAYLATER (Scan to Pay - 1%)</option>
-            <option value="Billease">BILLEASE (Scan to Pay - 1%)</option>
+            <option value="Cash">CASH (Pay sa Counter)</option>
+            <option value="Card">CREDIT/DEBIT CARD (Tap to Pay + 3.2%)</option>
+            <option value="Spaylater">SPAYLATER (Scan to Pay + 1%)</option>
+            <option value="Billease">BILLEASE (Scan to Pay + 1%)</option>
         </select>
     </div>
     `;
@@ -829,9 +829,26 @@ const formData = {
                     <div id="reviewSukliDisplay" class="sukli-display"></div>
                 </div>
             </div>`;
-    } else {
-        breakdownHTML += `<div style="text-align:center; padding:10px; color:#666; font-style:italic;">I-ready ang App o Card sa counter para sa processing.</div>`;
-    }
+   } else {
+    // Note para sa Card, Spaylater, at Billease
+    let feeNote = "";
+if (method === "Card") {
+    feeNote = "Ang 3.2% ay bank processing fee (Gateway Fee). Ito ay automatic na kaltas ng provider para sa pag-gamit ng Credit/Debit card.";
+} else {
+    // Mas generic na "Digital Payment Fee" para cover ang Spaylater/Billease/GCash
+    feeNote = "Ang 1% ay digital processing fee. Ito ay chinacharge ng payment provider para sa Scan to Pay/Installment transactions.";
+}
+
+    breakdownHTML += `
+        <div style="text-align:center; padding:10px; background: #fffbe6; border: 1px dashed #ffe58f; border-radius: 5px; margin-top: 10px;">
+            <p style="font-size: 10px; color: #856404; margin-bottom: 5px; line-height: 1.2;">
+                <b>NOTE:</b> ${feeNote}
+            </p>
+            <span style="color:#666; font-style:italic; font-size: 11px;">
+                I-ready ang App o Card sa counter para sa processing.
+            </span>
+        </div>`;
+}
 
     document.getElementById('finalBreakdown').innerHTML = breakdownHTML;
     updateReviewSukli();
