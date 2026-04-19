@@ -850,6 +850,17 @@ if (method === "Card") {
         </div>`;
 }
 
+        // --- ETO YUNG DINAGDAG NA DISCLAIMER SA PINAKA-BABA ---
+    breakdownHTML += `
+        <div style="margin-top: 20px; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
+            <p style="font-size: 9px; color: #999; margin: 0;">
+                Powered by <b>GCash for Business</b><br>
+                Standard gateway fees apply for non-cash payments.
+            </p>
+        </div>
+    `;
+        
+
     document.getElementById('finalBreakdown').innerHTML = breakdownHTML;
     updateReviewSukli();
 }
