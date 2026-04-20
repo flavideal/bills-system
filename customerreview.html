@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Reviews - Flavi Deal</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #1b4332; margin-bottom: 5px; }
+        
+        .review-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; position: relative; }
+        .reviewer-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .reviewer-name { font-weight: bold; color: #1b4332; }
+        .q-tag { font-size: 10px; background: #e8f5e9; padding: 2px 8px; border-radius: 10px; color: #2e7d32; }
+        
+        .stars { color: #ffc107; font-size: 18px; margin-bottom: 10px; }
+        .comment { font-size: 14px; line-height: 1.5; color: #555; }
+        .date { font-size: 11px; color: #999; margin-top: 10px; }
+        
+        .loading { text-align: center; color: #888; padding: 50px; }
+        .no-reviews { text-align: center; padding: 50px; color: #888; }
+        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #1b4332; font-weight: bold; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" class="back-btn">← Back to Home</a>
+    <div class="header">
+        <h1>Community Feedback</h1>
+        <p>What our customers in Butuan are saying</p>
+    </div>
+
+    <div id="reviewsList">
+        <div class="loading">Loading reviews...</div>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+
+    async function loadReviews() {
+        try {
+            const response = await fetch(`${WEB_APP_URL}?action=getPublicReviews`);
+            const result = await response.json();
+            const listDiv = document.getElementById('reviewsList');
+            
+            if (!result.data || result.data.length === 0) {
+                listDiv.innerHTML = '<div class="no-reviews">No reviews yet. Be the first to leave one!</div>';
+                return;
+            }
+
+            listDiv.innerHTML = ''; // Clear loading
+            
+            result.data.forEach(rev => {
+                // Convert string rating (e.g. "5 Stars") to stars icons
+                const starCount = parseInt(rev.rating);
+                const starIcons = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
+
+                const card = `
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">${rev.name}</span>
+                            <span class="q-tag">${rev.queueNo}</span>
+                        </div>
+                        <div class="stars">${starIcons}</div>
+                        <div class="comment">${rev.comment || "<i>No comment provided.</i>"}</div>
+                        <div class="date">${rev.timestamp}</div>
+                    </div>
+                `;
+                listDiv.innerHTML += card;
+            });
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById('reviewsList').innerHTML = '<div class="no-reviews">Error loading reviews. Please try again.</div>';
+        }
+    }
+
+    // Run on load
+    loadReviews();
+</script>
+
+</body>
+</html>
