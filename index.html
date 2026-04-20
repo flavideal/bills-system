@@ -267,7 +267,8 @@
 /* Container para sa menu para ma-control ang overlay */
 .menu-wrapper {
     position: relative;
-    min-height: 300px;
+    min-height: 250px; /* Eto yung space na i-o-occupy ng menu */
+    width: 100%;
 }
 
 /* Overlay sa menu grid lang */
@@ -275,16 +276,15 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(244, 247, 246, 0.8); /* Same as body bg pero semi-transparent */
+    right: 0; /* Dinagdag para sakop buong width */
+    bottom: 0; /* Dinagdag para sakop buong height */
+    background: var(--bg); /* Gawin nating solid muna para tago ang grid sa likod */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 10;
+    z-index: 99; /* Itaas natin para siguradong nasa ibabaw */
     border-radius: 20px;
-    backdrop-filter: blur(2px);
     transition: opacity 0.3s ease;
 }
 
@@ -334,6 +334,7 @@
         <div class="mini-loader"></div>
         <p style="font-size: 12px; color: var(--premium-green); font-weight: bold; margin-top: 10px;">Updating Services...</p>
     </div>
+            
         <div class="menu-grid">
     <a href="g.html" class="menu-item active-link hub-closed" id="link-gcash" ... >
         <img src="logo/g.png" alt="GCash" style="height: 25px; width: auto; margin-bottom: 8px; object-fit: contain;">
