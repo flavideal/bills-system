@@ -353,19 +353,12 @@
         <span class="status-tag">COMING SOON</span>
     </div>
 
-   <a href="javascript:void(0)" class="menu-item active-link" onclick="goToPage('anecopay.html')"><img src="logo/aneco.png" alt="ANECO" style="height: 25px;"><span class="service-name">ANECO</span></a>
-        <img src="logo/aneco.png" alt="ANECO" style="height: 25px; width: auto; margin-bottom: 8px; object-fit: contain;">
-        <span class="service-name" style="color: var(--premium-green); font-weight: 900;">ANECO</span>
-        
-        <div style="margin-top: 8px;">
-            <span style="font-size: 8px; background: var(--gold); color: var(--premium-green); padding: 2px 10px; border-radius: 4px; font-weight: bold; border: 1px solid #e6b800; text-transform: uppercase;">
-                ELECTRIC BILL
-            </span>
-        </div>
-        
-        <span class="fee-note" style="color: var(--premium-green); font-weight: bold; margin-top: 10px; font-size: 8px;">
-            ₱10 Biller Fee + 1% Service Fee
-        </span>
+   <a href="javascript:void(0)" 
+   class="menu-item active-link" 
+   onclick="goToPage('anecopay.html')">
+    
+    <img src="logo/aneco.png" alt="ANECO" style="height: 25px;">
+    <span class="service-name">ANECO</span>
     </a>
 
 
@@ -466,6 +459,13 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
     let currentSlide = 0;
     const slides = document.querySelectorAll('.slide');
+
+    function goToPage(url) {
+    // 1. I-save ang pass
+    sessionStorage.setItem('fromIndex', 'true');
+    // 2. I-redirect gamit ang JS para siguradong save na bago lumipat
+    window.location.href = url;
+}
 
     // --- SLIDER LOGIC ---
     function showNextSlide() {
