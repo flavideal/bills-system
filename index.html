@@ -137,7 +137,7 @@
     align-items: center;
     justify-content: center;
     border: 2px solid transparent;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease, opacity 0.3s ease;
     min-height: 140px; /* Siniguro nating sapat ang taas para sa logos at badges */
 }
 
@@ -145,6 +145,14 @@
             transform: scale(0.95);
             background: #fdfdfd;
         }
+
+        /* Bagong effect para sa hub-closed */
+.menu-item.hub-closed {
+    opacity: 0.3 !important;
+    filter: grayscale(1) blur(0.5px);
+    pointer-events: none;
+    user-select: none;
+}
 
         .menu-item.active-link {
             border-color: var(--gold);
@@ -285,7 +293,7 @@
 </div>
         
         <div class="menu-grid">
-    <a href="g.html" class="menu-item active-link" style="border-color: var(--premium-green); background: #ffffff;">
+    <a href="g.html" class="menu-item active-link hub-closed" id="link-gcash" ... >
         <img src="logo/g.png" alt="GCash" style="height: 25px; width: auto; margin-bottom: 8px; object-fit: contain;">
         <span class="service-name" style="color: var(--premium-green); font-weight: 900;">GCASH</span>
         
@@ -302,7 +310,7 @@
         <span class="status-tag">COMING SOON</span>
     </div>
 
-    <a href="anecopay.html" class="menu-item active-link" style="border-color: var(--gold); background: #ffffff; border-width: 2px;">
+    <a href="anecopay.html" class="menu-item active-link hub-closed" id="link-aneco" ... >
         <img src="logo/aneco.png" alt="ANECO" style="height: 25px; width: auto; margin-bottom: 8px; object-fit: contain;">
         <span class="service-name" style="color: var(--premium-green); font-weight: 900;">ANECO</span>
         
@@ -427,36 +435,51 @@
         }
     }
 
-    // --- HUB STATUS LOGIC (ANG FIX MO) ---
-    async function checkHubStatus() {
-        try {
-            // Gumamit tayo ng GET para iwas CORS error at siguradong mabasa ang status
-            const response = await fetch(`${SCRIPT_URL}?action=getTransactions&t=${Date.now()}`);
-            const res = await response.json();
-            
-            console.log("Server Status:", res.kioskStatus);
+   // --- HUB STATUS LOGIC (THE PERMANENT FIX) ---
+async function checkHubStatus() {
+    const msg = document.getElementById('closed-msg');
+    const menuItems = document.querySelectorAll('.menu-item:not(.coming-soon)');
 
-            const isClosed = (res.kioskStatus === "CLOSED");
-            const menuItems = document.querySelectorAll('.menu-item:not(.coming-soon)');
-            const msg = document.getElementById('closed-msg');
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=getTransactions&t=${Date.now()}`);
+        const res = await response.json();
+        
+        const isClosed = (res.kioskStatus === "CLOSED");
 
-            if (isClosed) {
-                msg.style.display = 'block'; // Lalabas ang Yellow Notice
-                menuItems.forEach(item => {
-                    item.classList.add('hub-closed'); // Mag-e-effect ang grayscale at disabled mode
-                });
-            } else {
-                msg.style.display = 'none'; // Mawawala ang Notice
-                menuItems.forEach(item => {
-                    item.classList.remove('hub-closed');
-                });
-            }
-        } catch (e) {
-            console.error("Status check failed:", e);
+        if (isClosed) {
+            msg.style.display = 'block';
+            menuItems.forEach(item => {
+                item.classList.add('hub-closed');
+                // Protection 1: Disable ang click via JS
+                item.onclick = function(e) { e.preventDefault(); return false; };
+            });
+        } else {
+            msg.style.display = 'none';
+            menuItems.forEach(item => {
+                item.classList.remove('hub-closed');
+                // Protection 2: Ibalik ang normal na function
+                item.onclick = null;
+            });
         }
+    } catch (e) {
+        // Kung mag-fail ang internet, safe-mode: I-sarado ang hub
+        msg.style.display = 'block';
+        msg.innerHTML = "⚠️ Connection Error. Reconnecting...";
+        menuItems.forEach(item => item.classList.add('hub-closed'));
     }
-    
-    window.addEventListener('load', checkHubStatus);
+}
+
+// Dagdag na layer: I-check ang status bago lumipat ng page
+document.querySelectorAll('.active-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+        if (this.classList.contains('hub-closed')) {
+            e.preventDefault();
+            alert("Paumanhin, sarado po ang aming hub sa ngayon.");
+        }
+    });
+});
+
+window.addEventListener('load', checkHubStatus);
 </script>
 </body>
 </html>
