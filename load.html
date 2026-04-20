@@ -215,14 +215,9 @@
         <li>This is a <b>Personal Assistance Service</b> for E-Load top-up.</li>
         <li><b>Accuracy:</b> Pakisuri nang mabuti ang Mobile Number. Hindi liable si Jerric kung mali ang number na nailagay at na-loadan na.</li>
         
-        <li style="color: #000; background: #fffde7; padding: 5px; border-radius: 5px;">
-            <b>Fees & Charges:</b> 
-            Ang Cash payment ay <b>WALANG SERVICE FEE (FREE)</b>. 
-            <div style="margin-top: 5px; padding-left: 10px; border-left: 2px solid #d32f2f;">
-                <span style="color: #d32f2f; font-weight: bold;">Card Payments:</span><br>
-                • <b>+3.20%</b> payment fee para sa Credit/Debit Cards.
-            </div>
-        </li>
+        <li><b>Fees (CASH):</b> Ang Cash payment ay <b>WALANG SERVICE FEE (FREE)</b>.</li>
+        <li><b>Fees (CARD):</b> <b>+3.20%</b> payment fee para sa Credit/Debit Cards.</li>
+    
         <li><b>Processing:</b> Ang load ay ipaproseso agad pagkatapos magbayad sa counter.</li>
         <li><b>Confirmation:</b> Makakatanggap kayo ng SMS mula sa inyong Network Provider (Globe/Smart/DITO) kapag pumasok na ang load.</li>
         <li><b>No Refund:</b> Kapag na-send na ang load, hindi na ito maaring i-cancel o i-refund.</li>
@@ -752,7 +747,7 @@ function showStep(stepId) {
 
     let breakdownHTML = `
         <div class="review-item"><span>Load Amount:</span><strong>${formatPHP(amt)}</strong></div>
-        ${extraFeePercent > 0 ? `<div class="review-item"><span>Card Processing Fee (3.2%):</span><strong>${formatPHP(paymentGatewayFee)}</strong></div>` : `<div class="review-item"><span>Service Fee:</span><strong style="color:green;">FREE</strong></div>`}
+        ${extraFeePercent > 0 ? `<div class="review-item"><span>Card Payment Fee (3.2%):</span><strong>${formatPHP(paymentGatewayFee)}</strong></div>` : `<div class="review-item"><span>Service Fee:</span><strong style="color:green;">FREE</strong></div>`}
         <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: #1b4332;">
             <span>Total to Pay:</span><strong>${formatPHP(totalWithFee)}</strong>
         </div>
