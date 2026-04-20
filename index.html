@@ -647,16 +647,24 @@ function displayNextReview() {
     const container = document.getElementById('reviewContent');
     const rev = allReviews[reviewIndex];
     
+    // I-APPLY ANG MASKING DITO
+    // Siguraduhin na 'customerName' at 'queueNo' ang properties na galing sa API mo
+    const maskedName = maskString(rev.customerName || rev.name, "name");
+    const maskedQueue = maskString(rev.queueNo, "queue");
+    
     const starCount = parseInt(rev.rating) || 5;
     const stars = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
+    
+    // Kunin ang service type (hal. ANECO, GCash)
+    const serviceLabel = rev.serviceType || rev.service || "Verified Transaction";
 
     container.innerHTML = `
-        <div class="rev-name">${rev.name} <span style="font-weight:normal; color:#aaa;">(${rev.queueNo})</span></div>
+        <div class="rev-name">${maskedName} <span style="font-weight:normal; color:#aaa;">(${maskedQueue})</span></div>
         <div style="font-size: 9px; background: #e8f5e9; color: #2e7d32; display: inline-block; padding: 2px 8px; border-radius: 5px; margin-bottom: 5px; font-weight: bold; border: 1px solid #c8e6c9;">
-            ${rev.service}
+            ${serviceLabel}
         </div>
         <div class="rev-stars">${stars}</div>
-        <div class="rev-text">"${rev.comment}"</div>
+        <div class="rev-text">"${rev.message || rev.comment}"</div>
     `;
     
     container.classList.remove('fade');
@@ -665,13 +673,17 @@ function displayNextReview() {
 
     reviewIndex = (reviewIndex + 1) % allReviews.length;
 }
-// Tawagin ang function sa pag-load ng page
-window.addEventListener('load', () => {
-    checkHubStatus();
-    loadPublicReviews(); // Idagdag ito
-});
 
-window.addEventListener('load', checkHubStatus);
+function maskString(str, type) {
+    if (!str || str === "N/A" || str === "Customer") return str;
+    if (type === "name") {
+        // Jerric Dela Cruz -> J***z
+        return str[0] + "***" + str[str.length - 1];
+    } else {
+        // G-001 -> G***1
+        return str.substring(0, 1) + "***" + str.slice(-1);
+    }
+}
 </script>
 </body>
 </html>
