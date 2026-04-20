@@ -27,7 +27,6 @@
         .reviewer-name { font-weight: 800; color: var(--premium-green); font-size: 16px; }
         .q-tag { font-size: 10px; background: #f0f0f0; padding: 2px 8px; border-radius: 10px; color: #777; font-weight: bold; }
         
-        /* SERVICE BADGE STYLE */
         .service-badge {
             display: inline-block;
             background: var(--soft-green);
@@ -59,28 +58,26 @@
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        /* VERIFIED BADGE STYLE */
-.verified-badge {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: #2e7d32; /* Green color */
-    font-size: 11px;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.verified-icon {
-    background: #2e7d32;
-    color: white;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 9px;
-}
+        .verified-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #2e7d32;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .verified-icon {
+            background: #2e7d32;
+            color: white;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+        }
     </style>
 </head>
 <body>
@@ -89,7 +86,7 @@
     <a href="index.html" class="back-btn">← Back to Kiosk</a>
     <div class="header">
         <h1>Community Feedback</h1>
-        <p style="color: #666; font-size: 14px;">Real stories from our customers in Butuan City</p>
+        <p style="color: #666; font-size: 14px;">Real stories from aming mga suki sa Butuan City</p>
     </div>
 
     <div id="reviewsList">
@@ -102,9 +99,20 @@
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
+    // FUNCTION PARA SA MASKING (Privacy)
+    function maskString(str, type) {
+        if (!str || str === "N/A" || str === "Customer") return str;
+        if (type === "name") {
+            // Halimbawa: Jerric Dela Cruz -> J***z
+            return str[0] + "***" + str[str.length - 1];
+        } else {
+            // Halimbawa: G-001 -> G***1
+            return str.substring(0, 1) + "***" + str.slice(-1);
+        }
+    }
+
     async function loadReviews() {
         try {
-            // Added cache buster (t=Date.now) para laging fresh ang reviews
             const response = await fetch(`${WEB_APP_URL}?action=getPublicReviews&t=${Date.now()}`);
             const result = await response.json();
             const listDiv = document.getElementById('reviewsList');
@@ -116,35 +124,37 @@
 
             listDiv.innerHTML = ''; 
             
-           result.data.forEach(rev => {
-                // 1. Siguraduhin na 'rating' ang tawag sa column sa Google Sheets
+            result.data.forEach(rev => {
+                // I-APPLY ANG MASKING DITO PARA SA PUBLIC VIEW
+                const maskedName = maskString(rev.customerName, "name");
+                const maskedQueue = maskString(rev.queueNo, "queue");
+
                 const starCount = parseInt(rev.rating) || 5; 
                 const starIcons = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
-                
-                const serviceUsed = rev.serviceType || "General Service"; // 'serviceType' ang sinave natin kanina
+                const serviceUsed = rev.serviceType || "General Service";
 
                 const card = `
-    <div class="review-card">
-        <div class="reviewer-info">
-            <span class="reviewer-name">${rev.customerName}</span>
-            <span class="q-tag">${rev.queueNo}</span>
-        </div>
-        
-        <div class="verified-badge">
-            <span class="verified-icon">✓</span>
-            Verified Transaction
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div class="service-badge">${serviceUsed}</div>
-            <div class="stars">${starIcons}</div>
-        </div>
-        
-        <div class="comment">"${rev.message || "No comment provided."}"</div>
-        
-        <div class="date">Transaction Date: ${rev.timestamp}</div>
-    </div>
-`;
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">${maskedName}</span>
+                            <span class="q-tag">${maskedQueue}</span>
+                        </div>
+                        
+                        <div class="verified-badge">
+                            <span class="verified-icon">✓</span>
+                            Verified Transaction
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="service-badge">${serviceUsed}</div>
+                            <div class="stars">${starIcons}</div>
+                        </div>
+                        
+                        <div class="comment">"${rev.message || "No comment provided."}"</div>
+                        
+                        <div class="date">Transaction Date: ${rev.timestamp}</div>
+                    </div>
+                `;
                 listDiv.innerHTML += card;
             });
 
