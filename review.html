@@ -41,15 +41,30 @@
 <script>
     let currentRating = 0;
 
-    // 1. KUNIN ang data - Ginawa nating diretso para walang lito
-    // Hahanapin muna ang 'reviewerName', kung wala, kukuha sa 'custName'
-    const nameFromStorage = localStorage.getItem('reviewerName') || localStorage.getItem('custName') || "Customer";
-    const queueFromStorage = localStorage.getItem('reviewerQueue') || localStorage.getItem('savedQueueNumber') || "N/A";
+    // 1. KUNIN ang data - May backup keys para sigurado
+    const rawName = localStorage.getItem('reviewerName') || localStorage.getItem('custName') || "Customer";
+    const rawQueue = localStorage.getItem('reviewerQueue') || localStorage.getItem('savedQueueNumber') || "N/A";
     const serviceFromStorage = localStorage.getItem('reviewerService') || "GCASH";
 
-    // 2. DISPLAY agad sa screen
-    if(nameFromStorage !== "Customer") {
-        document.getElementById('welcomeText').innerText = "Hi " + nameFromStorage + ", how was it?";
+    // 2. RESTRICTION: Kung "Customer" at "N/A", ibig sabihin walang transaction. 
+    // Ibabalik sa index para iwas spam.
+    if (rawName === "Customer" && rawQueue === "N/A") {
+        window.location.href = 'index.html';
+    }
+
+    // 3. DISPLAY agad sa screen (Full name para friendly sa customer)
+    if(rawName !== "Customer") {
+        document.getElementById('welcomeText').innerText = "Hi " + rawName + ", how was it?";
+    }
+
+    // 4. PRIVACY MASKING FUNCTION (Para sa Column C at B ng Sheets)
+    function maskString(str, type) {
+        if (!str || str === "N/A" || str === "Customer") return str;
+        if (type === "name") {
+            return str[0] + "***" + str[str.length - 1]; // J***n
+        } else {
+            return str.substring(0, 1) + "***" + str.slice(-1); // G***1
+        }
     }
 
     function setRating(n) {
@@ -73,13 +88,14 @@
         btnSubmit.disabled = true;
         btnSubmit.innerText = "Saving feedback...";
 
+        // 5. DATA SENDING - Dito gagamit ng maskString para may *** sa Sheets
         const reviewData = {
             action: "saveReview",
-            customerName: nameFromStorage, // Gamitin ang variable sa taas
-            queueNo: queueFromStorage,     // Gamitin ang variable sa taas
+            customerName: maskString(rawName, "name"),  // Lalabas na J***n sa Sheet
+            queueNo: maskString(rawQueue, "queue"),    // Lalabas na G***1 sa Sheet
             serviceType: serviceFromStorage, 
             rating: currentRating,
-            message: comment,
+            message: comment, 
             timestamp: new Date().toLocaleString()
         };
 
@@ -87,16 +103,14 @@
             await fetch(WEB_APP_URL, {
                 method: "POST",
                 mode: "no-cors", 
-                body: JSON.stringify(reviewData),
-                headers: { "Content-Type": "text/plain;charset=utf-8" }
+                body: JSON.stringify(reviewData)
             });
-
-            alert("Thank you! Your feedback has been saved.");
+            alert("Salamat! Your feedback helps Flavi Deal grow.");
             goHome();
         } catch (err) {
+            alert("Error: " + err);
             btnSubmit.disabled = false;
             btnSubmit.innerText = "SUBMIT REVIEW";
-            alert("Error saving review.");
         }
     }
 
