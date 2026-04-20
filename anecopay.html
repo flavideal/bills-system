@@ -314,14 +314,11 @@
 // --- ACCESS PROTECTION LOGIC ---
 // I-check agad bago mag-load ang kahit ano
 (function() {
-    const isWaiting = localStorage.getItem('isWaiting');
-    // Kung wala siyang active queue (isWaiting !== true) 
-    // at hindi siya galing sa index.html, i-kick out siya.
-    if (isWaiting !== 'true' && !document.referrer.includes("index.html")) {
-        alert("⚠️ Bawal ang direktang access. Mangyaring dumaan sa Main Menu.");
-        window.location.replace('index.html');
-    }
-})();
+            const isWaiting = localStorage.getItem('isWaiting');
+            if (isWaiting !== 'true' && !document.referrer.includes("index.html")) {
+                window.location.replace('index.html');
+            }
+        })();
 // --- END OF PROTECTION ---
 
 
