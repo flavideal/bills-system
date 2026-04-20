@@ -41,29 +41,17 @@
 <script>
     let currentRating = 0;
 
-    // 1. KUNIN ang data - May back-up keys tayo para siguradong hindi "Customer" ang lalabas
-    const reviewerName = localStorage.getItem('reviewerName') || localStorage.getItem('custName') || "Customer";
-    const reviewerQueue = localStorage.getItem('reviewerQueue') || localStorage.getItem('savedQueueNumber') || "N/A";
-    
-    // Hanapin ang service (Gcash, Aneco, etc.)
-    const serviceUsed = localStorage.getItem('reviewerService') || "GCASH"; 
+    // 1. KUNIN ang data - Ginawa nating diretso para walang lito
+    // Hahanapin muna ang 'reviewerName', kung wala, kukuha sa 'custName'
+    const nameFromStorage = localStorage.getItem('reviewerName') || localStorage.getItem('custName') || "Customer";
+    const queueFromStorage = localStorage.getItem('reviewerQueue') || localStorage.getItem('savedQueueNumber') || "N/A";
+    const serviceFromStorage = localStorage.getItem('reviewerService') || "GCASH";
 
-    // 2. I-display ang pangalan - Mas malinaw na check
-    const welcomeText = document.getElementById('welcomeText');
-    if(reviewerName && reviewerName !== "Customer") {
-        welcomeText.innerText = `Hi ${reviewerName}, how was it?`;
-    } else {
-        welcomeText.innerText = "How's your experience?";
+    // 2. DISPLAY agad sa screen
+    if(nameFromStorage !== "Customer") {
+        document.getElementById('welcomeText').innerText = "Hi " + nameFromStorage + ", how was it?";
     }
 
-    // 3. RESTRICTION: I-check kung galing ba talaga sa transaction
-    // Kung walang name at walang queue, balik sa index para iwas spam
-    if (reviewerName === "Customer" && reviewerQueue === "N/A") {
-        console.log("No transaction data found, redirecting...");
-        // window.location.href = 'index.html'; // I-uncomment mo ito kapag tapos ka na mag-test
-    }
-
-    // --- STARS LOGIC (Huwag baguhin) ---
     function setRating(n) {
         currentRating = n;
         const stars = document.querySelectorAll('#starGroup span');
@@ -72,7 +60,6 @@
         });
     }
 
-    // --- SUBMIT LOGIC ---
     async function submitReview() {
         if (currentRating === 0) {
             alert("Please select a star rating.");
@@ -88,9 +75,9 @@
 
         const reviewData = {
             action: "saveReview",
-            customerName: reviewerName,
-            queueNo: reviewerQueue,
-            serviceType: serviceUsed, 
+            customerName: nameFromStorage, // Gamitin ang variable sa taas
+            queueNo: queueFromStorage,     // Gamitin ang variable sa taas
+            serviceType: serviceFromStorage, 
             rating: currentRating,
             message: comment,
             timestamp: new Date().toLocaleString()
