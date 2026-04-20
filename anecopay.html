@@ -317,13 +317,19 @@
     const isWaiting = localStorage.getItem('isWaiting');
     const cameFromIndex = sessionStorage.getItem('fromIndex');
 
-    if (isWaiting === 'true') return; // Hayaan ang user kung may active transaction
+    // Debugging: Makita natin kung pumasok ba ang data
+    console.log("Waiting Status:", isWaiting);
+    console.log("Came From Index:", cameFromIndex);
 
-    if (!cameFromIndex) {
+    // Hayaan kung may active transaction
+    if (isWaiting === 'true') {
+        return; 
+    }
+
+    // Kung walang transaction at walang session pass, kick out
+    if (cameFromIndex !== 'true') {
         window.location.replace('index.html');
     }
-    // Note: pwedeng huwag mo muna i-removeItem dito para kung mag-reload 
-    // siya habang nag-e-encode (stepForm), hindi siya masipa.
 })();
 // --- END OF PROTECTION ---
 
