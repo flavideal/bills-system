@@ -195,7 +195,7 @@
 </div>
             
             <div class="field-group">
-    <label>Bill Amount</label>
+    <label>Bill Amount(Exact amount sa bill)</label>
     <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
     <div id="liveBreakdown" style="font-size: 12px; margin-top: 5px; color: var(--dark-green);"></div>
     <div id="sukliDisplay" class="sukli-display"></div>
@@ -249,7 +249,7 @@
     </div>
 </li>
         <li><b>Processing:</b> Ang payment ay ipapasa sa ANECO via <b>Maya Business</b>. Ang pag-reflect ng payment sa inyong record ay depende sa billing cycle ng ANECO.</li>
-        <li><b>Confirmation:</b> Makakatanggap kayo ng SMS confirmation mula sa Maya kapag successfully processed na ang inyong bill.</li>
+        <li><b>Confirmation:</b> Makakatanggap kayo ng SMS confirmation mula sa Maya Center kapag successfully processed na ang payment sa inyong ANECO bill.</li>
         <li><b>Privacy:</b> Ang inyong personal data ay gagamitin lamang para sa transaction logs at hindi ibabahagi sa ibang platform.</li>
         <li><b>No Refund:</b> Ang mga completed transactions ay final at hindi na maaring i-cancel o i-refund.</li>
         <li><b>No Arrears:</b> Tumatanggap lamang kami ng payments na <b>WALANG ARREARS</b> (Current Bill only).</li>
@@ -660,7 +660,7 @@ function showStep(stepId) {
         <div style="height: 10px;"></div> <div class="review-item"><span>ANECO Bill Name:</span><strong>${accName}</strong></div>
         <div class="review-item"><span>ANECO Bill Account No:</span><strong>${accNo}</strong></div>
         <div class="review-item"><span>Due Date:</span><strong style="color:red;">${formattedDate}</strong></div>
-        <div class="review-item"><span>Total Bill:</span><strong>${formatPHP(amt)}</strong></div>
+        <div class="review-item"><span>Bill Amount:</span><strong>${formatPHP(amt)}</strong></div>
 
         <div style="margin-top:15px; background:#f9f9f9; padding:10px; border:1px solid #ddd; border-radius:5px;">
         <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:5px;">PILIIN ANG PARAAN NG PAGBAYAD:</label>
