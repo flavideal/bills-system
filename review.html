@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rate Your Experience - JERRIC Personal Assistance Service</title>
+    <title>Rate Your Experience - Flavi Deal</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
@@ -11,15 +11,18 @@
         .stars { font-size: 45px; color: #ddd; margin: 20px 0; cursor: pointer; }
         .star-active { color: #ffc107; }
         textarea { width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 10px; box-sizing: border-box; font-family: inherit; resize: none; margin-bottom: 20px; }
-        .btn-submit { width: 100%; padding: 15px; background: #1b4332; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-submit { width: 100%; padding: 15px; background: #1b4332; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
         .btn-skip { background: none; border: none; color: #888; margin-top: 15px; cursor: pointer; text-decoration: underline; }
+        
+        /* Privacy Notice Style */
+        .privacy-note { font-size: 11px; color: #999; margin-top: 20px; font-style: italic; border-top: 1px solid #eee; pt: 10px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2 id="welcomeText">How's your experience?</h2>
-    <p style="color: #666; font-size: 14px;">Your feedback helps JERRIC Personal Assistance Service improve!</p>
+    <p style="color: #666; font-size: 14px;">Your feedback helps us improve!</p>
 
     <div class="stars" id="starGroup">
         <span onclick="setRating(1)">★</span><span onclick="setRating(2)">★</span><span onclick="setRating(3)">★</span><span onclick="setRating(4)">★</span><span onclick="setRating(5)">★</span>
@@ -29,12 +32,20 @@
 
     <button class="btn-submit" onclick="submitReview()">SUBMIT REVIEW</button>
     <button class="btn-skip" onclick="goHome()">No thanks, skip this</button>
+
+    <div class="privacy-note">
+        Privacy Note: To protect your data, your name and queue number will be partially hidden (e.g., J***n, G***01) when displayed on our public Review Page.
+    </div>
 </div>
 
 <script>
     let currentRating = 0;
     const reviewerName = localStorage.getItem('reviewerName') || "Customer";
-    if(reviewerName) document.getElementById('welcomeText').innerText = `Hi ${reviewerName}, how was it?`;
+    const reviewerQueue = localStorage.getItem('reviewerQueue') || "N/A";
+
+    if(reviewerName !== "Customer") {
+        document.getElementById('welcomeText').innerText = `Hi ${reviewerName}, how was it?`;
+    }
 
     function setRating(n) {
         currentRating = n;
@@ -44,58 +55,59 @@
         });
     }
 
-    // Kunin ang Queue Number mula sa localStorage
-const reviewerQueue = localStorage.getItem('reviewerQueue') || "N/A";
-
-async function submitReview() {
-    if (currentRating === 0) {
-        alert("Please select a star rating.");
-        return;
+    // Function para lagyan ng asterisks (Privacy Masking)
+    function maskString(str, type) {
+        if (!str || str === "N/A") return str;
+        if (type === "name") {
+            // Juan Dela Cruz -> J***z
+            return str[0] + "***" + str[str.length - 1];
+        } else {
+            // G-001 -> G***1
+            return str.substring(0, 1) + "***" + str.slice(-1);
+        }
     }
 
-    // 1. Kunin ang button element
-    const btnSubmit = document.querySelector('.btn-submit');
-    const comment = document.getElementById('comment').value;
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+    async function submitReview() {
+        if (currentRating === 0) {
+            alert("Please select a star rating.");
+            return;
+        }
 
-    // 2. I-disable ang button at palitan ang text para alam ng customer na "Working" ang system
-    btnSubmit.disabled = true;
-    btnSubmit.innerText = "Savinng feedback...";
-    btnSubmit.style.opacity = "0.5"; // Para magmukhang naka-off
-    btnSubmit.style.cursor = "not-allowed";
+        const btnSubmit = document.querySelector('.btn-submit');
+        const comment = document.getElementById('comment').value;
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
-    const reviewData = {
-        action: "saveReview",
-        customerName: reviewerName,
-        queueNo: reviewerQueue, 
-        rating: currentRating,
-        message: comment,
-        timestamp: new Date().toLocaleString()
-    };
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Saving feedback...";
+        btnSubmit.style.opacity = "0.5";
 
-    try {
-        await fetch(WEB_APP_URL, {
-            method: "POST",
-            body: JSON.stringify(reviewData),
-            headers: { "Content-Type": "text/plain;charset=utf-8" }
-        });
+        const reviewData = {
+            action: "saveReview",
+            customerName: maskString(reviewerName, "name"), // Nakatago na ang pangalan
+            queueNo: maskString(reviewerQueue, "queue"),   // Nakatago na ang queue
+            rating: currentRating,
+            message: comment,
+            timestamp: new Date().toLocaleString()
+        };
 
-        // 3. Kapag tapos na, ipakita ang alert
-        alert("Thank you! Feedback for Queue " + reviewerQueue + " has been saved.");
-        goHome();
-    } catch (err) {
-        console.error(err);
-        // Kung nag-error, ibalik sa dati ang button para ma-try ulit
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = "SUBMIT REVIEW";
-        btnSubmit.style.opacity = "1";
-        btnSubmit.style.cursor = "pointer";
-        alert("Something went wrong. Please try again.");
+        try {
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify(reviewData),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+
+            alert("Thank you! Your masked review will be visible on our Review Page soon.");
+            goHome();
+        } catch (err) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "SUBMIT REVIEW";
+            btnSubmit.style.opacity = "1";
+            alert("Error saving review. Please try again.");
+        }
     }
-}
 
     function goHome() {
-        // Linisin ang lahat ng natitirang data
         localStorage.clear();
         window.location.href = 'index.html';
     }
