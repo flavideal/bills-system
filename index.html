@@ -227,6 +227,34 @@
 .active .arrow {
     transform: rotate(180deg);
 }
+/* Style para sa Disabled Buttons */
+.menu-item.hub-closed {
+    cursor: not-allowed;
+    opacity: 0.6;
+    filter: grayscale(0.5);
+    pointer-events: none; /* Hindi maki-click */
+    position: relative;
+}
+
+/* Mensahe kapag sarado */
+.closed-overlay {
+    display: none; /* Default ay tago */
+    background: #ffeb3b;
+    color: #856404;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    border: 1px solid #ffe58f;
+    animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
     </style>
 </head>
 <body>
@@ -250,6 +278,12 @@
                 <p>Coming Soon: ANECO at Water District</p>
             </div>
         </div>
+
+        <div id="closed-msg" class="closed-overlay">
+    ⚠️ <b>NOTICE:</b> Our hub services are currently <b>OFFLINE</b>. <br>
+    Please check back later or visit us during hub hours.
+</div>
+        
         <div class="menu-grid">
     <a href="g.html" class="menu-item active-link" style="border-color: var(--premium-green); background: #ffffff;">
         <img src="logo/g.png" alt="GCash" style="height: 25px; width: auto; margin-bottom: 8px; object-fit: contain;">
@@ -362,6 +396,7 @@
     </div>
 
     <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
 
@@ -391,6 +426,38 @@
         content.style.maxHeight = content.scrollHeight + "px";
     }
 }
+
+
+async function checkHubStatus() {
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "getTransactions" }) // Gamitin ang action na may kioskStatus
+        });
+        const res = await response.json();
+        
+        const isClosed = res.kioskStatus === "CLOSED";
+        const menuItems = document.querySelectorAll('.menu-item:not(.coming-soon)');
+        const msg = document.getElementById('closed-msg');
+
+        if (isClosed) {
+            msg.style.display = 'block'; // Ipakita ang sorry message
+            menuItems.forEach(item => {
+                item.classList.add('hub-closed'); // I-disable ang buttons
+            });
+        } else {
+            msg.style.display = 'none'; // Tago ang message
+            menuItems.forEach(item => {
+                item.classList.remove('hub-closed'); // I-enable ang buttons
+            });
+        }
+    } catch (e) {
+        console.log("Status check failed, defaulting to OPEN.");
+    }
+}
+
+// Patakbuhin ang check pag-load ng page
+window.addEventListener('load', checkHubStatus);
     </script>
 </body>
 </html>
