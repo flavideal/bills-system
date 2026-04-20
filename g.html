@@ -351,6 +351,48 @@
 </div>
 
 <script>
+
+// ==========================================
+// MAINTENANCE SETTINGS (Edit mo dito)
+// ==========================================
+const isMaintenance = true; // Under Maintenance: true / Normal Operation: flase
+// ==========================================
+
+(function() {
+    const isWaiting = localStorage.getItem('isWaiting');
+
+    // Titignan kung Maintenance at kung WALANG active transaction
+    if (isMaintenance && isWaiting !== 'true') {
+        // Papalitan ang itsura ng buong page
+        document.documentElement.innerHTML = `
+            <body style="margin:0; padding:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center;">
+                <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 400px; width: 90%;">
+                    <div style="font-size: 60px; margin-bottom: 20px;">⚠️</div>
+                    <h1 style="color: #d32f2f; margin-bottom: 10px; font-size: 24px;">UNDER MAINTENANCE</h1>
+                    <p style="color: #555; line-height: 1.6; margin-bottom: 5px;">
+                        Kasalukuyang ina-update ang aming system para sa <b>ANECO Bills Payment</b> upang mabigyan kayo ng mas magandang serbisyo.
+                    </p>
+                    <p style="color: #1b4332; font-weight: bold; margin-bottom: 25px;">
+                        Salamat sa inyong pag-unawa!
+                    </p>
+                    
+                    <button onclick="window.location.replace('index.html')" 
+                        style="width: 100%; padding: 15px; background: #1b4332; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                        BUMALIK SA MAIN MENU
+                    </button>
+                    
+                    <div style="margin-top: 20px; font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px;">
+                        JERRIC Personal Assistance Service
+                    </div>
+                </div>
+            </body>
+        `;
+        // Ititigil ang lahat ng iba pang scripts sa page
+        throw new Error("Maintenance Mode Active"); 
+    }
+})();
+// ==========================================
+
 window.addEventListener('beforeunload', function (e) {
     const isWaiting = localStorage.getItem('isWaiting');
     // Kung isWaiting ay true, lalabas ang "Confirm Navigation" pop-up
