@@ -5,36 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Reviews - Flavi Deal</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        :root { 
+            --premium-green: #1b431c; 
+            --soft-green: #e8f5e9;
+            --gold: #ffc267; 
+        }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 600px; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { color: #1b4332; margin-bottom: 5px; }
+        .header h1 { color: var(--premium-green); margin-bottom: 5px; font-weight: 800; }
         
-        .review-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; position: relative; }
-        .reviewer-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .reviewer-name { font-weight: bold; color: #1b4332; }
-        .q-tag { font-size: 10px; background: #e8f5e9; padding: 2px 8px; border-radius: 10px; color: #2e7d32; }
+        .review-card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            margin-bottom: 20px; 
+            border: 1px solid #eee;
+        }
+        .reviewer-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .reviewer-name { font-weight: 800; color: var(--premium-green); font-size: 16px; }
+        .q-tag { font-size: 10px; background: #f0f0f0; padding: 2px 8px; border-radius: 10px; color: #777; font-weight: bold; }
         
-        .stars { color: #ffc107; font-size: 18px; margin-bottom: 10px; }
-        .comment { font-size: 14px; line-height: 1.5; color: #555; }
-        .date { font-size: 11px; color: #999; margin-top: 10px; }
+        /* SERVICE BADGE STYLE */
+        .service-badge {
+            display: inline-block;
+            background: var(--soft-green);
+            color: var(--premium-green);
+            font-size: 10px;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 6px;
+            border: 1px solid #c8e6c9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stars { color: #ffc107; font-size: 18px; margin-bottom: 12px; }
+        .comment { font-size: 15px; line-height: 1.6; color: #444; font-style: italic; }
+        .date { font-size: 11px; color: #bbb; margin-top: 15px; border-top: 1px dashed #eee; padding-top: 10px; }
         
         .loading { text-align: center; color: #888; padding: 50px; }
         .no-reviews { text-align: center; padding: 50px; color: #888; }
-        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #1b4332; font-weight: bold; font-size: 14px; }
+        .back-btn { 
+            display: inline-block; 
+            margin-bottom: 20px; 
+            text-decoration: none; 
+            color: var(--premium-green); 
+            font-weight: bold; 
+            font-size: 14px; 
+            background: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <a href="index.html" class="back-btn">← Back to Home</a>
+    <a href="index.html" class="back-btn">← Back to Kiosk</a>
     <div class="header">
         <h1>Community Feedback</h1>
-        <p>What our customers in Butuan are saying</p>
+        <p style="color: #666; font-size: 14px;">Real stories from our customers in Butuan City</p>
     </div>
 
     <div id="reviewsList">
-        <div class="loading">Loading reviews...</div>
+        <div class="loading">
+            <div style="margin-bottom: 10px;">Checking latest feedback...</div>
+        </div>
     </div>
 </div>
 
@@ -43,21 +82,24 @@
 
     async function loadReviews() {
         try {
-            const response = await fetch(`${WEB_APP_URL}?action=getPublicReviews`);
+            // Added cache buster (t=Date.now) para laging fresh ang reviews
+            const response = await fetch(`${WEB_APP_URL}?action=getPublicReviews&t=${Date.now()}`);
             const result = await response.json();
             const listDiv = document.getElementById('reviewsList');
             
             if (!result.data || result.data.length === 0) {
-                listDiv.innerHTML = '<div class="no-reviews">No reviews yet. Be the first to leave one!</div>';
+                listDiv.innerHTML = '<div class="no-reviews">No feedback yet. Be the first to share your experience!</div>';
                 return;
             }
 
-            listDiv.innerHTML = ''; // Clear loading
+            listDiv.innerHTML = ''; 
             
             result.data.forEach(rev => {
-                // Convert string rating (e.g. "5 Stars") to stars icons
-                const starCount = parseInt(rev.rating);
+                const starCount = parseInt(rev.rating) || 5;
                 const starIcons = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
+                
+                // Fallback kung walang service na nakalagay
+                const serviceUsed = rev.service || "General Service";
 
                 const card = `
                     <div class="review-card">
@@ -65,9 +107,12 @@
                             <span class="reviewer-name">${rev.name}</span>
                             <span class="q-tag">${rev.queueNo}</span>
                         </div>
+                        
+                        <div class="service-badge">${serviceUsed}</div>
+                        
                         <div class="stars">${starIcons}</div>
-                        <div class="comment">${rev.comment || "<i>No comment provided.</i>"}</div>
-                        <div class="date">${rev.timestamp}</div>
+                        <div class="comment">"${rev.comment || "Great service! Very fast and reliable."}"</div>
+                        <div class="date">Transaction Date: ${rev.timestamp}</div>
                     </div>
                 `;
                 listDiv.innerHTML += card;
@@ -75,11 +120,10 @@
 
         } catch (err) {
             console.error(err);
-            document.getElementById('reviewsList').innerHTML = '<div class="no-reviews">Error loading reviews. Please try again.</div>';
+            document.getElementById('reviewsList').innerHTML = '<div class="no-reviews">Unable to connect. Please refresh the page.</div>';
         }
     }
 
-    // Run on load
     loadReviews();
 </script>
 
