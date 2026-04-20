@@ -234,17 +234,18 @@
             <div id="finalBreakdown" style="margin-top: 15px;"></div>
 
             <div id="termsContainer" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
-    <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY</h4>
+    <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY POLICY</h4>
     <ul style="font-size: 11px; color: #555; padding-left: 18px; line-height: 1.4;">
+        <li>This is a <b>Personal Service</b> only. </li>
         <li><b>Accuracy:</b> Please verify the Account Number and Name. Jerric is not liable for any wrong account inputs.</li>
         
         <li style="color: #000; background: #fffde7; padding: 5px; border-radius: 5px;">
     <b>Fees & Charges:</b> 
     May fixed <b>Biller Fee na ₱10.00</b> at <b>Service Fee na 1%</b>. 
     <div style="margin-top: 5px; padding-left: 10px; border-left: 2px solid #d32f2f;">
-        <span style="color: #d32f2f; font-weight: bold;">Additional Merchant Fees:</span><br>
-        • <b>3.20%</b> para sa Credit/Debit Cards (Visa/MC).<br>
-        • <b>1%</b> para sa SPayLater at BillEase.
+        <span style="color: #d32f2f; font-weight: bold;">Additional Payment Fees:</span><br>
+        • <b>+3.20%</b> para sa Credit/Debit Cards (Visa/MC).<br>
+        • <b>+1%</b> para sa SPayLater at BillEase.
     </div>
 </li>
         <li><b>Processing:</b> Ang payment ay ipapasa sa ANECO via <b>Maya Business</b>. Ang pag-reflect ng payment sa inyong record ay depende sa billing cycle ng ANECO.</li>
@@ -839,10 +840,10 @@ function showStep(stepId) {
     // Note para sa Card, Spaylater, at Billease
     let feeNote = "";
 if (method === "Card") {
-    feeNote = "Ang 3.2% ay bank processing fee (Gateway Fee). Ito ay automatic na kaltas ng provider para sa pag-gamit ng Credit/Debit card.";
+    feeNote = "Ang 3.2% additional payment fee ay bank processing fee (Gateway Fee). Ito ay automatic na kaltas ng provider para sa pag-gamit ng Credit/Debit card.";
 } else {
     // Mas generic na "Digital Payment Fee" para cover ang Spaylater/Billease/GCash
-    feeNote = "Ang 1% ay digital processing fee. Ito ay chinacharge ng payment provider para sa Scan to Pay/Installment transactions.";
+    feeNote = "Ang 1% additional payment fee ay digital processing fee. Ito ay chinacharge ng payment provider para sa Scan to Pay/Installment transactions.";
 }
 
     breakdownHTML += `
@@ -851,15 +852,24 @@ if (method === "Card") {
                 <b>NOTE:</b> ${feeNote}
             </p>
             <span style="color:#666; font-style:italic; font-size: 11px;">
-                I-ready ang App o Card sa counter para sa processing.
+                I-ready ang gagamitin na App o Card sa counter para sa payment.
             </span>
         </div>`;
 }
 
         // --- ETO YUNG DINAGDAG NA DISCLAIMER SA PINAKA-BABA ---
     breakdownHTML += `
-        <div style="margin-top: 20px; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
-            <p style="font-size: 9px; color: #999; margin: 0;">
+        <div style="margin-top: 20px; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
+            <p style="font-size: 10px; color: #666; margin-bottom: 5px; font-weight: bold;">
+                ACCEPTED VIA GATEWAY:
+            </p>
+            <div style="margin-bottom: 10px; opacity: 0.8;">
+                <span style="font-size: 9px; background: #f5f5f5; padding: 2px 6px; border-radius: 4px; border: 1px solid #ddd; margin: 0 2px;">💳 CARDS</span>
+                <span style="font-size: 9px; background: #f5f5f5; padding: 2px 6px; border-radius: 4px; border: 1px solid #ddd; margin: 0 2px;">🧡 SPAYLATER</span>
+                <span style="font-size: 9px; background: #f5f5f5; padding: 2px 6px; border-radius: 4px; border: 1px solid #ddd; margin: 0 2px;">🔵 BILLEASE</span>
+            </div>
+
+            <p style="font-size: 9px; color: #999; margin: 0; line-height: 1.4;">
                 Powered by <b>GCash for Business</b><br>
                 Standard gateway fees apply for non-cash payments.
             </p>
