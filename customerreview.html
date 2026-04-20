@@ -94,24 +94,26 @@
 
             listDiv.innerHTML = ''; 
             
-            result.data.forEach(rev => {
-                const starCount = parseInt(rev.rating) || 5;
+           result.data.forEach(rev => {
+                // 1. Siguraduhin na 'rating' ang tawag sa column sa Google Sheets
+                const starCount = parseInt(rev.rating) || 5; 
                 const starIcons = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
                 
-                // Fallback kung walang service na nakalagay
-                const serviceUsed = rev.service || "General Service";
+                const serviceUsed = rev.serviceType || "General Service"; // 'serviceType' ang sinave natin kanina
 
                 const card = `
                     <div class="review-card">
                         <div class="reviewer-info">
-                            <span class="reviewer-name">${rev.name}</span>
+                            <span class="reviewer-name">${rev.customerName}</span>
                             <span class="q-tag">${rev.queueNo}</span>
                         </div>
                         
                         <div class="service-badge">${serviceUsed}</div>
                         
                         <div class="stars">${starIcons}</div>
-                        <div class="comment">"${rev.comment || "Great service! Very fast and reliable."}"</div>
+                        
+                        <div class="comment">"${rev.message || "No comment provided."}"</div>
+                        
                         <div class="date">Transaction Date: ${rev.timestamp}</div>
                     </div>
                 `;
