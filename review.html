@@ -41,22 +41,29 @@
 <script>
     let currentRating = 0;
 
-    // 1. KUNIN ang data mula sa localStorage
-    const reviewerName = localStorage.getItem('reviewerName') || "Customer";
-    const reviewerQueue = localStorage.getItem('reviewerQueue') || "N/A";
-    const serviceUsed = localStorage.getItem('reviewerService'); // Ito yung 'ANECO', 'GCASH', o 'E-LOAD'
+    // 1. KUNIN ang data - May back-up keys tayo para siguradong hindi "Customer" ang lalabas
+    const reviewerName = localStorage.getItem('reviewerName') || localStorage.getItem('custName') || "Customer";
+    const reviewerQueue = localStorage.getItem('reviewerQueue') || localStorage.getItem('savedQueueNumber') || "N/A";
+    
+    // Hanapin ang service (Gcash, Aneco, etc.)
+    const serviceUsed = localStorage.getItem('reviewerService') || "GCASH"; 
 
-    // 2. RESTRICTION: Kung walang serviceUsed, ibig sabihin hindi dumaan sa transaction.
-    // Ibabalik natin sila sa index.html para iwas spam review.
-    if (!serviceUsed) {
-        window.location.href = 'index.html';
+    // 2. I-display ang pangalan - Mas malinaw na check
+    const welcomeText = document.getElementById('welcomeText');
+    if(reviewerName && reviewerName !== "Customer") {
+        welcomeText.innerText = `Hi ${reviewerName}, how was it?`;
+    } else {
+        welcomeText.innerText = "How's your experience?";
     }
 
-    // I-display ang pangalan kung meron
-    if(reviewerName !== "Customer") {
-        document.getElementById('welcomeText').innerText = `Hi ${reviewerName}, how was it?`;
+    // 3. RESTRICTION: I-check kung galing ba talaga sa transaction
+    // Kung walang name at walang queue, balik sa index para iwas spam
+    if (reviewerName === "Customer" && reviewerQueue === "N/A") {
+        console.log("No transaction data found, redirecting...");
+        // window.location.href = 'index.html'; // I-uncomment mo ito kapag tapos ka na mag-test
     }
 
+    // --- STARS LOGIC (Huwag baguhin) ---
     function setRating(n) {
         currentRating = n;
         const stars = document.querySelectorAll('#starGroup span');
@@ -65,18 +72,7 @@
         });
     }
 
-    // Function para lagyan ng asterisks (Privacy Masking)
-    function maskString(str, type) {
-        if (!str || str === "N/A") return str;
-        if (type === "name") {
-            // Halimbawa: Jerric -> J***c
-            return str[0] + "***" + str[str.length - 1];
-        } else {
-            // Halimbawa: G-001 -> G***1
-            return str.substring(0, 1) + "***" + str.slice(-1);
-        }
-    }
-
+    // --- SUBMIT LOGIC ---
     async function submitReview() {
         if (currentRating === 0) {
             alert("Please select a star rating.");
@@ -89,20 +85,18 @@
 
         btnSubmit.disabled = true;
         btnSubmit.innerText = "Saving feedback...";
-        btnSubmit.style.opacity = "0.5";
 
         const reviewData = {
-    action: "saveReview",
-    customerName: reviewerName, // Alisin ang maskString dito
-    queueNo: reviewerQueue,     // Alisin ang maskString dito
-    serviceType: serviceUsed, 
-    rating: currentRating,
-    message: comment,
-    timestamp: new Date().toLocaleString()
-};
+            action: "saveReview",
+            customerName: reviewerName,
+            queueNo: reviewerQueue,
+            serviceType: serviceUsed, 
+            rating: currentRating,
+            message: comment,
+            timestamp: new Date().toLocaleString()
+        };
 
         try {
-            // Gamit ang mode: 'no-cors' para sigurado ang pasok sa Google Script
             await fetch(WEB_APP_URL, {
                 method: "POST",
                 mode: "no-cors", 
@@ -115,17 +109,14 @@
         } catch (err) {
             btnSubmit.disabled = false;
             btnSubmit.innerText = "SUBMIT REVIEW";
-            btnSubmit.style.opacity = "1";
-            alert("Error saving review. Please check your connection.");
+            alert("Error saving review.");
         }
     }
 
     function goHome() {
-        // Lilinisin na natin ang lahat para sa susunod na customer sa kiosk
         localStorage.clear();
         window.location.href = 'index.html';
     }
 </script>
-
 </body>
 </html>
