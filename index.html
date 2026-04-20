@@ -306,13 +306,27 @@
 .review-slider {
     width: 100%;
     background: #ffffff;
-    border-radius: 15px;
+    border-radius: 20px; /* Ginawa kong 20px para terno sa menu items mo */
     margin-bottom: 25px;
-    padding: 15px 0;
+    padding: 20px 10px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     border: 1px solid #e8f5e9;
     text-align: center;
     overflow: hidden;
+    display: block;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+/* Effect kapag tinap o clinick ng customer */
+.review-slider:active {
+    transform: scale(0.98);
+    background: #f9f9f9;
+}
+
+.review-slider:hover {
+    border-color: var(--gold);
 }
 
 .review-track {
@@ -453,14 +467,14 @@
 </a>
 </div>
 
-</div> 
-
-<div class="review-slider" id="reviewSlider" style="display: none; margin-top: 25px;">
-    <p style="font-size: 10px; color: #999; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">Community Feedback</p>
+<a href="customerreview.html" class="review-slider" id="reviewSlider" style="display: none; margin-top: 25px; text-decoration: none; display: block;">
+    <p style="font-size: 10px; color: #999; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">
+        Community Feedback (See All)
+    </p>
     <div id="reviewContent" class="fade">
         <div class="loading-rev" style="font-size: 11px; color: #ccc;">Loading feedback...</div>
     </div>
-</div>
+</a>
     
         
     </div> <div class="faq-section" style="background: white; border-radius: 20px; padding: 20px; margin-top: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
