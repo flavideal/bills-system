@@ -85,6 +85,7 @@
             action: "saveReview",
             customerName: maskString(reviewerName, "name"), // Nakatago na ang pangalan
             queueNo: maskString(reviewerQueue, "queue"),   // Nakatago na ang queue
+            serviceType: serviceUsed, // BAGONG DAGDAG: ex. "ANECO", "GCASH"
             rating: currentRating,
             message: comment,
             timestamp: new Date().toLocaleString()
