@@ -496,54 +496,52 @@ return new Intl.NumberFormat('en-PH', {
     }
 
     function calculateFee() {
-    const amt = parseFloat(document.getElementById('amount').value) || 0;
-    
-    // Naka-0 muna ang fees para sa Cash/E-load
-    const fixedBillerFee = 0;
-    const serviceFee = 0; 
-    
-    const totalFee = serviceFee + fixedBillerFee;
-    const totalToPay = amt + totalFee; 
-    
-    const liveBreakdown = document.getElementById('liveBreakdown');
+        const amt = parseFloat(document.getElementById('amount').value) || 0;
+        
+        const fixedBillerFee = 0;
+        const serviceFee = 0; 
+        
+        const totalFee = serviceFee + fixedBillerFee;
+        const totalToPay = amt + totalFee; 
+        
+        const liveBreakdown = document.getElementById('liveBreakdown');
 
-    if (amt > 0) {
-        liveBreakdown.style.display = 'block';
-        liveBreakdown.innerHTML = `
-            <div style="border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px;">
-                <div style="display: flex; justify-content: space-between;">
-                    <span>Amount:</span> <b>${formatPHP(amt)}</b>
+        if (amt > 0) {
+            liveBreakdown.style.display = 'block';
+            liveBreakdown.innerHTML = `
+                <div style="border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Amount:</span> <b>${formatPHP(amt)}</b>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 5px; color: #1b4332; font-weight: bold;">
+                        <span>TOTAL TO PAY:</span> <span>${formatPHP(totalToPay)}</span>
+                    </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 5px; color: #1b4332; font-weight: bold;">
-                    <span>TOTAL TO PAY:</span> <span>${formatPHP(totalToPay)}</span>
-                </div>
-            </div>
-        `;
-    } else {
-        liveBreakdown.style.display = 'none';
-    }
-}
-
-    // --- Sukli Logic ---
-    const cashInInput = document.getElementById('cashReceived');
-    const cashIn = cashInInput ? parseFloat(cashInInput.value) || 0 : 0;
-    const sukliDiv = document.getElementById('sukliDisplay');
-    const isExact = document.getElementById('isExact');
-    
-    if (sukliDiv) {
-        if (isExact && !isExact.checked && cashIn > 0) {
-            if (cashIn < totalToPay) {
-                sukliDiv.style.color = "#d32f2f";
-                sukliDiv.innerHTML = "❌ KULANG NG: " + formatPHP(totalToPay - cashIn);
-            } else {
-                sukliDiv.style.color = "#1b431c";
-                sukliDiv.innerHTML = "✅ SUKLI: " + formatPHP(cashIn - totalToPay);
-            }
-        } else { 
-            sukliDiv.innerHTML = ""; 
+            `;
+        } else {
+            liveBreakdown.style.display = 'none';
         }
-    }
-}
+
+        // --- Sukli Logic (Dapat nasa loob ito ng calculateFee para mag-update agad) ---
+        const cashInInput = document.getElementById('cashReceived');
+        const cashIn = cashInInput ? parseFloat(cashInInput.value) || 0 : 0;
+        const sukliDiv = document.getElementById('sukliDisplay');
+        const isExact = document.getElementById('isExact');
+        
+        if (sukliDiv) {
+            if (isExact && !isExact.checked && cashIn > 0) {
+                if (cashIn < totalToPay) {
+                    sukliDiv.style.color = "#d32f2f";
+                    sukliDiv.innerHTML = "❌ KULANG NG: " + formatPHP(totalToPay - cashIn);
+                } else {
+                    sukliDiv.style.color = "#1b431c";
+                    sukliDiv.innerHTML = "✅ SUKLI: " + formatPHP(cashIn - totalToPay);
+                }
+            } else { 
+                sukliDiv.innerHTML = ""; 
+            }
+        }
+    } // Eto lang dapat ang closing brace dito.
 
 function showStep(stepId) {
     // Itago lahat
