@@ -147,82 +147,61 @@
     <div class="card" id="formCard">
         <div class="force-reset-trigger" onclick="adminForceReset()">RESET</div>
         
-        <div id="stepForm">
+       <div id="stepForm">
     <div style="background: var(--dark-green); padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center;">
-        <img src="logo/aneco.png" alt="ANECO Logo" style="height: 50px; width: auto; margin-bottom: 5px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));">
-        <p style="color: rgba(255,255,255,0.7); font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">You are paying for:</p>
-        <p style="color: #ffffff; margin: 2px 0; font-size: 10px; font-weight: normal; opacity: 0.9;">Agusan del Norte Electric Cooperative, Inc.</p>
-        <h2 style="color: #ffc267; margin: 5px 0 0 0; font-size: 24px; text-transform: uppercase; font-weight: 800; line-height: 1;">ANECO</h2>
-        <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 11px; font-weight: bold; letter-spacing: 1px;">ELECTRIC BILL PAYMENT</p>
+        <h2 style="color: #ffc267; margin: 5px 0 0 0; font-size: 24px; text-transform: uppercase; font-weight: 800; line-height: 1;">E-LOAD KIOSK</h2>
+        <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 11px; font-weight: bold; letter-spacing: 1px;">PREPAID LOAD & PROMOS</p>
         <div style="height: 1px; background: rgba(255,194,103,0.3); width: 60%; margin: 12px auto;"></div>
         <p style="color: #ffffff; font-size: 12px; margin: 0; font-style: italic; opacity: 0.8;">Jerric Personal Assistance Service</p>
     </div>
 
-            <div class="field-group">
-                <label id="nameLabel">Name ng Nag-transact</label>
-                <input type="text" id="custName" placeholder="Buong Pangalan" oninput="saveInput('custName')">
-            </div>
-            <div class="field-group">
-                <label>ANECO Account Name</label>
-                <input type="text" id="accName" placeholder="Pangalan sa Bill" oninput="saveInput('accName')">
-            </div>
-            <div class="field-group">
-                <label>ANECO Account Number</label>
-                <input type="text" id="accNo" placeholder="Ex: B000011100020" 
-       style="text-transform: uppercase;"
-       oninput="this.value = this.value.toUpperCase(); saveInput('accNo')">
-            </div>
-            <div class="field-group">
-    <label>Cellphone Number</label>
-    <input type="tel" id="custPhone" 
-           placeholder="09123456789" 
-           oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11); saveInput('custPhone')"
-           onkeypress="return event.charCode >= 48 && event.charCode <= 57">
-</div>
-            <div class="field-group">
-    <label>Upload Aneco Bill (Optional)</label>
-    <p style="font-size: 11px; color: #666; margin-top: -5px; margin-bottom: 5px;">
-        I-upload ang bill kung hindi sigurado sa detalye para kami na ang mag-verify.
-    </p>
-    <input type="file" id="proofUpload" accept="image/*">
-</div>
-            <div class="field-group">
-    <label>Bill Due Date</label>
-    <input type="date" id="dueDate" oninput="saveInput('dueDate')" style="border: 2px solid var(--dark-green);">
-    <p style="font-size: 10px; color: #d32f2f; margin-top: 5px; font-weight: bold;">
-        *Paalala: Bawal ang "With Arrears" o "Past Due" na bill.
-    </p>
-</div>
-            
-            <div class="field-group">
-    <label>Bill Amount (Exact amount sa bill)</label>
-    <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
-    <div id="liveBreakdown" style="font-size: 12px; margin-top: 5px; color: var(--dark-green);"></div>
-    <div id="sukliDisplay" class="sukli-display"></div>
-</div>
-
-<div style="margin: 20px 0; padding: 15px; background: #ffffff; border-radius: 12px; text-align: center; border: 1.5px solid #eef0f2; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-    <p style="font-size: 10px; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">
-        Payment Channels
-    </p>
-    
-    <div style="display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
-        <span style="font-size: 10px; font-weight: bold; color: #1b4332; background: #d8f3dc; padding: 5px 12px; border-radius: 6px; border: 1px solid #b7e4c7; display: flex; align-items: center; gap: 4px;">
-            💵 CASH
-        </span>
-        <img src="https://errihoportal.flavideal.com/images/be.png" alt="BillEase" style="height: 16px; object-fit: contain;">
+    <div class="field-group">
+        <label>Customer Name</label>
+        <input type="text" id="custName" placeholder="Pangalan ninyo" oninput="saveInput('custName')">
     </div>
 
-    <div style="display: flex; justify-content: center; align-items: center; gap: 15px; border-top: 1px solid #f0f0f0; padding-top: 12px;">
-        <img src="https://errihoportal.flavideal.com/images/visa.png" alt="Visa" style="height: 20px; object-fit: contain;">
-        <img src="https://errihoportal.flavideal.com/images/mc.png" alt="Mastercard" style="height: 25px; object-fit: contain;">
+    <div class="field-group">
+        <label>Mobile Number (Dito papasok ang load)</label>
+        <input type="tel" id="custPhone" 
+               placeholder="09123456789" 
+               style="font-size: 20px; font-weight: bold; letter-spacing: 2px; color: var(--dark-green);"
+               oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11); saveInput('custPhone')"
+               onkeypress="return event.charCode >= 48 && event.charCode <= 57">
     </div>
-    
-    <p style="font-size: 9px; color: #d32f2f; margin-top: 12px; font-style: italic; font-weight: 600;">
-        *Card & Installment fees apply
-    </p>
-</div>
-<button onclick="showReview()" class="btn-main">REVIEW DETAILS</button>
+
+    <div class="field-group">
+        <label>Select Network</label>
+        <select id="loadNetwork" onchange="saveInput('loadNetwork')" style="font-weight: bold;">
+            <option value="">-- Choose Network --</option>
+            <option value="Globe / TM">Globe / TM</option>
+            <option value="Smart / TNT">Smart / TNT</option>
+            <option value="DITO">DITO</option>
+            <option value="GOMO">GOMO</option>
+            <option value="Cignal / Satellite">Cignal / Satellite</option>
+        </select>
+    </div>
+
+    <div class="field-group">
+        <label>Ano ang i-load?</label>
+        <input type="text" id="loadType" placeholder="Ex: Regular 50, PowerAll 99, etc." oninput="saveInput('loadType')">
+    </div>
+
+    <div class="field-group">
+        <label>Amount (Presyo ng Load)</label>
+        <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
+        <div id="liveBreakdown" style="font-size: 12px; margin-top: 5px; color: var(--dark-green);"></div>
+        <div id="sukliDisplay" class="sukli-display"></div>
+    </div>
+
+    <div style="margin: 20px 0; padding: 15px; background: #ffffff; border-radius: 12px; text-align: center; border: 1.5px solid #eef0f2;">
+        <p style="font-size: 10px; color: #888; margin-bottom: 10px; font-weight: 800; letter-spacing: 1.5px;">AVAILABLE PAYMENTS</p>
+        <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+            <span style="font-size: 10px; font-weight: bold; background: #d8f3dc; padding: 5px 10px; border-radius: 5px;">💵 CASH</span>
+            <span style="font-size: 10px; font-weight: bold; background: #e3f2fd; padding: 5px 10px; border-radius: 5px;">💳 CARD</span>
+        </div>
+    </div>
+
+    <button onclick="showReview()" class="btn-main">REVIEW DETAILS</button>
 </div>
 
         <div id="stepReview" class="overlay-screen">
@@ -523,12 +502,9 @@ return new Intl.NumberFormat('en-PH', {
     function calculateFee() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     
-    // 1. Fixed Biller Fee (Maya/ANECO fee)
-    const fixedBillerFee = 10;
-    
-    // 2. Service Fee: 1% of bill, then Math.ceil para walang centavos
-    let rawPercentFee = amt * 0.01;
-    let serviceFee = Math.ceil(rawPercentFee); 
+    // Naka-0 muna ang fees para sa Cash/E-load
+    const fixedBillerFee = 0;
+    const serviceFee = 0; 
     
     const totalFee = serviceFee + fixedBillerFee;
     const totalToPay = amt + totalFee; 
@@ -540,25 +516,17 @@ return new Intl.NumberFormat('en-PH', {
         liveBreakdown.innerHTML = `
             <div style="border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px;">
                 <div style="display: flex; justify-content: space-between;">
-                    <span>Bill Amount:</span> <b>${formatPHP(amt)}</b>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                    <span>Biller Convenience Fee:</span> <b>${formatPHP(fixedBillerFee)}</b>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                    <span>Service Fee (1%):</span> <b>${formatPHP(serviceFee)}</b>
+                    <span>Amount:</span> <b>${formatPHP(amt)}</b>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-top: 5px; color: #1b4332; font-weight: bold;">
                     <span>TOTAL TO PAY:</span> <span>${formatPHP(totalToPay)}</span>
                 </div>
-                <p style="color:#d90429; font-size:10px; margin-top: 5px; font-style: italic;">
-                    *Service fee is rounded up to the nearest peso for faster change (sukli).
-                </p>
             </div>
         `;
     } else {
         liveBreakdown.style.display = 'none';
     }
+}
 
     // --- Sukli Logic ---
     const cashInInput = document.getElementById('cashReceived');
@@ -644,26 +612,19 @@ function showStep(stepId) {
     }
 
     // I-render ang Review Screen
+   // Hanapin ang part na ito sa loob ng showReview() function at palitan:
     let reviewHTML = `
         <div class="review-item"><span>Customer Name:</span><strong>${name}</strong></div>
-        <div class="review-item">
-            <span>Cellphone No:</span>
-            <div style="text-align: right;">
-                <strong>${phone}</strong><br>
-                <small style="font-size: 9px; color: #666; display: block;">*Dito isesend ng <b>Maya Center</b> ang official SMS receipt.</small>
-            </div>
-        </div>
-        <div style="height: 10px;"></div> <div class="review-item"><span>ANECO Bill Name:</span><strong>${accName}</strong></div>
-        <div class="review-item"><span>ANECO Bill Account No:</span><strong>${accNo}</strong></div>
-        <div class="review-item"><span>Due Date:</span><strong style="color:red;">${formattedDate}</strong></div>
-        <div class="review-item"><span>Bill Amount:</span><strong>${formatPHP(amt)}</strong></div>
+        <div class="review-item"><span>Mobile Number:</span><strong>${phone}</strong></div>
+        <div class="review-item"><span>Network:</span><strong>${document.getElementById('loadNetwork').value}</strong></div>
+        <div class="review-item"><span>Load Type:</span><strong>${document.getElementById('loadType').value}</strong></div>
+        <div class="review-item"><span>Amount:</span><strong>${formatPHP(amt)}</strong></div>
 
         <div style="margin-top:15px; background:#f9f9f9; padding:10px; border:1px solid #ddd; border-radius:5px;">
-        <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:5px;">PILIIN ANG PARAAN NG PAGBAYAD:</label>
+        <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:5px;">PARAAN NG PAGBAYAD:</label>
         <select id="paymentMethod" onchange="updateReviewTotal()" style="width:100%; padding:8px; font-weight:bold; border-radius:5px;">
-            <option value="Cash">CASH (Pay sa Counter)</option>
-            <option value="Card">CREDIT/DEBIT CARD (Tap to Pay + 3.2%)</option>
-            <option value="Billease">BILLEASE (Scan to Pay + 1%)</option>
+            <option value="Cash">CASH (+0% No fee)</option>
+            <option value="Card">CREDIT/DEBIT CARD (+3.2% Fee)</option>
         </select>
     </div>
     `;
@@ -677,7 +638,7 @@ function showStep(stepId) {
     showStep('stepForm');
 }
     
-  async function generateNumber() {
+ async function generateNumber() {
     const btn = event.target; 
     const originalText = "GET QUEUE NUMBER";
 
@@ -690,6 +651,7 @@ function showStep(stepId) {
     btn.disabled = true;
 
     try {
+        // --- FILE UPLOAD LOGIC (Mananatili para walang error) ---
         const fileInput = document.getElementById('proofUpload');
         let base64File = "";
         let fileName = "";
@@ -706,41 +668,57 @@ function showStep(stepId) {
             });
         }
 
+        // --- LOAD DATA & COMPUTATION ---
         const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
         const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
+        const network = document.getElementById('loadNetwork') ? document.getElementById('loadNetwork').value : "LOAD";
+        const promo = document.getElementById('loadType') ? document.getElementById('loadType').value : "Regular";
 
         let payFeeRate = 0;
         let methodLabel = "Cash";
-        if (method === "Card") { payFeeRate = 0.032; methodLabel = "Card+3.2%"; }
-        else if (method === "Spaylater") { payFeeRate = 0.01; methodLabel = "Spaylater+1%"; }
-        else if (method === "Billease") { payFeeRate = 0.01; methodLabel = "Billease+1%"; }
+        
+        // Logic: 3.2% lang kung Card, 0 kung Cash
+        if (method === "Card") { 
+            payFeeRate = 0.032; 
+            methodLabel = "Card+3.2%"; 
+        }
 
-        const serviceFee = Math.ceil(baseAmount * 0.01); 
-        const fixedBillerFee = 10;
+        const serviceFee = 0; // 0% muna base sa request mo
+        const fixedBillerFee = 0; // 0 muna para sa load
         const paymentGatewayFee = baseAmount * payFeeRate; 
+        
         const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
         const totalWithFee = baseAmount + totalFee;
 
         const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
         const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
-        const generatedNum = "A-" + (Math.floor(Math.random() * 900) + 100);
+        
+        // Queue Prefix "L" para sa Load
+        const generatedNum = "L-" + (Math.floor(Math.random() * 900) + 100);
 
+        // --- PREPARING FORM DATA (App Script Compatible) ---
         const formData = {
             customerName: document.getElementById('custName').value,
             queueNo: generatedNum,
             timestamp: new Date().toLocaleString(),
-            provider: "ANECO | Due Date: " + document.getElementById('dueDate').value,
-            transType: "Bill Payment | " + methodLabel, 
-            gcashName: document.getElementById('accName').value,
-            gcashNo: document.getElementById('accNo').value,
             
-            // IBALIK NATIN ITO: Huwag gawing 0 para hindi mawala ang display sa screen!
+            // Dito natin ipinasok ang Network para mabasa pa rin ng App Script mo as "Provider"
+            provider: "LOAD | Network: " + network, 
+            
+            // Dito naman ang Promo/Type
+            transType: "Bill Payment | LOAD Promo: " + promo + " | " + methodLabel, 
+            
+            // "gcashName" pero promo/network details ang nilagay para safe sa App Script columns
+            gcashName: network + " - " + promo,
+            
+            // Cellphone number kung saan papasok ang load
+            gcashNo: document.getElementById('custPhone').value, 
+            
             amount: baseAmount, 
             feeAmount: totalFee,
-            
             feeOption: "add", 
 
-            // LOGIC PARA SA N AT O (Monitoring)
+            // MONITORING LOGIC (Amount received vs Sukli)
             totalAmount: (method !== "Cash" || isExactVal) ? totalWithFee : cashInputVal, 
             cashAmount: (method !== "Cash" || isExactVal) ? 0 : (cashInputVal - totalWithFee), 
             
@@ -795,88 +773,43 @@ function showStep(stepId) {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
     
-    // --- COMPUTATION NG FEES ---
     let extraFeePercent = 0;
+    let fixedFee = 0;
+    let serviceFee = 0;
+
     if (method === "Card") {
-        extraFeePercent = 0.032; // 3.20%
-    } else if (method === "Billease") {
-        extraFeePercent = 0.01; // 1% (Tinanggal na ang Spaylater dito)
+        extraFeePercent = 0.032; // 3.20% para sa Card
     }
     
-    const serviceFee = Math.ceil(amt * 0.01); 
     const paymentGatewayFee = amt * extraFeePercent; 
-    const fixedFee = 10; 
-    
     const totalWithFee = amt + serviceFee + fixedFee + paymentGatewayFee;
 
-    // --- HTML RENDER ---
     let breakdownHTML = `
-        <div class="review-item"><span>Biller Fee:</span><strong>${formatPHP(fixedFee)}</strong></div>
-        <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(serviceFee)}</strong></div>
-        ${extraFeePercent > 0 ? `<div class="review-item"><span>Payment Fee (${(extraFeePercent*100).toFixed(1)}%):</span><strong>${formatPHP(paymentGatewayFee)}</strong></div>` : ''}
+        <div class="review-item"><span>Load Amount:</span><strong>${formatPHP(amt)}</strong></div>
+        ${extraFeePercent > 0 ? `<div class="review-item"><span>Card Processing Fee (3.2%):</span><strong>${formatPHP(paymentGatewayFee)}</strong></div>` : `<div class="review-item"><span>Service Fee:</span><strong style="color:green;">FREE</strong></div>`}
         <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: #1b4332;">
             <span>Total to Pay:</span><strong>${formatPHP(totalWithFee)}</strong>
         </div>
     `;
 
-    // --- SAKTO/CASH LOGIC ---
     if (method === "Cash") {
         const isExact = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
         breakdownHTML += `
             <div class="cash-logic-box">
                 <label class="checkbox-row">
                     <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" ${isExact ? 'checked' : ''}> 
-                    Sakto ang ibabayad ko (Exact Cash)
+                    Sakto ang ibabayad ko
                 </label>
                 <div id="reviewCashInputGroup" style="display: ${isExact ? 'none' : 'block'}">
-                    <label>Magkano ang cash na iaabot?</label>
-                    <input type="number" id="reviewCashReceived" oninput="updateReviewSukli()" placeholder="0.00">
+                    <input type="number" id="reviewCashReceived" oninput="updateReviewSukli()" placeholder="Magkano ang cash mo?">
                     <div id="reviewSukliDisplay" class="sukli-display"></div>
                 </div>
             </div>`;
-    } else {
-        // --- NOTES PARA SA CARD AT BILLEASE ---
-        let feeNote = "";
-        if (method === "Card") {
-            feeNote = "Ang 3.2% additional payment fee ay bank processing fee (Gateway Fee). Ito ay automatic na kaltas ng provider para sa pag-gamit ng Credit/Debit card.";
-        } else {
-            // In-update para sa Billease/Digital payments lang
-            feeNote = "Ang 1% additional payment fee ay digital processing fee. Ito ay chinacharge ng payment provider para sa Scan to Pay o Installment transactions.";
-        }
-
-        breakdownHTML += `
-            <div style="text-align:center; padding:10px; background: #fffbe6; border: 1px dashed #ffe58f; border-radius: 5px; margin-top: 10px;">
-                <p style="font-size: 10px; color: #856404; margin-bottom: 5px; line-height: 1.2;">
-                    <b>NOTE:</b> ${feeNote}
-                </p>
-                <span style="color:#666; font-style:italic; font-size: 11px;">
-                    I-ready ang gagamitin na App o Card sa counter para sa payment.
-                </span>
-            </div>`;
     }
 
-    // --- DISCLAIMER SA PINAKA-BABA (Tinanggal ang SPayLater badge) ---
-    breakdownHTML += `
-        <div style="margin-top: 20px; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
-            <p style="font-size: 10px; color: #666; margin-bottom: 8px; font-weight: bold; letter-spacing: 0.5px;">
-                AVAILABLE VIA TAP / SCAN TO PAY:
-            </p>
-            <div style="margin-bottom: 12px; display: flex; justify-content: center; gap: 4px; flex-wrap: wrap;">
-                <span style="font-size: 9px; background: #fff; padding: 3px 8px; border-radius: 12px; border: 1px solid #007bff; color: #007bff; font-weight: bold;">💳 CARDS</span>
-                <span style="font-size: 9px; background: #fff; padding: 3px 8px; border-radius: 12px; border: 1px solid #0056b3; color: #0056b3; font-weight: bold;">🔵 BILLEASE</span>
-            </div>
-
-            <p style="font-size: 9px; color: #999; margin: 0; line-height: 1.4;">
-                Powered by <b>Maya Business</b><br>
-                <i style="font-size: 8px;">Standard payment fees apply for non-cash payments.</i>
-            </p>
-        </div>
-    `;
-
     document.getElementById('finalBreakdown').innerHTML = breakdownHTML;
-    updateReviewSukli();
+    updateReviewTotal(); // Note: Siguraduhin na ang updateReviewSukli ay tinatawag dito
 }
-
 
 function updateReviewSukli() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
