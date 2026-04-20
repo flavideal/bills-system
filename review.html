@@ -44,22 +44,22 @@
         });
     }
 
-    async function submitReview() {
+    // Kunin ang Queue Number mula sa localStorage
+const reviewerQueue = localStorage.getItem('reviewerQueue') || "N/A";
+
+async function submitReview() {
     if (currentRating === 0) {
         alert("Please select a star rating.");
         return;
     }
 
-    const btn = document.querySelector('.btn-submit');
     const comment = document.getElementById('comment').value;
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec"; // Gamitin ang parehong URL sa anecopay
-
-    btn.innerText = "Submitting...";
-    btn.disabled = true;
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
 
     const reviewData = {
-        action: "saveReview", // Marka para malaman ng Google Script na review ito
+        action: "saveReview",
         customerName: reviewerName,
+        queueNo: reviewerQueue, // HETO NA: Yung original Queue Number niya
         rating: currentRating,
         message: comment,
         timestamp: new Date().toLocaleString()
@@ -72,11 +72,10 @@
             headers: { "Content-Type": "text/plain;charset=utf-8" }
         });
 
-        alert("Thank you! Your feedback has been saved.");
+        // Pakita sa alert para malinaw
+        alert("Thank you! Feedback for Queue " + reviewerQueue + " has been saved.");
         goHome();
     } catch (err) {
-        console.error(err);
-        alert("Saved locally, thank you!"); // Fallback alert
         goHome();
     }
 }
