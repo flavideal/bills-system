@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Your Experience - Flavi Deal</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
+        h2 { color: #1b4332; margin-bottom: 10px; }
+        .stars { font-size: 45px; color: #ddd; margin: 20px 0; cursor: pointer; }
+        .star-active { color: #ffc107; }
+        textarea { width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 10px; box-sizing: border-box; font-family: inherit; resize: none; margin-bottom: 20px; }
+        .btn-submit { width: 100%; padding: 15px; background: #1b4332; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-skip { background: none; border: none; color: #888; margin-top: 15px; cursor: pointer; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2 id="welcomeText">How's your experience?</h2>
+    <p style="color: #666; font-size: 14px;">Your feedback helps Flavi Deal improve!</p>
+
+    <div class="stars" id="starGroup">
+        <span onclick="setRating(1)">★</span><span onclick="setRating(2)">★</span><span onclick="setRating(3)">★</span><span onclick="setRating(4)">★</span><span onclick="setRating(5)">★</span>
+    </div>
+
+    <textarea id="comment" rows="3" placeholder="Tell us more about your experience... (Optional)"></textarea>
+
+    <button class="btn-submit" onclick="submitReview()">SUBMIT REVIEW</button>
+    <button class="btn-skip" onclick="goHome()">No thanks, skip this</button>
+</div>
+
+<script>
+    let currentRating = 0;
+    const reviewerName = localStorage.getItem('reviewerName') || "Customer";
+    if(reviewerName) document.getElementById('welcomeText').innerText = `Hi ${reviewerName}, how was it?`;
+
+    function setRating(n) {
+        currentRating = n;
+        const stars = document.querySelectorAll('#starGroup span');
+        stars.forEach((star, index) => {
+            star.classList.toggle('star-active', index < n);
+        });
+    }
+
+    async function submitReview() {
+        if (currentRating === 0) {
+            alert("Please select a star rating.");
+            return;
+        }
+
+        const comment = document.getElementById('comment').value;
+        
+        // DITO: I-send ang data sa Google Sheets mo (Optional pero recommended)
+        // Pwede mong gamitin ang same WEB_APP_URL mo at lagyan ng logic sa .gs
+        console.log("Saving Review:", { name: reviewerName, rating: currentRating, msg: comment });
+
+        alert("Thank you for your feedback!");
+        goHome();
+    }
+
+    function goHome() {
+        // Linisin ang lahat ng natitirang data
+        localStorage.clear();
+        window.location.href = 'index.html';
+    }
+</script>
+
+</body>
+</html>
