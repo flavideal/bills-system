@@ -301,6 +301,60 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* REVIEW SLIDER STYLE */
+.review-slider {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    padding: 15px 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid #e8f5e9;
+    text-align: center;
+    overflow: hidden;
+}
+
+.review-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.review-slide {
+    min-width: 100%;
+    box-sizing: border-box;
+    padding: 0 20px;
+}
+
+.rev-name {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--premium-green);
+    margin-bottom: 3px;
+}
+
+.rev-stars {
+    color: #ffc107;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.rev-text {
+    font-size: 13px;
+    color: #555;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+/* Para sa auto-fade effect */
+.fade {
+    animation: fadeAnim 1s;
+}
+
+@keyframes fadeAnim {
+    from { opacity: 0.4; }
+    to { opacity: 1; }
+}
     </style>
 </head>
 <body>
@@ -397,6 +451,13 @@
         Globe • Smart • DITO • GOMO
     </span>
 </a>
+</div>
+
+<div class="review-slider" id="reviewSlider" style="display: none;">
+    <p style="font-size: 10px; color: #999; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">Customer Feedback</p>
+    <div id="reviewContent" class="fade">
+        <div class="loading-rev" style="font-size: 11px; color: #ccc;">Loading feedback...</div>
+    </div>
 </div>
     
         
@@ -542,6 +603,56 @@ document.querySelectorAll('.active-link').forEach(link => {
             alert("Paumanhin, sarado po ang aming hub sa ngayon.");
         }
     });
+});
+
+// --- REVIEW SLIDER LOGIC ---
+let allReviews = [];
+let reviewIndex = 0;
+
+async function loadPublicReviews() {
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=getPublicReviews`);
+        const result = await response.json();
+        
+        if (result.data && result.data.length > 0) {
+            allReviews = result.data.filter(r => r.comment && r.comment.length > 2); // Yung may comment lang
+            if (allReviews.length > 0) {
+                document.getElementById('reviewSlider').style.display = 'block';
+                displayNextReview();
+                setInterval(displayNextReview, 5000); // Lipat kada 5 seconds
+            }
+        }
+    } catch (e) {
+        console.log("Review load failed");
+    }
+}
+
+function displayNextReview() {
+    const container = document.getElementById('reviewContent');
+    const rev = allReviews[reviewIndex];
+    
+    // Create Stars
+    const starCount = parseInt(rev.rating) || 5;
+    const stars = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
+
+    container.innerHTML = `
+        <div class="rev-name">${rev.name} <span style="font-weight:normal; color:#aaa;">(${rev.queueNo})</span></div>
+        <div class="rev-stars">${stars}</div>
+        <div class="rev-text">"${rev.comment}"</div>
+    `;
+    
+    // Reset animation
+    container.classList.remove('fade');
+    void container.offsetWidth; // Trigger reflow
+    container.classList.add('fade');
+
+    reviewIndex = (reviewIndex + 1) % allReviews.length;
+}
+
+// Tawagin ang function sa pag-load ng page
+window.addEventListener('load', () => {
+    checkHubStatus();
+    loadPublicReviews(); // Idagdag ito
 });
 
 window.addEventListener('load', checkHubStatus);
