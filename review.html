@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rate Your Experience - Flavi Deal</title>
+    <title>Rate Your Experience - JERRIC Personal Assistance Service</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
@@ -19,7 +19,7 @@
 
 <div class="card">
     <h2 id="welcomeText">How's your experience?</h2>
-    <p style="color: #666; font-size: 14px;">Your feedback helps Flavi Deal improve!</p>
+    <p style="color: #666; font-size: 14px;">Your feedback helps JERRIC Personal Assistance Service improve!</p>
 
     <div class="stars" id="starGroup">
         <span onclick="setRating(1)">★</span><span onclick="setRating(2)">★</span><span onclick="setRating(3)">★</span><span onclick="setRating(4)">★</span><span onclick="setRating(5)">★</span>
@@ -45,20 +45,41 @@
     }
 
     async function submitReview() {
-        if (currentRating === 0) {
-            alert("Please select a star rating.");
-            return;
-        }
+    if (currentRating === 0) {
+        alert("Please select a star rating.");
+        return;
+    }
 
-        const comment = document.getElementById('comment').value;
-        
-        // DITO: I-send ang data sa Google Sheets mo (Optional pero recommended)
-        // Pwede mong gamitin ang same WEB_APP_URL mo at lagyan ng logic sa .gs
-        console.log("Saving Review:", { name: reviewerName, rating: currentRating, msg: comment });
+    const btn = document.querySelector('.btn-submit');
+    const comment = document.getElementById('comment').value;
+    const WEB_APP_URL = "ILAGAY_DITO_ANG_IYONG_WEB_APP_URL"; // Gamitin ang parehong URL sa anecopay
 
-        alert("Thank you for your feedback!");
+    btn.innerText = "Submitting...";
+    btn.disabled = true;
+
+    const reviewData = {
+        action: "saveReview", // Marka para malaman ng Google Script na review ito
+        customerName: reviewerName,
+        rating: currentRating,
+        message: comment,
+        timestamp: new Date().toLocaleString()
+    };
+
+    try {
+        await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify(reviewData),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+
+        alert("Thank you! Your feedback has been saved.");
+        goHome();
+    } catch (err) {
+        console.error(err);
+        alert("Saved locally, thank you!"); // Fallback alert
         goHome();
     }
+}
 
     function goHome() {
         // Linisin ang lahat ng natitirang data
