@@ -237,6 +237,10 @@
     if (res.result === "success") {
 
       allData = res.data;
+
+      if (res.kioskStatus) {
+          updateStatusUI(res.kioskStatus);
+      }
       // --- LOGIC PARA SA NOTIFICATION ---
       // Bilangin ang transactions na HINDI pa completed
       const currentActiveCount = allData.filter(row => (row[16] || "NEW").toUpperCase() !== "COMPLETED").length;
