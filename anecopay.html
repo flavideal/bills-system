@@ -312,13 +312,19 @@
 <script>
 
 // --- ACCESS PROTECTION LOGIC ---
-// I-check agad bago mag-load ang kahit ano
+// 1. PROTECTION FIRST (Hindi nito gagalawin ang inputs mo)
 (function() {
-            const isWaiting = localStorage.getItem('isWaiting');
-            if (isWaiting !== 'true' && !document.referrer.includes("index.html")) {
-                window.location.replace('index.html');
-            }
-        })();
+    const isWaiting = localStorage.getItem('isWaiting');
+    const cameFromIndex = sessionStorage.getItem('fromIndex');
+
+    if (isWaiting === 'true') return; // Hayaan ang user kung may active transaction
+
+    if (!cameFromIndex) {
+        window.location.replace('index.html');
+    }
+    // Note: pwedeng huwag mo muna i-removeItem dito para kung mag-reload 
+    // siya habang nag-e-encode (stepForm), hindi siya masipa.
+})();
 // --- END OF PROTECTION ---
 
 
