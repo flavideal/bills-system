@@ -311,29 +311,27 @@
 
 <script>
 
-// --- ACCESS PROTECTION LOGIC ---
-// 1. PROTECTION FIRST (Hindi nito gagalawin ang inputs mo)
+// ==========================================
+// MAINTENANCE SETTINGS (Edit mo dito)
+// ==========================================
+const isMaintenance = true; // Under Maintenance (Block ang mga papasok): true / flase: Normal Operation (Tumatanggap ng Bayad)
+// ==========================================
+
 (function() {
-    const isWaiting = localStorage.getItem('isWaiting');
-    const cameFromIndex = sessionStorage.getItem('fromIndex');
-
-    // Debugging: Makita natin kung pumasok ba ang data
-    console.log("Waiting Status:", isWaiting);
-    console.log("Came From Index:", cameFromIndex);
-
-    // Hayaan kung may active transaction
-    if (isWaiting === 'true') {
-        return; 
-    }
-
-    // Kung walang transaction at walang session pass, kick out
-    if (cameFromIndex !== 'true') {
-        window.location.replace('index.html');
+    // 1. Check muna kung naka-Maintenance mode
+    if (isMaintenance) {
+        // I-check kung may active transaction (isWaiting)
+        // Kung meron, hayaan muna natin matapos yung customer bago i-block
+        const isWaiting = localStorage.getItem('isWaiting');
+        
+        if (isWaiting !== 'true') {
+            alert("⚠️ UNDER MAINTENANCE\n\nAng ANECO Bills Payment ay kasalukuyang sumasailalim sa system update. Mangyaring bumalik mamaya.");
+            window.location.replace('index.html');
+            return;
+        }
     }
 })();
-// --- END OF PROTECTION ---
-
-
+    
 window.addEventListener('beforeunload', function (e) {
     const isWaiting = localStorage.getItem('isWaiting');
     // Kung isWaiting ay true, lalabas ang "Confirm Navigation" pop-up
