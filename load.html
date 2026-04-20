@@ -182,9 +182,11 @@
     </div>
 
     <div class="field-group">
-        <label>Ano ang i-load?</label>
-        <input type="text" id="loadType" placeholder="Ex: Regular 50, PowerAll 99, etc." oninput="saveInput('loadType')">
-    </div>
+    <label>Select Promo / Load Type</label>
+    <select id="loadType" onchange="updateAmountFromPromo(); saveInput('loadType');">
+        <option value="">-- Select Network First --</option>
+    </select>
+</div>
 
     <div class="field-group">
         <label>Amount (Presyo ng Load)</label>
@@ -818,6 +820,78 @@ function adminForceReset() {
         alert("Maling PIN!");
     }
 }
+
+// Listahan ng mga Promos at Presyo
+const promoData = {
+    "Globe / TM": [
+        { name: "Regular Load", price: "" },
+        { name: "Go50 (5GB for 3 Days)", price: 50 },
+        { name: "Go90 (8GB for 7 Days)", price: 90 },
+        { name: "GoEXTRA90 (8GB + Unli Allnet)", price: 90 },
+        { name: "TM EasySurf 50", price: 50 }
+    ],
+    "Smart / TNT": [
+        { name: "Regular Load", price: "" },
+        { name: "PowerAll 99 (8GB + Unli TikTok)", price: 99 },
+        { name: "PowerAll 149 (12GB + Unli TikTok)", price: 149 },
+        { name: "GigaVideo 99", price: 99 },
+        { name: "Unli Data 449 (30 Days)", price: 449 }
+    ],
+    "DITO": [
+        { name: "DITO 99 (7GB + Unli Allnet)", price: 99 },
+        { name: "DITO 199 (16GB + Unli Allnet)", price: 199 },
+        { name: "Level-Up 50", price: 50 }
+    ],
+    "GOMO": [
+        { name: "30GB No Expiry", price: 399 },
+        { name: "Unli Data (30 Days)", price: 599 }
+    ]
+};
+
+// Function para mag-update ang Dropdown ng Promo base sa Network
+function updatePromoList() {
+    const network = document.getElementById('loadNetwork').value;
+    const promoSelect = document.getElementById('loadType');
+    const amountInput = document.getElementById('amount');
+    
+    // Linisin ang dropdown
+    promoSelect.innerHTML = '<option value="">-- Choose Promo --</option>';
+    
+    if (promoData[network]) {
+        promoData[network].forEach(promo => {
+            let option = document.createElement('option');
+            option.value = promo.name;
+            option.text = promo.name;
+            option.dataset.price = promo.price; // Itago ang presyo dito
+            promoSelect.appendChild(option);
+        });
+    } else {
+        promoSelect.innerHTML = '<option value="">-- Select Network First --</option>';
+    }
+}
+
+// Function para kusa nang mapuno ang Amount box
+function updateAmountFromPromo() {
+    const promoSelect = document.getElementById('loadType');
+    const selectedOption = promoSelect.options[promoSelect.selectedIndex];
+    const price = selectedOption.dataset.price;
+    const amountInput = document.getElementById('amount');
+
+    if (price && price !== "") {
+        amountInput.value = price;
+        amountInput.readOnly = true; // Hindi na pwedeng baguhin ng customer ang presyo
+    } else {
+        amountInput.value = "";
+        amountInput.readOnly = false; // Pwedeng mag-type kung "Regular Load"
+    }
+    calculateFee(); // I-recompute ang breakdown
+}
+
+// Siguraduhin na ang Network dropdown ay tatawagin ang function na ito
+document.getElementById('loadNetwork').addEventListener('change', function() {
+    updatePromoList();
+    saveInput('loadNetwork');
+});
 
 function saveInput(id) {
     const el = document.getElementById(id);
