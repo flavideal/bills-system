@@ -92,14 +92,14 @@
         btnSubmit.style.opacity = "0.5";
 
         const reviewData = {
-            action: "saveReview",
-            customerName: maskString(reviewerName, "name"), 
-            queueNo: maskString(reviewerQueue, "queue"),   
-            serviceType: serviceUsed, // Dito na papasok ang ANECO/GCASH/E-LOAD
-            rating: currentRating,
-            message: comment,
-            timestamp: new Date().toLocaleString()
-        };
+    action: "saveReview",
+    customerName: reviewerName, // Alisin ang maskString dito
+    queueNo: reviewerQueue,     // Alisin ang maskString dito
+    serviceType: serviceUsed, 
+    rating: currentRating,
+    message: comment,
+    timestamp: new Date().toLocaleString()
+};
 
         try {
             // Gamit ang mode: 'no-cors' para sigurado ang pasok sa Google Script
