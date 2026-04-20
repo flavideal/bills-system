@@ -111,7 +111,7 @@
     color: #ccc; /* Lilitaw lang ng bahagya pag tinapatan mo */
 }
     #stepReview {
-    z-index: 999;
+    padding-bottom: 60px; /* Dagdag space sa baba para hindi dikit ang button */
 }
 /* FIX PARA SA CHECKBOX SA REVIEW SCREEN */
 #reviewIsExact, 
@@ -171,7 +171,7 @@
 
     <div class="field-group">
         <label>Select Network</label>
-        <select id="loadNetwork" onchange="saveInput('loadNetwork')" style="font-weight: bold;">
+        <select id="loadNetwork" onchange="saveInput('loadNetwork'); calculateFee();" style="font-weight: bold;">
             <option value="">-- Choose Network --</option>
             <option value="Globe / TM">Globe / TM</option>
             <option value="Smart / TNT">Smart / TNT</option>
@@ -209,27 +209,23 @@
             <div id="reviewContent"></div>
             <div id="finalBreakdown" style="margin-top: 15px;"></div>
 
-            <div id="termsContainer" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
-    <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY POLICY</h4>
+    <div id="termsContainer" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
+    <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY POLICY (E-LOAD)</h4>
     <ul style="font-size: 11px; color: #555; padding-left: 18px; line-height: 1.4;">
-        <li>This is a <b>Personal Service</b> only. </li>
-        <li><b>Accuracy:</b> Please verify the Account Number and Name. Jerric is not liable for any wrong account inputs.</li>
+        <li>This is a <b>Personal Assistance Service</b> for E-Load top-up.</li>
+        <li><b>Accuracy:</b> Pakisuri nang mabuti ang Mobile Number. Hindi liable si Jerric kung mali ang number na nailagay at na-loadan na.</li>
         
         <li style="color: #000; background: #fffde7; padding: 5px; border-radius: 5px;">
-    <b>Fees & Charges:</b> 
-    May fixed <b>Biller Fee na ₱10.00</b> at <b>Service Fee na 1%</b>. 
-    <div style="margin-top: 5px; padding-left: 10px; border-left: 2px solid #d32f2f;">
-        <span style="color: #d32f2f; font-weight: bold;">Additional Payment Fees:</span><br>
-        • <b>+3.20%</b> para sa Credit/Debit Cards (Visa/MC).<br>
-    </div>
-</li>
-        <li><b>Processing:</b> Ang payment ay ipapasa sa ANECO via <b>Maya Business</b>. Ang pag-reflect ng payment sa inyong record ay depende sa billing cycle ng ANECO.</li>
-        <li><b>Confirmation:</b> Makakatanggap kayo ng SMS confirmation mula sa Maya Center kapag successfully processed na ang payment sa inyong ANECO bill.</li>
-        <li><b>Privacy:</b> Ang inyong personal data ay gagamitin lamang para sa transaction logs at hindi ibabahagi sa ibang platform.</li>
-        <li><b>No Refund:</b> Ang mga completed transactions ay final at hindi na maaring i-cancel o i-refund.</li>
-        <li><b>No Arrears:</b> Tumatanggap lamang kami ng payments na <b>WALANG ARREARS</b> (Current Bill only).</li>
-        <li><b>Past Due:</b> Kapag lumagpas na sa Due Date, mangyaring sa ANECO Head Office na magbayad.</li>
-        <li><b>No Liability:</b> Kapag nag-proceed kayo kahit may arrears at hindi ito tinanggap ng ANECO system, hindi liable si Jerric sa anumang penalty.</li>
+            <b>Fees & Charges:</b> 
+            Ang Cash payment ay <b>WALANG SERVICE FEE (FREE)</b>. 
+            <div style="margin-top: 5px; padding-left: 10px; border-left: 2px solid #d32f2f;">
+                <span style="color: #d32f2f; font-weight: bold;">Card Payments:</span><br>
+                • <b>+3.20%</b> payment fee para sa Credit/Debit Cards.
+            </div>
+        </li>
+        <li><b>Processing:</b> Ang load ay ipaproseso agad pagkatapos magbayad sa counter.</li>
+        <li><b>Confirmation:</b> Makakatanggap kayo ng SMS mula sa inyong Network Provider (Globe/Smart/DITO) kapag pumasok na ang load.</li>
+        <li><b>No Refund:</b> Kapag na-send na ang load, hindi na ito maaring i-cancel o i-refund.</li>
     </ul>
     
     <div class="checkbox-row" style="margin-top: 15px; display: flex; align-items: center; gap: 10px; padding: 10px; background: #e9f5ed; border-radius: 8px;">
@@ -248,7 +244,7 @@
     <div style="font-size: 50px;">✅</div>
     <h2 style="color: var(--dark-green);">SUCCESS!</h2>
     <p>YOUR QUEUE NUMBER:</p>
-    <div id="numberDisplay" class="que-number">G-000</div>
+    <div id="numberDisplay" class="que-number">...</div>
     <div id="liveStatusBox" class="status-badge status-waiting">STATUS: WAITING...</div>
     <p id="instructionText">Checking status...</p>
 
