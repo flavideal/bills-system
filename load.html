@@ -567,66 +567,38 @@ function showStep(stepId) {
 
    function showReview() {
     const name = document.getElementById('custName').value.trim();
-    const accName = document.getElementById('accName').value.trim();
-    const accNo = document.getElementById('accNo').value.trim().toUpperCase(); // Naka-auto Caps na para sa "B"
-    const phone = document.getElementById('custPhone').value.trim();
+    const phone = document.getElementById('custPhone').value.trim(); // Eto yung mobile no.
+    const network = document.getElementById('loadNetwork').value;
+    const promo = document.getElementById('loadType').value;
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     
-    // Kunin ang raw value ng date para sa validation
-    const dueDateInput = document.getElementById('dueDate').value;
-    const rawDate = new Date(dueDateInput);
-    const formattedDate = rawDate.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
-    
-    // Kunin ang date ngayong araw (Butuan Time)
-    const today = new Date().toISOString().split('T')[0];
-
-    // 1. Basic Validation (Inayos ang dueDate check)
-    if(!name || !accName || !accNo || !phone || amt <= 0 || !dueDateInput) { 
-        alert("⚠️ Pakikumpleto ang lahat ng detalye, kasama ang Due Date."); 
+    // 1. Basic Validation
+    if(!name || !phone || amt <= 0) { 
+        alert("⚠️ Pakikumpleto ang lahat ng detalye."); 
         return; 
     }
 
-    // 2. Due Date Check (Bawal Overdue)
-    if (dueDateInput < today) {
-        alert("❌ PAALALA: Ang bill mo ay PAST DUE na.\n\nHindi na ito tinatanggap sa aming Kiosk. Mangyaring pumunta sa ANECO Head Office para mag-settle.");
-        return;
-    }
-
-    // 3. Mobile Validation
+    // 2. Mobile Validation
     if (phone.length !== 11 || !phone.startsWith("09")) {
         alert("⚠️ Ang Mobile Number ay dapat 11 digits at nagsisimula sa 09.");
         return;
     }
 
-    // 4. ANECO Account Number Validation (Allow letters like 'B')
-    // Regex: Tatanggap ng letters at numbers, bawal space o special characters
-    const alphanumericRegex = /^[A-Z0-9]+$/;
-    if (!alphanumericRegex.test(accNo)) {
-        alert("⚠️ Ang Account Number ay dapat letters at numbers lamang. Huwag lagyan ng space o symbols.");
-        return;
-    }
-    
-    if (accNo.length < 10) {
-        alert("⚠️ Siguraduhing tama ang Account Number. Karaniwan itong 10 characters o higit pa.");
-        return;
-    }
-
     // I-render ang Review Screen
-   // Hanapin ang part na ito sa loob ng showReview() function at palitan:
     let reviewHTML = `
         <div class="review-item"><span>Customer Name:</span><strong>${name}</strong></div>
         <div class="review-item"><span>Mobile Number:</span><strong>${phone}</strong></div>
-        <div class="review-item"><span>Network:</span><strong>${document.getElementById('loadNetwork').value}</strong></div>
-        <div class="review-item"><span>Load Type:</span><strong>${document.getElementById('loadType').value}</strong></div>
+        <div class="review-item"><span>Network:</span><strong>${network}</strong></div>
+        <div class="review-item"><span>Load Type:</span><strong>${promo}</strong></div>
         <div class="review-item"><span>Amount:</span><strong>${formatPHP(amt)}</strong></div>
 
         <div style="margin-top:15px; background:#f9f9f9; padding:10px; border:1px solid #ddd; border-radius:5px;">
-        <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:5px;">PARAAN NG PAGBAYAD:</label>
-        <select id="paymentMethod" onchange="updateReviewTotal()" style="width:100%; padding:8px; font-weight:bold; border-radius:5px;">
-            <option value="Cash">CASH (+0% No fee)</option>
-            <option value="Card">CREDIT/DEBIT CARD (+3.2% Fee)</option>
-        </select>
-    </div>
+            <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:5px;">PARAAN NG PAGBAYAD:</label>
+            <select id="paymentMethod" onchange="updateReviewTotal()" style="width:100%; padding:8px; font-weight:bold; border-radius:5px;">
+                <option value="Cash">CASH (+0% No fee)</option>
+                <option value="Card">CREDIT/DEBIT CARD (+3.2% Fee)</option>
+            </select>
+        </div>
     `;
 
     document.getElementById('reviewContent').innerHTML = reviewHTML;
@@ -774,11 +746,11 @@ function showStep(stepId) {
     const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
     
     let extraFeePercent = 0;
-    let fixedFee = 0;
-    let serviceFee = 0;
+    const fixedFee = 0; // Gawing 0 para sa Load
+    const serviceFee = 0; // Gawing 0 para sa Load
 
     if (method === "Card") {
-        extraFeePercent = 0.032; // 3.20% para sa Card
+        extraFeePercent = 0.032; 
     }
     
     const paymentGatewayFee = amt * extraFeePercent; 
@@ -808,33 +780,23 @@ function showStep(stepId) {
     }
 
     document.getElementById('finalBreakdown').innerHTML = breakdownHTML;
-    updateReviewTotal(); // Note: Siguraduhin na ang updateReviewSukli ay tinatawag dito
+    
+    // TAWAGIN ANG SUKLI UPDATE DITO
+    updateReviewSukli(); 
 }
 
 function updateReviewSukli() {
     const amt = parseFloat(document.getElementById('amount').value) || 0;
     const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
 
-    // Kunin ang extra fee rate para parehas sila ng generateNumber
-    let extraRate = 0;
-    if (method === "Card") extraRate = 0.032;
-    else if (method === "Spaylater" || method === "Billease") extraRate = 0.01;
-
-    const serviceFee = Math.ceil(amt * 0.01);
-    const fixedFee = 10;
-    const paymentGatewayFee = amt * extraRate;
-    
-    // Eto ang tamang total na dapat bayaran ng customer
-    const totalWithFee = amt + serviceFee + fixedFee + paymentGatewayFee;
+    let extraRate = (method === "Card") ? 0.032 : 0;
+    const totalWithFee = amt + (amt * extraRate); // Simple logic para sa Load
     
     const cashInput = document.getElementById('reviewCashReceived');
     const sukliDiv = document.getElementById('reviewSukliDisplay');
     const isExact = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : false;
 
-    if (!sukliDiv || isExact) {
-        if(sukliDiv) sukliDiv.innerHTML = "";
-        return;
-    }
+    if (!sukliDiv || isExact || !cashInput) return;
 
     const cashHanded = parseFloat(cashInput.value) || 0;
     const computeSukli = cashHanded - totalWithFee;
