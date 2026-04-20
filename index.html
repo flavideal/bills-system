@@ -467,7 +467,7 @@
 </a>
 </div>
 
-<a href="customerreview.html" class="review-slider" id="reviewSlider" style="display: none; margin-top: 25px; text-decoration: none; display: block;">
+<a href="customerreview.html" class="review-slider" id="reviewSlider" style="display: none; margin-top: 25px; text-decoration: none;">
     <p style="font-size: 10px; color: #999; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">
         Community Feedback (See All)
     </p>
@@ -642,16 +642,21 @@ async function loadPublicReviews() {
         const response = await fetch(`${SCRIPT_URL}?action=getPublicReviews`);
         const result = await response.json();
         
-        if (result.data && result.data.length > 0) {
-            allReviews = result.data.filter(r => r.comment && r.comment.length > 2); // Yung may comment lang
+        // I-check kung may 'data' property at hindi empty
+        if (result && result.data && result.data.length > 0) {
+            allReviews = result.data.filter(r => (r.comment || r.message) && (r.comment || r.message).length > 2);
+            
             if (allReviews.length > 0) {
-                document.getElementById('reviewSlider').style.display = 'block';
+                const slider = document.getElementById('reviewSlider');
+                slider.style.setProperty("display", "block", "important"); // Force show
                 displayNextReview();
-                setInterval(displayNextReview, 5000); // Lipat kada 5 seconds
+                setInterval(displayNextReview, 5000);
             }
+        } else {
+            console.warn("No reviews found in database.");
         }
     } catch (e) {
-        console.log("Review load failed");
+        console.error("Review load failed:", e);
     }
 }
 
