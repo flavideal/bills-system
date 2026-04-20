@@ -825,17 +825,23 @@ function showStep(stepId) {
 }
     
      function finishTransaction() {
-    // 1. Burahin ang mga sinave na input para malinis sa susunod na customer
+    // 1. Kuhanin muna natin ang name para ma-save natin sandali para sa Review Page
+    const currentName = document.getElementById('custName').value;
+    if(currentName) {
+        localStorage.setItem('reviewerName', currentName);
+    }
+
+    // 2. Burahin ang lahat ng transaction data EXCEPT 'reviewerName'
     ['custName', 'accNo', 'accName', 'amount', 'savedQueueNumber', 'isWaiting', 'currentStep', 'feeOption', 'sessionStartTime'].forEach(id => {
         localStorage.removeItem(id);
-        localStorage.removeItem('input_' + id); // Para sa mga input fields
+        localStorage.removeItem('input_' + id); 
     });
 
-    // 2. Itigil ang pag-check ng status kung meron man
+    // 3. Itigil ang pag-check ng status
     if(statusInterval) clearInterval(statusInterval);
 
-    // 3. I-redirect sa index.html imbes na reload lang
-    window.location.href = 'index.html'; 
+    // 4. I-redirect na sa review.html imbes na index.html
+    window.location.href = 'review.html'; 
 }
     
     function updateReviewTotal() {
