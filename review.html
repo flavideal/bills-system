@@ -53,13 +53,21 @@ async function submitReview() {
         return;
     }
 
+    // 1. Kunin ang button element
+    const btnSubmit = document.querySelector('.btn-submit');
     const comment = document.getElementById('comment').value;
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+
+    // 2. I-disable ang button at palitan ang text para alam ng customer na "Working" ang system
+    btnSubmit.disabled = true;
+    btnSubmit.innerText = "Savinng feedback...";
+    btnSubmit.style.opacity = "0.5"; // Para magmukhang naka-off
+    btnSubmit.style.cursor = "not-allowed";
 
     const reviewData = {
         action: "saveReview",
         customerName: reviewerName,
-        queueNo: reviewerQueue, // HETO NA: Yung original Queue Number niya
+        queueNo: reviewerQueue, 
         rating: currentRating,
         message: comment,
         timestamp: new Date().toLocaleString()
@@ -72,11 +80,17 @@ async function submitReview() {
             headers: { "Content-Type": "text/plain;charset=utf-8" }
         });
 
-        // Pakita sa alert para malinaw
+        // 3. Kapag tapos na, ipakita ang alert
         alert("Thank you! Feedback for Queue " + reviewerQueue + " has been saved.");
         goHome();
     } catch (err) {
-        goHome();
+        console.error(err);
+        // Kung nag-error, ibalik sa dati ang button para ma-try ulit
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "SUBMIT REVIEW";
+        btnSubmit.style.opacity = "1";
+        btnSubmit.style.cursor = "pointer";
+        alert("Something went wrong. Please try again.");
     }
 }
 
