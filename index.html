@@ -395,79 +395,68 @@
         </div>
     </div>
 
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
+   <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
 
-        function showNextSlide() {
-            slides[currentSlide].classList.remove('active');
-            
-            // Konting delay bago ilipat ang display para smooth ang fade out
-            setTimeout(() => {
-                slides[currentSlide].style.display = 'none';
-                currentSlide = (currentSlide + 1) % slides.length;
-                slides[currentSlide].style.display = 'block';
-                
-                // Force reflow para gumana ang transition
-                slides[currentSlide].offsetHeight; 
-                slides[currentSlide].classList.add('active');
-            }, 800); // Tugma sa 0.8s na transition mo sa CSS
-        }
+    // --- SLIDER LOGIC ---
+    function showNextSlide() {
+        slides[currentSlide].classList.remove('active');
+        setTimeout(() => {
+            slides[currentSlide].style.display = 'none';
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].style.display = 'block';
+            slides[currentSlide].offsetHeight; 
+            slides[currentSlide].classList.add('active');
+        }, 800);
+    }
+    setInterval(showNextSlide, 4000);
 
-        function toggleAccordion(button) {
-    const content = button.nextElementSibling;
-    button.parentElement.classList.toggle('active');
-
-    if (content.style.maxHeight) {
-        content.style.maxHeight = null;
-    } else {
-        // Isasara muna ang iba bago buksan ang isa (Optional)
+    // --- ACCORDION LOGIC ---
+    function toggleAccordion(button) {
+        const content = button.nextElementSibling;
+        const isActive = button.parentElement.classList.contains('active');
+        
         document.querySelectorAll('.accordion-content').forEach(el => el.style.maxHeight = null);
         document.querySelectorAll('.accordion-item').forEach(el => el.classList.remove('active'));
         
-        button.parentElement.classList.add('active');
-        content.style.maxHeight = content.scrollHeight + "px";
-    }
-}
-
-
-async function checkHubStatus() {
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors", // Subukan muna ito kung may CORS error
-            body: JSON.stringify({ action: "getTransactions" })
-        });
-        
-        // PAUNAWA: Dahil "no-cors" ang Google Apps Script minsan, 
-        // mas maganda ang Option B sa ibaba (sa Google Script side).
-        
-        // Pero kung normal fetch ang gamit mo, heto ang tamang JSON fetch:
-        const normalResponse = await fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "getTransactions" })
-        });
-        const res = await normalResponse.json();
-        
-        const isClosed = res.kioskStatus === "CLOSED";
-        const menuItems = document.querySelectorAll('.menu-item:not(.coming-soon)');
-        const msg = document.getElementById('closed-msg');
-
-        if (isClosed) {
-            msg.style.display = 'block'; 
-            menuItems.forEach(item => item.classList.add('hub-closed'));
-        } else {
-            msg.style.display = 'none';
-            menuItems.forEach(item => item.classList.remove('hub-closed'));
+        if (!isActive) {
+            button.parentElement.classList.add('active');
+            content.style.maxHeight = content.scrollHeight + "px";
         }
-    } catch (e) {
-        console.log("Check failed, but that's okay.");
     }
-}
-        
-// Patakbuhin ang check pag-load ng page
-window.addEventListener('load', checkHubStatus);
-    </script>
+
+    // --- HUB STATUS LOGIC (ANG FIX MO) ---
+    async function checkHubStatus() {
+        try {
+            // Gumamit tayo ng GET para iwas CORS error at siguradong mabasa ang status
+            const response = await fetch(`${SCRIPT_URL}?action=getTransactions&t=${Date.now()}`);
+            const res = await response.json();
+            
+            console.log("Server Status:", res.kioskStatus);
+
+            const isClosed = (res.kioskStatus === "CLOSED");
+            const menuItems = document.querySelectorAll('.menu-item:not(.coming-soon)');
+            const msg = document.getElementById('closed-msg');
+
+            if (isClosed) {
+                msg.style.display = 'block'; // Lalabas ang Yellow Notice
+                menuItems.forEach(item => {
+                    item.classList.add('hub-closed'); // Mag-e-effect ang grayscale at disabled mode
+                });
+            } else {
+                msg.style.display = 'none'; // Mawawala ang Notice
+                menuItems.forEach(item => {
+                    item.classList.remove('hub-closed');
+                });
+            }
+        } catch (e) {
+            console.error("Status check failed:", e);
+        }
+    }
+    
+    window.addEventListener('load', checkHubStatus);
+</script>
 </body>
 </html>
