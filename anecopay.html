@@ -319,16 +319,22 @@ const isMaintenance = true; // Under Maintenance (Block ang mga papasok): true /
 
 (function() {
     // 1. Check muna kung naka-Maintenance mode
-    if (isMaintenance) {
-        // I-check kung may active transaction (isWaiting)
-        // Kung meron, hayaan muna natin matapos yung customer bago i-block
-        const isWaiting = localStorage.getItem('isWaiting');
-        
-        if (isWaiting !== 'true') {
-            alert("⚠️ UNDER MAINTENANCE\n\nAng ANECO Bills Payment ay kasalukuyang sumasailalim sa system update. Mangyaring bumalik mamaya.");
-            window.location.replace('index.html');
-            return;
-        }
+    if (isMaintenance && localStorage.getItem('isWaiting') !== 'true') {
+    // Palitan ang buong content ng page ng maintenance notice na maganda
+    document.body.innerHTML = `
+        <div style="text-align:center; padding:50px; font-family:sans-serif;">
+            <h1 style="color:#d32f2f;">⚠️ UNDER MAINTENANCE</h1>
+            <p>Kasalukuyang ina-update ang system para sa ANECO.</p>
+            <p>Mangyaring bumalik na lang sa <b>Main Menu</b>.</p>
+            <br>
+            <button onclick="window.location.replace('index.html')" 
+                style="padding:10px 20px; background:#1b4332; color:white; border:none; border-radius:5px; cursor:pointer;">
+                BUMALIK SA HOME
+            </button>
+        </div>
+    `;
+    return; // Itigil ang script dito
+}
     }
 })();
     
