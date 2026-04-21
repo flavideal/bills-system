@@ -192,22 +192,60 @@
             margin-top: 10px;
             color: #777;
         }
-       /* FAQ & LEGAL ACCORDION */
+     
+        /* INFORMATION HUB STYLES */
+.faq-section {
+    background: white; 
+    border-radius: 20px; 
+    padding: 20px; 
+    margin-top: 25px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
 .accordion-item {
-    border-bottom: 1px solid #eee;
-    padding: 10px 0;
+    border-bottom: 1px solid #eee; /* Ito yung line sa pagitan ng items */
+    padding: 5px 0;
 }
 
-/* Siguradong tanggal ang line sa pinakahuling item sa loob ng information hub */
-.faq-section .accordion-item:last-of-type {
+/* Tinatanggal ang border/line sa pinakahuling item (Terms) para malinis */
+.accordion-item:last-of-type {
     border-bottom: none !important;
 }
 
-/* Tanggalin ang border sa huling item (Terms) */
-.accordion-item:last-child {
-    border-bottom: none !important;
+.accordion-header {
+    width: 100%;
+    background: none;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    color: var(--premium-green);
+    font-weight: bold;
+    font-size: 14px;
+    padding: 15px 0;
+    text-align: left;
 }
 
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* Footer alignment sa loob ng Hub */
+.hub-footer {
+    text-align: center; 
+    margin-top: 20px; 
+    padding-top: 15px;
+    border-top: 1px solid #eee; /* ITO ANG LINE SA TAAS NG 2026 */
+    color: #999; 
+    font-size: 11px;
+}
+        
 .accordion-header {
     width: 100%;
     background: none;
@@ -613,7 +651,7 @@
         </div>
     </div>
         
-<div style="text-align: center; margin-top: 15px; color: #999; font-size: 11px; padding-bottom: 0px;">
+<div class="hub-footer">
     &copy; 2026 JERRIC PERSONAL SERVICE | BUTUAN HUB
 </div>
 </div>
