@@ -3,21 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rate Your Experience - Flavi Deal</title>
+    <title>Rate Your Experience - JERRIC Personal Assistance Service</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
         h2 { color: #1b4332; margin-bottom: 10px; }
         .stars { 
-    font-size: 45px; 
-    color: #ddd; 
-    margin: 20px 0; 
-    cursor: pointer; 
-    /* DAGDAG ITO: Para hindi mag-blue highlight kapag clinick */
-    user-select: none; 
-    -webkit-user-select: none; /* Para sa Chrome/Safari/Mobile */
-    -moz-user-select: none;    /* Para sa Firefox */
-}
+        font-size: 45px; 
+        color: #ddd; 
+        margin: 20px 0; 
+        cursor: pointer; 
+        user-select: none; 
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: transparent; /* Eto ang solusyon sa asul */
+        outline: none; /* Iwas sa focus border */
+    }
+    /* Dagdag natin para mas maganda ang transition ng kulay */
+    .stars span {
+        transition: color 0.2s ease;
+    }
         .star-active { color: #ffc107; }
         textarea { width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 10px; box-sizing: border-box; font-family: inherit; resize: none; margin-bottom: 20px; }
         .btn-submit { width: 100%; padding: 15px; background: #1b4332; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
@@ -69,7 +73,7 @@
     // Display
     window.addEventListener('DOMContentLoaded', () => {
         if(finalName !== "Customer") {
-            document.getElementById('welcomeText').innerText = "Hi " + finalName + ", how was it?";
+            document.getElementById('welcomeText').innerText = "Hi " + finalName + ", how was our service?";
         }
     });
 
@@ -81,45 +85,52 @@
         });
     }
 
-    async function submitReview() {
-        if (currentRating === 0) {
-            alert("Please select a star rating.");
-            return;
-        }
-
-        const btnSubmit = document.querySelector('.btn-submit');
-        const comment = document.getElementById('comment').value;
-        // SIGURADUHIN NA TAMA ANG URL NA ITO:
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
-
-        btnSubmit.disabled = true;
-        btnSubmit.innerText = "Saving feedback...";
-
-        const reviewData = {
-            action: "saveReview",
-            customerName: finalName,  // <--- Dati: maskString(finalName, "name")
-            queueNo: finalQueue,
-            serviceType: rawService,
-            rating: currentRating,
-            message: comment,
-            timestamp: new Date().toLocaleString()
-        };
-
-        try {
-            await fetch(WEB_APP_URL, {
-                method: "POST",
-                mode: "no-cors", 
-                body: JSON.stringify(reviewData)
-            });
-            alert("Salamat! Review saved.");
-            goHome();
-        } catch (err) {
-            alert("Error: " + err);
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "SUBMIT REVIEW";
-        }
+   async function submitReview() {
+    if (currentRating === 0) {
+        alert("Please select a star rating.");
+        return;
     }
 
+    const btnSubmit = document.querySelector('.btn-submit');
+    const comment = document.getElementById('comment').value;
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+
+    // --- VISUAL FEEDBACK ---
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = 'Please wait, saving feedback...';
+    btnSubmit.style.opacity = "0.7";
+    btnSubmit.style.cursor = "not-allowed";
+
+    const reviewData = {
+        action: "saveReview",
+        customerName: finalName,
+        queueNo: finalQueue,
+        serviceType: rawService,
+        rating: currentRating,
+        message: comment,
+        timestamp: new Date().toLocaleString()
+    };
+
+    try {
+        await fetch(WEB_APP_URL, {
+            method: "POST",
+            mode: "no-cors", 
+            body: JSON.stringify(reviewData)
+        });
+
+        // MAS MAAYOS NA MESSAGE
+        alert("Thank you so much for your feedback! We really appreciate it.\n\nYou may see your review on our Customer Feedback page. Have a great day!");
+        
+        goHome();
+    } catch (err) {
+        alert("Oops! Something went wrong: " + err);
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "SUBMIT REVIEW";
+        btnSubmit.style.opacity = "1";
+        btnSubmit.style.cursor = "pointer";
+    }
+}
+    
     function goHome() {
         localStorage.clear();
         window.location.href = 'index.html';
