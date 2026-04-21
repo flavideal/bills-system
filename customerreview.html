@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Reviews - Flavi Deal</title>
+    <title>Customer Reviews -JERRIC Personal Assistance Service</title>
     <style>
         :root { 
             --premium-green: #1b431c; 
@@ -78,6 +78,22 @@
             justify-content: center;
             font-size: 9px;
         }
+        .admin-reply {
+    background: #f1f8e9; /* Light green background */
+    border-left: 4px solid var(--premium-green);
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+.admin-label {
+    display: block;
+    font-weight: 800;
+    color: var(--premium-green);
+    font-size: 11px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
     </style>
 </head>
 <body>
@@ -125,39 +141,47 @@
             listDiv.innerHTML = ''; 
             
             result.data.forEach(rev => {
-                // I-APPLY ANG MASKING DITO PARA SA PUBLIC VIEW
-                const maskedName = maskString(rev.customerName, "name");
-                const maskedQueue = maskString(rev.queueNo, "queue");
+    const maskedName = maskString(rev.customerName, "name");
+    const maskedQueue = maskString(rev.queueNo, "queue");
+    const starCount = parseInt(rev.rating) || 5; 
+    const starIcons = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
+    const serviceUsed = rev.serviceType || "General Service";
 
-                const starCount = parseInt(rev.rating) || 5; 
-                const starIcons = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
-                const serviceUsed = rev.serviceType || "General Service";
+    // --- DAGDAG NA LOGIC PARA SA REPLY ---
+    let replyHTML = '';
+    if (rev.adminReply && rev.adminReply.trim() !== "") {
+        replyHTML = `
+            <div class="admin-reply">
+                <span class="admin-label">Response from Owner:</span>
+                ${rev.adminReply}
+            </div>
+        `;
+    }
 
-                const card = `
-                    <div class="review-card">
-                        <div class="reviewer-info">
-                            <span class="reviewer-name">${maskedName}</span>
-                            <span class="q-tag">${maskedQueue}</span>
-                        </div>
-                        
-                        <div class="verified-badge">
-                            <span class="verified-icon">✓</span>
-                            Verified Transaction
-                        </div>
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div class="service-badge">${serviceUsed}</div>
-                            <div class="stars">${starIcons}</div>
-                        </div>
-                        
-                        <div class="comment">"${rev.message || "No comment provided."}"</div>
-                        
-                        <div class="date">Transaction Date: ${rev.timestamp}</div>
-                    </div>
-                `;
-                listDiv.innerHTML += card;
-            });
-
+    const card = `
+        <div class="review-card">
+            <div class="reviewer-info">
+                <span class="reviewer-name">${maskedName}</span>
+                <span class="q-tag">${maskedQueue}</span>
+            </div>
+            
+            <div class="verified-badge">
+                <span class="verified-icon">✓</span>
+                Verified Transaction
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="service-badge">${serviceUsed}</div>
+                <div class="stars">${starIcons}</div>
+            </div>
+            
+            <div class="comment">"${rev.message || "No comment provided."}"</div>
+            
+            ${replyHTML} <div class="date">Transaction Date: ${rev.timestamp}</div>
+        </div>
+    `;
+    listDiv.innerHTML += card;
+});
         } catch (err) {
             console.error(err);
             document.getElementById('reviewsList').innerHTML = '<div class="no-reviews">Unable to connect. Please refresh the page.</div>';
