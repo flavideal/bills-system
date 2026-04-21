@@ -8,7 +8,16 @@
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
         h2 { color: #1b4332; margin-bottom: 10px; }
-        .stars { font-size: 45px; color: #ddd; margin: 20px 0; cursor: pointer; }
+        .stars { 
+    font-size: 45px; 
+    color: #ddd; 
+    margin: 20px 0; 
+    cursor: pointer; 
+    /* DAGDAG ITO: Para hindi mag-blue highlight kapag clinick */
+    user-select: none; 
+    -webkit-user-select: none; /* Para sa Chrome/Safari/Mobile */
+    -moz-user-select: none;    /* Para sa Firefox */
+}
         .star-active { color: #ffc107; }
         textarea { width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 10px; box-sizing: border-box; font-family: inherit; resize: none; margin-bottom: 20px; }
         .btn-submit { width: 100%; padding: 15px; background: #1b4332; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
@@ -72,13 +81,6 @@
         });
     }
 
-    function maskString(str, type) {
-        if (!str || str === "N/A" || str === "Customer") return str;
-        return type === "name" 
-            ? str[0] + "***" + str[str.length - 1] 
-            : str.substring(0, 1) + "***" + str.slice(-1);
-    }
-
     async function submitReview() {
         if (currentRating === 0) {
             alert("Please select a star rating.");
@@ -95,8 +97,8 @@
 
         const reviewData = {
             action: "saveReview",
-            customerName: maskString(finalName, "name"), 
-            queueNo: maskString(finalQueue, "queue"), 
+            customerName: finalName,  // <--- Dati: maskString(finalName, "name")
+            queueNo: finalQueue,
             serviceType: rawService,
             rating: currentRating,
             message: comment,
