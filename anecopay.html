@@ -747,10 +747,45 @@ function showStep(stepId) {
     const btn = event.target; 
     const originalText = "GET QUEUE NUMBER";
 
-    if(!document.getElementById('termsAgree').checked) { 
-        alert("Paki-check ang box para sumang-ayon sa terms."); 
+    // 1. VALIDATION: Check muna kung naka-check ang Terms & Conditions
+    const termsCheck = document.getElementById('termsAgree');
+    if (!termsCheck || !termsCheck.checked) { 
+        alert("⚠️ ACTION REQUIRED\n\nTo proceed, please check the box to agree with our Terms and Conditions and Privacy Policy.");
+        if(termsCheck) termsCheck.focus();
         return; 
     }
+
+    // 2. VALIDATION: Cash Payment Logic
+    const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
+    
+    if (method === "Cash") {
+        const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+        const cashInput = document.getElementById('reviewCashReceived');
+        const cashInputVal = cashInput ? parseFloat(cashInput.value) : 0;
+
+        // Kung HINDI naka-check ang "Sakto ang ibabayad" (ibig sabihin may sukli dapat)
+        if (!isExactVal) {
+            // A. Check kung walang laman o zero ang nilagay na cash
+            if (!cashInputVal || cashInputVal <= 0) {
+                alert("⚠️ INPUT REQUIRED:\n\nPinili mo na hindi sakto ang iyong bayad. Pakilagay sa box kung magkano ang cash na iaabot mo para ma-compute ang iyong sukli.");
+                if(cashInput) cashInput.focus();
+                return;
+            }
+
+            // B. Check kung mas mababa ang cash kaysa sa Total Bill
+            const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+            const serviceFee = Math.ceil(baseAmount * 0.01); 
+            const fixedBillerFee = 10;
+            const totalToPay = baseAmount + serviceFee + fixedBillerFee;
+
+            if (cashInputVal < totalToPay) {
+                alert("⚠️ KULANG ANG BAYAD:\n\nAng iyong total bill ay " + formatPHP(totalToPay) + ".\nAng nilagay mong cash (" + formatPHP(cashInputVal) + ") ay kulang. Pakitama ang amount.");
+                if(cashInput) cashInput.focus();
+                return;
+            }
+        }
+    }
+    // ------------------------------------
 
     btn.innerText = "Processing...";
     btn.disabled = true;
