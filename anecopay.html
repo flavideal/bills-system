@@ -384,9 +384,11 @@ window.onload = function() {
     // --- DAGDAG DITO: Lock the calendar to Today onwards ---
     const dateInput = document.getElementById('dueDate');
     if (dateInput) {
-        // Kunin ang date ngayong araw sa format na YYYY-MM-DD
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.setAttribute('min', today); 
+        // Imbes na ISOString, gagamit tayo ng Locale Date para sa PH Timezone
+        const phTime = new Date().toLocaleDateString('en-CA', { // en-CA format is YYYY-MM-DD
+            timeZone: 'Asia/Manila'
+        });
+        dateInput.setAttribute('min', phTime); 
     }
     // -----------------------------------------------------
 
