@@ -40,44 +40,40 @@
 
 <script>
     let currentRating = 0;
-    let rawName = "Customer";
-    let rawQueue = "N/A";
-    let serviceFromStorage = "GCASH";
+    
+    // 1. DATA CAPTURE (Immediate)
+    const urlParams = new URLSearchParams(window.location.search);
+    const rawName = urlParams.get('name') || localStorage.getItem('reviewerName') || localStorage.getItem('custName') || "Customer";
+    const rawQueue = urlParams.get('q') || localStorage.getItem('reviewerQueue') || localStorage.getItem('savedQueueNumber') || "N/A";
+    const rawService = urlParams.get('service') || localStorage.getItem('reviewerService') || "GCASH";
 
-    // AGRESSIVE CAPTURE: Ito ang sasalo habang binubura ng finishTransaction ang data
-    function captureData() {
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        // Unahin ang URL (pinaka-safe), pagkatapos ay ang transfer keys, huli ang original keys
-        rawName = urlParams.get('name') || localStorage.getItem('reviewerName') || localStorage.getItem('custName') || "Customer";
-        rawQueue = urlParams.get('q') || localStorage.getItem('reviewerQueue') || localStorage.getItem('savedQueueNumber') || "N/A";
-        serviceFromStorage = urlParams.get('service') || localStorage.getItem('reviewerService') || "GCASH";
+    // Lock data to avoid "Customer" issue
+    if (rawName !== "Customer") localStorage.setItem('locked_Name', rawName);
+    if (rawQueue !== "N/A") localStorage.setItem('locked_Queue', rawQueue);
 
-        // I-lock agad natin sa bagong temporary keys para hindi na mabura!
-        if (rawName !== "Customer") localStorage.setItem('locked_Name', rawName);
-        if (rawQueue !== "N/A") localStorage.setItem('locked_Queue', rawQueue);
-    }
-
-    // Tawagin agad ang captureData bago pa mag-load ang page elements
-    captureData();
-
-    // Gamitin ang naka-lock na data para sa display
     const finalName = localStorage.getItem('locked_Name') || rawName;
     const finalQueue = localStorage.getItem('locked_Queue') || rawQueue;
 
-    // 2. RESTRICTION
+    // Restriction
     if (finalName === "Customer" && finalQueue === "N/A") {
         window.location.href = 'index.html';
     }
 
-    // 3. DISPLAY (Gagamit ng finalName)
-    window.addEventListener('DOMContentLoaded', (event) => {
+    // Display
+    window.addEventListener('DOMContentLoaded', () => {
         if(finalName !== "Customer") {
             document.getElementById('welcomeText').innerText = "Hi " + finalName + ", how was it?";
         }
     });
 
-    // --- DITO NA ANG MASKING (Gamitin ang finalName at finalQueue) ---
+    function setRating(n) {
+        currentRating = n;
+        const stars = document.querySelectorAll('#starGroup span');
+        stars.forEach((star, index) => {
+            star.classList.toggle('star-active', index < n);
+        });
+    }
+
     function maskString(str, type) {
         if (!str || str === "N/A" || str === "Customer") return str;
         return type === "name" 
@@ -85,16 +81,48 @@
             : str.substring(0, 1) + "***" + str.slice(-1);
     }
 
-    // SA SUBMIT REVIEW, GAMITIN ANG finalName at finalQueue
     async function submitReview() {
-        // ... (check rating logic) ...
+        if (currentRating === 0) {
+            alert("Please select a star rating.");
+            return;
+        }
+
+        const btnSubmit = document.querySelector('.btn-submit');
+        const comment = document.getElementById('comment').value;
+        // SIGURADUHIN NA TAMA ANG URL NA ITO:
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Saving feedback...";
+
         const reviewData = {
             action: "saveReview",
             customerName: maskString(finalName, "name"), 
             queueNo: maskString(finalQueue, "queue"), 
-            // ... (rest of the data)
+            serviceType: rawService,
+            rating: currentRating,
+            message: comment,
+            timestamp: new Date().toLocaleString()
         };
-        // ... (fetch logic)
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors", 
+                body: JSON.stringify(reviewData)
+            });
+            alert("Salamat! Review saved.");
+            goHome();
+        } catch (err) {
+            alert("Error: " + err);
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "SUBMIT REVIEW";
+        }
+    }
+
+    function goHome() {
+        localStorage.clear();
+        window.location.href = 'index.html';
     }
 </script>
 </body>
