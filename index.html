@@ -198,6 +198,11 @@
     padding: 10px 0;
 }
 
+/* Siguradong tanggal ang line sa pinakahuling item sa loob ng information hub */
+.faq-section .accordion-item:last-of-type {
+    border-bottom: none !important;
+}
+
 /* Tanggalin ang border sa huling item (Terms) */
 .accordion-item:last-child {
     border-bottom: none !important;
@@ -578,7 +583,7 @@
         </div>
     </div>
 
-    <div class="accordion-item">
+    <div class="accordion-item" style="border-bottom: none;"> <button class="accordion-header" onclick="toggleAccordion(this)">
     <button class="accordion-header" onclick="toggleAccordion(this)">
         Terms of Service <span class="arrow">▼</span>
     </button>
