@@ -41,30 +41,28 @@
 <script>
     let currentRating = 0;
 
-    // 1. KUNIN ang data - May backup keys para sigurado
-    const rawName = localStorage.getItem('reviewerName') || localStorage.getItem('custName') || "Customer";
-    const rawQueue = localStorage.getItem('reviewerQueue') || localStorage.getItem('savedQueueNumber') || "N/A";
-    const serviceFromStorage = localStorage.getItem('reviewerService') || "GCASH";
+    // 1. KUNIN ang data - Check URL first, then Storage
+    const urlParams = new URLSearchParams(window.location.search);
+    const rawName = urlParams.get('name') || localStorage.getItem('reviewerName') || localStorage.getItem('custName') || "Customer";
+    const rawQueue = urlParams.get('q') || localStorage.getItem('reviewerQueue') || localStorage.getItem('savedQueueNumber') || "N/A";
+    const serviceFromStorage = urlParams.get('service') || localStorage.getItem('reviewerService') || "GCASH";
 
-    // 2. RESTRICTION: Kung "Customer" at "N/A", ibig sabihin walang transaction. 
-    // Ibabalik sa index para iwas spam.
+    // 2. RESTRICTION: Kung wala talagang data sa URL at Storage, balik sa index
     if (rawName === "Customer" && rawQueue === "N/A") {
         window.location.href = 'index.html';
     }
 
-    // 3. DISPLAY agad sa screen (Full name para friendly sa customer)
+    // 3. DISPLAY agad sa screen
     if(rawName !== "Customer") {
         document.getElementById('welcomeText').innerText = "Hi " + rawName + ", how was it?";
     }
 
-    // 4. PRIVACY MASKING FUNCTION (Para sa Column C at B ng Sheets)
+    // 4. PRIVACY MASKING FUNCTION
     function maskString(str, type) {
         if (!str || str === "N/A" || str === "Customer") return str;
-        if (type === "name") {
-            return str[0] + "***" + str[str.length - 1]; // J***n
-        } else {
-            return str.substring(0, 1) + "***" + str.slice(-1); // G***1
-        }
+        return type === "name" 
+            ? str[0] + "***" + str[str.length - 1] 
+            : str.substring(0, 1) + "***" + str.slice(-1);
     }
 
     function setRating(n) {
@@ -88,11 +86,10 @@
         btnSubmit.disabled = true;
         btnSubmit.innerText = "Saving feedback...";
 
-        // 5. DATA SENDING - Dito gagamit ng maskString para may *** sa Sheets
         const reviewData = {
             action: "saveReview",
-            customerName: maskString(rawName, "name"),  // Lalabas na J***n sa Sheet
-            queueNo: maskString(rawQueue, "queue"),    // Lalabas na G***1 sa Sheet
+            customerName: maskString(rawName, "name"), 
+            queueNo: maskString(rawQueue, "queue"), 
             serviceType: serviceFromStorage, 
             rating: currentRating,
             message: comment, 
