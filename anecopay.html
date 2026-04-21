@@ -879,17 +879,33 @@ function showStep(stepId) {
 }
     
      function finishTransaction() {
-    // 1. Burahin ang mga sinave na input para malinis sa susunod na customer
-    ['custName', 'accNo', 'accName', 'amount', 'savedQueueNumber', 'isWaiting', 'currentStep', 'feeOption', 'sessionStartTime'].forEach(id => {
+    // A. KUNIN ANG DATA BAGO BURAHIN (Para sa Review Page)
+    const nameFromScreen = document.getElementById('custName').value;
+    const qNumFromScreen = document.getElementById('numberDisplay').innerText;
+    
+    // B. PATAYIN ANG "EXIT GUARD" (Ito ang pinaka-importante!)
+    // Ginagawa nating 'false' para hindi lumabas ang "Are you sure" popup
+    localStorage.setItem('isWaiting', 'false');
+
+    // C. I-SET ANG DATA PARA SA REVIEW PAGE (Reviewer Data)
+    // Ginagamit natin ang nameFromScreen para sigurado tayong full name ang makuha
+    localStorage.setItem('reviewerName', nameFromScreen || localStorage.getItem('input_custName') || "Customer");
+    localStorage.setItem('reviewerQueue', qNumFromScreen || localStorage.getItem('savedQueueNumber') || "N/A");
+    localStorage.setItem('reviewerService', 'ANECO'); 
+
+    // D. LINISIN ANG MGA INPUTS (Except the ones we just set for review)
+    const itemsToRemove = ['custName', 'accNo', 'accName', 'amount', 'savedQueueNumber', 'currentStep', 'feeOption', 'sessionStartTime', 'savedMode'];
+    itemsToRemove.forEach(id => {
         localStorage.removeItem(id);
-        localStorage.removeItem('input_' + id); // Para sa mga input fields
+        localStorage.removeItem('input_' + id); 
     });
 
-    // 2. Itigil ang pag-check ng status kung meron man
+    // E. ITIGIL ANG STATUS CHECKING
     if(statusInterval) clearInterval(statusInterval);
 
-    // 3. I-redirect sa index.html imbes na reload lang
-    window.location.href = 'index.html'; 
+    // F. LIPAT SA REVIEW PAGE
+    // Siguraduhing may review.html ka para sa ANECO feedback
+    window.location.href = 'review.html'; 
 }
 
     
