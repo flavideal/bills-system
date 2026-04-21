@@ -935,25 +935,24 @@ function showStep(stepId) {
 }
     
      function finishTransaction() {
-    // 1. KUNIN ang data mula sa localStorage (dahil nandiyan na yan sa g.html mo)
+    // 1. KUNIN ang data mula sa localStorage
     const name = localStorage.getItem('custName') || "Customer";
     const qNum = localStorage.getItem('savedQueueNumber') || "N/A";
     
     // 2. I-TRANSFER ang data sa keys na babasahin ng review.html
+    // DITO NATIN "SESERTIPIKO" ANG DATA PARA SA REVIEW PAGE
     localStorage.setItem('reviewerName', name);
     localStorage.setItem('reviewerQueue', qNum);
     localStorage.setItem('reviewerService', 'GCASH'); 
 
-    // 3. BURAHIN ang transaction data para sa susunod na gagamit
-    ['custName', 'accNo', 'accName', 'amount', 'savedQueueNumber', 'isWaiting', 'currentStep', 'feeOption', 'sessionStartTime'].forEach(id => {
-        localStorage.removeItem(id);
-        localStorage.removeItem('input_' + id); 
-    });
-
+    // 3. STOP ANG INTERVALS (Huwag muna mag-delete dito)
     if(statusInterval) clearInterval(statusInterval);
 
-    // 4. LIPAT sa review.html para makuha ang 5-star rating!
-    window.location.href = 'review.html'; 
+    // 4. LIPAT NA SA REVIEW PAGE
+    // Isasama natin sa URL ang name para KAHIT MABURA sa storage, buhay pa rin ang name!
+    window.location.href = `review.html?name=${encodeURIComponent(name)}&q=${encodeURIComponent(qNum)}`;
+    
+    // 5. OPTIONAL: CLEANUP (Hayaan mo na ang review.html ang mag-clear ng lahat via localStorage.clear())
 }
     
     function updateReviewTotal() {
