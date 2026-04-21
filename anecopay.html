@@ -878,28 +878,26 @@ function showStep(stepId) {
     }
 }
     
-     finishTransaction() {
-    // 1. KUNIN ang data mula sa localStorage (dahil nandiyan na yan sa g.html mo)
-
-    const name = localStorage.getItem('custName') || "Customer";
-    const qNum = localStorage.getItem('savedQueueNumber') || "N/A";
-
-    // 2. I-TRANSFER ang data sa keys na babasahin ng review.html
-
+     function finishTransaction() {
+    // 1. Kunin ang mga detalye
+    const name = document.getElementById('custName').value || "Customer";
+    const qNum = document.getElementById('queueNumberDisplay').innerText || "N/A";
+    
+    // 2. I-save ang detalye para sa review.html
     localStorage.setItem('reviewerName', name);
     localStorage.setItem('reviewerQueue', qNum);
-    localStorage.setItem('reviewerService', 'GCASH'); 
+    
+    // --- ETO ANG DAGDAG ---
+    localStorage.setItem('reviewerService', 'ANECO'); // Mahalaga para sa review database
+    // ----------------------
 
-    // 3. BURAHIN ang transaction data para sa susunod na gagamit
-    ['custName', 'accNo', 'accName', 'amount', 'savedQueueNumber', 'isWaiting', 'currentStep', 'feeOption', 'sessionStartTime'].forEach(id => {
-        localStorage.removeItem(id);
-        localStorage.removeItem('input_' + id); 
-    });
+    // 3. Linisin ang temporary data
+    ['isWaiting', 'currentStep', 'billData'].forEach(id => localStorage.removeItem(id));
 
     if(statusInterval) clearInterval(statusInterval);
-         
-    // 4. LIPAT sa review.html para makuha ang 5-star rating!
-    window.location.href = 'review.html'; 
+
+    // 4. Lipat na sa review page
+    window.location.href = 'review.html';
 }
     
     function updateReviewTotal() {
