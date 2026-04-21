@@ -381,6 +381,15 @@ window.onload = function() {
         }
     });
 
+    // --- DAGDAG DITO: Lock the calendar to Today onwards ---
+    const dateInput = document.getElementById('dueDate');
+    if (dateInput) {
+        // Kunin ang date ngayong araw sa format na YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today); 
+    }
+    // -----------------------------------------------------
+
     // Ituloy ang dating logic (Routing)
     const savedNumber = localStorage.getItem('savedQueueNumber');
     const isWaiting = localStorage.getItem('isWaiting');
