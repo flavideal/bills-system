@@ -381,17 +381,6 @@ window.onload = function() {
         }
     });
 
-    // --- DAGDAG DITO: Lock the calendar to Today onwards ---
-    const dateInput = document.getElementById('dueDate');
-    if (dateInput) {
-        // Imbes na ISOString, gagamit tayo ng Locale Date para sa PH Timezone
-        const phTime = new Date().toLocaleDateString('en-CA', { // en-CA format is YYYY-MM-DD
-            timeZone: 'Asia/Manila'
-        });
-        dateInput.setAttribute('min', phTime); 
-    }
-    // -----------------------------------------------------
-
     // Ituloy ang dating logic (Routing)
     const savedNumber = localStorage.getItem('savedQueueNumber');
     const isWaiting = localStorage.getItem('isWaiting');
@@ -404,7 +393,7 @@ window.onload = function() {
     } else {
         showStep('stepForm');
     }
-
+    
     // I-recompute ang fee kung may laman na ang amount
     if (document.getElementById('amount').value > 0) {
         calculateFee();
