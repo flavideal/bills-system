@@ -935,24 +935,27 @@ function showStep(stepId) {
 }
     
      function finishTransaction() {
-    // 1. KUNIN ang data mula sa localStorage
-    const name = localStorage.getItem('custName') || "Customer";
-    const qNum = localStorage.getItem('savedQueueNumber') || "N/A";
+    // A. KUNIN ANG DATA (Fresh mula sa screen)
+    const nameFromScreen = document.getElementById('custName').value;
+    const qNumFromScreen = document.getElementById('numberDisplay').innerText;
     
-    // 2. I-TRANSFER ang data sa keys na babasahin ng review.html
-    // DITO NATIN "SESERTIPIKO" ANG DATA PARA SA REVIEW PAGE
-    localStorage.setItem('reviewerName', name);
-    localStorage.setItem('reviewerQueue', qNum);
+    // B. INSURANCE (Kung sakaling empty ang screen, tingnan sa storage)
+    const finalName = nameFromScreen || localStorage.getItem('custName') || "Customer";
+    const finalQueue = qNumFromScreen || localStorage.getItem('savedQueueNumber') || "N/A";
+
+    // C. PATAYIN ANG POP-UP (Ito ang solusyon sa "Are you sure" error)
+    localStorage.setItem('isWaiting', 'false');
+
+    // D. I-SET ANG DATA PARA SA REVIEW PAGE
+    localStorage.setItem('reviewerName', finalName);
+    localStorage.setItem('reviewerQueue', finalQueue);
     localStorage.setItem('reviewerService', 'GCASH'); 
 
-    // 3. STOP ANG INTERVALS (Huwag muna mag-delete dito)
+    // E. STOP INTERVALS
     if(statusInterval) clearInterval(statusInterval);
 
-    // 4. LIPAT NA SA REVIEW PAGE
-    // Isasama natin sa URL ang name para KAHIT MABURA sa storage, buhay pa rin ang name!
-    window.location.href = `review.html?name=${encodeURIComponent(name)}&q=${encodeURIComponent(qNum)}`;
-    
-    // 5. OPTIONAL: CLEANUP (Hayaan mo na ang review.html ang mag-clear ng lahat via localStorage.clear())
+    // F. LIPAT PAGE (Safe transition)
+    window.location.href = `review.html?name=${encodeURIComponent(finalName)}&q=${encodeURIComponent(finalQueue)}`;
 }
     
     function updateReviewTotal() {
