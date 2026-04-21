@@ -666,18 +666,14 @@ function showStep(stepId) {
 
     // 2. Due Date Check (Bawal Overdue)
     const localToday = new Date();
-    localToday.setHours(0, 0, 0, 0); // I-reset ang oras sa 12:00 AM para date lang ang ikukumpara
+    localToday.setHours(0, 0, 0, 0); // April 22, 2026 00:00:00
 
-    // Kuhanin ang "kahapon"
-    const yesterday = new Date(localToday);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    // Kuhanin ang input date (Due Date)
+    // Kuhanin ang input date mula sa form
     const inputDueDate = new Date(dueDateInput);
     inputDueDate.setHours(0, 0, 0, 0);
-
+       
     // VALIDATION: I-allow kung ang input date ay >= kahapon
-    if (inputDueDate < yesterday) {
+   if (inputDueDate < localToday) {
         alert("❌ PAALALA: Ang bill mo ay PAST DUE na.\n\nHindi na ito tinatanggap sa aming Kiosk. Mangyaring pumunta sa ANECO Head Office para mag-settle.");
         return;
     }
