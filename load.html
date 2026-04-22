@@ -450,18 +450,6 @@ else if (result.status === "COMPLETED") {
     instruction.style.display = "none"; 
     completedArea.style.display = "block"; 
 
-    // Ipakita ang main area kung nasaan ang resibo
-    const verifyArea = document.getElementById('cashInVerify');
-    if (verifyArea) verifyArea.style.display = "block";
-
-    const finishBtn = document.getElementById('finishBtn');
-    if (finishBtn) {
-        finishBtn.disabled = false;
-        finishBtn.style.opacity = "1";
-        finishBtn.onclick = finishTransaction;
-    }
-
-    // Kunin ang mga values para sa Slip (E-LOAD Specific)
    const phoneNo = result.gcashNo || "N/A";
    const network = result.provider || "N/A";
    const promo = result.gcashName || "N/A";
