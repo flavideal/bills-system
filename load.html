@@ -182,15 +182,12 @@
 
     <div class="field-group">
     <label>Select Promo / Load Type</label>
-    
-    <div style="position: relative; margin-bottom: 8px;">
-        <input type="text" id="promoSearch" onkeyup="filterPromos()" 
-               placeholder="🔍 Hanapin ang promo (ex: Go50, Unli...)" 
-               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
-    </div>
 
-    <select id="loadType" onchange="updateAmountFromPromo(); saveInput('loadType');" 
-            style="width: 100%; padding: 12px; border-radius: 8px;">
+    <input type="text" id="promoSearch" onkeyup="filterPromos()" 
+           placeholder="🔍 Mag-type para mag-filter (ex: Go50)..." 
+           style="width: 100%; padding: 10px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 5px;">
+
+    <select id="loadType" onchange="updateAmountFromPromo(); saveInput('loadType');">
         <option value="">-- Select Network First --</option>
     </select>
 </div>
