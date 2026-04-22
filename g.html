@@ -1310,6 +1310,49 @@ function saveInput(id) {
 }
 // I-expose sa window para kahit nasa loob ng ibang function, mababasa pa rin
 window.saveInput = saveInput;
+
+// bago para sa maintenance at close
+async function checkMaintenanceStatus() {
+    try {
+        // Gagamit tayo ng getTransactions action para makuha ang status object
+        const response = await fetch(`${WEB_APP_URL}?action=getTransactions`);
+        const result = await response.json();
+
+        // 1. General Kiosk Maintenance
+        if (result.kioskStatus === "CLOSED") {
+            document.body.innerHTML = "<div style='text-align:center; padding:50px;'><h1>PASENSYA NA</h1><p>Kasalukuyang naka-maintenance ang buong Kiosk. Balik na lang po mamaya.</p></div>";
+            return;
+        }
+
+        const btnIn = document.getElementById('btnIn');
+        const btnOut = document.getElementById('btnOut');
+
+        // 2. Cash In Maintenance
+        if (result.cashInStatus === "CLOSED") {
+            btnIn.style.opacity = "0.4";
+            btnIn.style.pointerEvents = "none";
+            btnIn.innerHTML = "CASH IN (CLOSED)";
+            if (currentMode === 'Cash In') setMode('Cash Out'); // Force shift to other mode
+        }
+
+        // 3. Cash Out Maintenance
+        if (result.cashOutStatus === "CLOSED") {
+            btnOut.style.opacity = "0.4";
+            btnOut.style.pointerEvents = "none";
+            btnOut.innerHTML = "CASH OUT (CLOSED)";
+            if (currentMode === 'Cash Out') setMode('Cash In'); // Force shift to other mode
+        }
+
+    } catch (e) {
+        console.error("Maintenance check failed:", e);
+    }
+}
+
+// Siguraduhin na tinatawag ito sa window.onload
+window.onload = function() {
+    checkMaintenanceStatus(); 
+    // ... existing onload code ...
+};
     
 </script>
 
