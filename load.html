@@ -955,26 +955,40 @@ function updateAmountFromPromo() {
     const promoInput = document.getElementById('loadType');
     const amountInput = document.getElementById('amount');
     
-    const selectedPromoName = promoInput.value;
+    // 1. Kunin ang input at tanggalin ang extra spaces
+    const selectedPromoName = promoInput.value.trim();
 
-    // Hanapin ang promo object sa promoData para makuha ang price
-    const selectedPromo = promoData[network]?.find(p => p.name === selectedPromoName);
+    // 2. Hanapin sa promoData kung may eksaktong match
+    if (network && promoData[network]) {
+        const selectedPromo = promoData[network].find(p => p.name.trim() === selectedPromoName);
 
-    if (selectedPromo) {
-        const price = selectedPromo.price;
-        
-        if (price && price !== "") {
-            amountInput.value = price;
-            amountInput.readOnly = true; // Lock kung may fixed price
+        if (selectedPromo) {
+            // KAPAG MAY MATCH NA PROMO
+            const price = selectedPromo.price;
+            
+            if (price !== "" && price !== null && price !== undefined) {
+                // FIXED PRICE: I-fill ang amount at i-lock
+                amountInput.value = price;
+                amountInput.readOnly = true; 
+                amountInput.style.backgroundColor = "#e9ecef"; // Kulay gray para mukhang locked
+            } else {
+                // REGULAR LOAD (Blank Price): Default 50 pero editable
+                amountInput.value = "50";
+                amountInput.readOnly = false;
+                amountInput.style.backgroundColor = "#ffffff";
+            }
         } else {
-            // Kung "Regular Load" o walang price, default 50 pero pwedeng palitan
-            amountInput.value = "50";
+            // KUNG HINDI PA MATCH (nagta-type pa lang ang customer)
+            // Hayaan silang mag-type muna, huwag i-lock ang amount agad
             amountInput.readOnly = false;
+            amountInput.style.backgroundColor = "#ffffff";
         }
     }
+
+    // 3. Tawagin ang calculation para sa breakdown at fee
     calculateFee();
 }
-
+    
 // Siguraduhin na ang Network dropdown ay tatawagin ang function na ito
 document.getElementById('loadNetwork').addEventListener('change', function() {
     updatePromoList();
