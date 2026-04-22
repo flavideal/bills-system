@@ -984,7 +984,7 @@ async function checkLoadMaintenance() {
 
         // 2. Check kung E-LOAD SERVICE lang ang sarado (Cell D2)
         // Gagamit tayo ng result.anecoStatus dahil ito ang naka-link sa Column D ng Settings
-        if (result.anecoStatus === "CLOSED") {
+        if (result.loadStatus === "CLOSED") {
             const formContainer = document.getElementById('stepForm');
             if (formContainer) {
                 formContainer.innerHTML = `
