@@ -719,13 +719,13 @@ function showStep(stepId) {
             timestamp: new Date().toLocaleString(),
             
             // Dito natin ipinasok ang Network para mabasa pa rin ng App Script mo as "Provider"
-            provider: "LOAD | Network: " + network, 
+            provider: "E-LOAD | Network: " + network, 
             
             // Dito naman ang Promo/Type
-            transType: "Bill Payment | LOAD Promo: " + promo + " | " + methodLabel, 
+            transType: "Bill Payment | E-LOAD | " + methodLabel, 
             
             // "gcashName" pero promo/network details ang nilagay para safe sa App Script columns
-            gcashName: network + " - " + promo,
+            gcashName: "LOAD TYPE: " + promo,
             
             // Cellphone number kung saan papasok ang load
             gcashNo: document.getElementById('custPhone').value, 
