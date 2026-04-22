@@ -302,12 +302,14 @@
 
       allData = res.data;
 
+      // Hanapin ang part na ito sa loadData() at palitan:
       if (res.kioskStatus) {
-        window.currentKioskStatus = res.kioskStatus;
-        // Kung ang kioskStatus mo ay mismong "OPEN" or "CLOSED" string:
-        updateStatusUI(res.kioskStatus);
+        // I-save ang buong object sa window variable para ma-access ng ibang functions
+        window.currentKioskStatus = res.kioskStatus; 
         
-        // Kung may specific status para sa services (B2, C2, etc.)
+        // Gamitin ang mainStatus para sa Hub Status buttons (Open/Close)
+        updateStatusUI(res.kioskStatus.mainStatus || res.kioskStatus);
+        
         if (res.specificStatus) {
             updateMaintenanceUI(res.specificStatus);
         }
@@ -680,24 +682,40 @@ function updateStatusUI(status) {
     const btnOpen = document.getElementById('btn-open');
     const btnClose = document.getElementById('btn-close');
 
-    // Siguraduhin na string ang chine-check (halimbawa status.main o status)
-    // Depende sa Apps Script mo, kung ang res.kioskStatus ay mismong string na "OPEN":
-    const currentStatus = (typeof status === 'object') ? status.mainStatus : status;
+    // Kunin ang string value (halimbawa: "OPEN")
+    let currentStatus = (typeof status === 'object') ? status.mainStatus : status;
+    
+    // Siguraduhin na uppercase para walang error sa comparison
+    if (currentStatus) {
+        currentStatus = currentStatus.toUpperCase();
+    }
+
+    console.log("Current Hub Status:", currentStatus); // Para sa debugging
 
     if (currentStatus === "OPEN") {
+        // Highlight OPEN
         btnOpen.style.opacity = "1";
-        btnOpen.style.background = "#4CAF50"; // Gawing solid ang kulay
+        btnOpen.style.background = "#4CAF50";
         btnOpen.style.border = "2px solid white";
-        
+        btnOpen.style.boxShadow = "0 0 10px #4CAF50";
+
+        // Dim CLOSE
         btnClose.style.opacity = "0.3";
+        btnClose.style.background = "#f44336";
         btnClose.style.border = "none";
-    } else {
+        btnClose.style.boxShadow = "none";
+    } else if (currentStatus === "CLOSED" || currentStatus === "CLOSE") {
+        // Highlight CLOSE
         btnClose.style.opacity = "1";
-        btnClose.style.background = "#f44336"; // Gawing solid ang kulay
+        btnClose.style.background = "#f44336";
         btnClose.style.border = "2px solid white";
-        
+        btnClose.style.boxShadow = "0 0 10px #f44336";
+
+        // Dim OPEN
         btnOpen.style.opacity = "0.3";
+        btnOpen.style.background = "#4CAF50";
         btnOpen.style.border = "none";
+        btnOpen.style.boxShadow = "none";
     }
 }
 
