@@ -962,6 +962,62 @@ function saveInput(id) {
 }
 // I-expose sa window para kahit nasa loob ng ibang function, mababasa pa rin
 window.saveInput = saveInput;
+
+// --- maintenance check at close
+async function checkLoadMaintenance() {
+    try {
+        const response = await fetch(`${WEB_APP_URL}?action=getTransactions`);
+        const result = await response.json();
+
+        // 1. Check kung ang BUONG KIOSK ay sarado (Cell A2)
+        if (result.kioskStatus === "CLOSED") {
+            document.body.innerHTML = `
+                <div style="text-align:center; padding:50px; font-family:Arial, sans-serif;">
+                    <div style="font-size:60px;">🏠</div>
+                    <h1 style="color:#d32f2f;">OUR HUB IS CLOSED</h1>
+                    <p>Please check back later or visit us during opening hours.</p>
+                    <p>Thank you.</p>
+                    <button onclick="window.location.href='index.html'" style="margin-top:20px; padding:10px 20px; background:#1565c0; color:white; border:none; border-radius:5px; cursor:pointer;">BACK TO HOME</button>
+                </div>`;
+            return;
+        }
+
+        // 2. Check kung E-LOAD SERVICE lang ang sarado (Cell D2)
+        // Gagamit tayo ng result.anecoStatus dahil ito ang naka-link sa Column D ng Settings
+        if (result.anecoStatus === "CLOSED") {
+            const formContainer = document.getElementById('stepForm');
+            if (formContainer) {
+                formContainer.innerHTML = `
+                    <div style="background:#fff3f3; padding:30px; border-radius:12px; border:1px solid #ffcdd2; text-align:center; margin: 20px; font-family:Arial, sans-serif;">
+                        <div style="font-size:40px; margin-bottom:10px;">📱</div>
+                        <b style="color:#c62828; font-size:18px;">E-LOAD SERVICE IS NOT AVAILABLE</b><br>
+                        <p style="font-size:14px; color:#555; margin-top:15px; line-height:1.5;">
+                            Our E-Load system is currently down for maintenance.<br>
+                            Please go back to our kiosk and try other services.<br>
+                            Thank you for understanding!
+                        </p>
+                        <button onclick="window.location.href='index.html'" 
+                            style="margin-top:20px; padding:12px 25px; background-color:#1565c0; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+                            BACK TO KIOSK
+                        </button>
+                    </div>`;
+                
+                // I-hide din ang review step para sigurado
+                const reviewStep = document.getElementById('stepReview');
+                if(reviewStep) reviewStep.style.display = 'none';
+            }
+        }
+    } catch (e) {
+        console.error("Maintenance check failed:", e);
+    }
+}
+
+// I-inject sa existing onload nang hindi binubura ang luma
+const loadOriginalOnload = window.onload;
+window.onload = function() {
+    if (loadOriginalOnload) loadOriginalOnload();
+    checkLoadMaintenance(); 
+};
     
 </script>
 
