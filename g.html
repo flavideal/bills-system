@@ -1318,37 +1318,47 @@ async function checkMaintenanceStatus() {
         const result = await response.json();
 
         // 1. GENERAL KIOSK MAINTENANCE (Hub is Closed)
-        if (result.kioskStatus === "CLOSED") {
-            document.body.innerHTML = `
-                <div style="text-align:center; padding:50px; font-family:Arial, sans-serif; color:#333;">
-                    <div style="font-size:60px;">🏠</div>
-                    <h1 style="color:#d32f2f;">OUR HUB IS CLOSED</h1>
-                    <p style="font-size:18px;">Please check back later or visit us during opening hours.</p>
-                    <div style="margin-top:20px; color:#666;">Thank you.</div>
-                </div>`;
-            return;
-        }
+if (result.kioskStatus === "CLOSED") {
+    document.body.innerHTML = `
+        <div style="text-align:center; padding:50px; font-family:Arial, sans-serif; color:#333;">
+            <div style="font-size:60px;">🏠</div>
+            <h1 style="color:#d32f2f;">OUR HUB IS CLOSED</h1>
+            <p style="font-size:18px;">Please check back later or visit us during opening hours.</p>
+            <div style="margin-top:20px; color:#666;">Thank you.</div>
+            
+            <button onclick="window.location.href='index.html'" 
+                style="margin-top:30px; padding:12px 25px; font-size:16px; background-color:#1565c0; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                BACK TO HOME
+            </button>
+        </div>`;
+    return;
+}
 
-        const btnIn = document.getElementById('btnIn');
-        const btnOut = document.getElementById('btnOut');
+const btnIn = document.getElementById('btnIn');
+const btnOut = document.getElementById('btnOut');
 
-        // Check kung parehong sarado ang Cash In at Cash Out
-        if (result.cashInStatus === "CLOSED" && result.cashOutStatus === "CLOSED") {
-            btnIn.style.display = "none";
-            btnOut.style.display = "none";
-            const formContainer = document.getElementById('stepForm');
-            if(formContainer) {
-                formContainer.innerHTML = `
-                    <div style="background:#fff3f3; padding:20px; border-radius:12px; border:1px solid #ffcdd2; text-align:center;">
-                        <b style="color:#c62828;">SORRY, ALL SERVICES ARE CURRENTLY UNAVAILABLE</b><br>
-                        <p style="font-size:13px; color:#555; margin-top:10px;">
-                            We are temporarily unable to process Cash In and Cash Out transactions.<br>
-                            Please try again later. Thank you!
-                        </p>
-                    </div>`;
-            }
-            return;
-        }
+// Check kung parehong sarado ang Cash In at Cash Out
+if (result.cashInStatus === "CLOSED" && result.cashOutStatus === "CLOSED") {
+    btnIn.style.display = "none";
+    btnOut.style.display = "none";
+    const formContainer = document.getElementById('stepForm');
+    if(formContainer) {
+        formContainer.innerHTML = `
+            <div style="background:#fff3f3; padding:20px; border-radius:12px; border:1px solid #ffcdd2; text-align:center;">
+                <b style="color:#c62828;">SORRY, ALL SERVICES ARE CURRENTLY UNAVAILABLE</b><br>
+                <p style="font-size:13px; color:#555; margin-top:10px;">
+                    We are temporarily unable to process Cash In and Cash Out transactions.<br>
+                    Please try again later. Thank you!
+                </p>
+                
+                <button onclick="window.location.href='index.html'" 
+                    style="margin-top:15px; padding:10px 20px; background-color:#1565c0; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">
+                    BACK TO HOME
+                </button>
+            </div>`;
+    }
+    return;
+}
 
         // 2. CASH IN MAINTENANCE
         if (result.cashInStatus === "CLOSED") {
