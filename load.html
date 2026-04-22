@@ -170,15 +170,15 @@
     </div>
 
     <div class="field-group">
-        <label>Select Network</label>
-        <select id="loadNetwork" onchange="saveInput('loadNetwork'); calculateFee();" style="font-weight: bold;">
-            <option value="">-- Choose Network --</option>
-            <option value="Globe">Globe</option>
-            <option value="Smart / TNT">Smart / TNT</option>
-            <option value="DITO">DITO</option>
-            <option value="GOMO">GOMO</option>
-        </select>
-    </div>
+    <label>Select Network</label>
+    <select id="loadNetwork" onchange="updatePromoList(); saveInput('loadNetwork'); calculateFee();" style="font-weight: bold;">
+        <option value="">-- Choose Network --</option>
+        <option value="Globe">Globe</option>
+        <option value="Smart / TNT">Smart / TNT</option>
+        <option value="DITO">DITO</option>
+        <option value="GOMO">GOMO</option>
+    </select>
+</div>
 
     <div class="field-group">
     <label>Select Promo / Load Type</label>
@@ -955,38 +955,37 @@ function updateAmountFromPromo() {
     const promoInput = document.getElementById('loadType');
     const amountInput = document.getElementById('amount');
     
-    // 1. Kunin ang input at tanggalin ang extra spaces
     const selectedPromoName = promoInput.value.trim();
 
-    // 2. Hanapin sa promoData kung may eksaktong match
+    // Hanapin ang match sa promoData
     if (network && promoData[network]) {
         const selectedPromo = promoData[network].find(p => p.name.trim() === selectedPromoName);
 
         if (selectedPromo) {
-            // KAPAG MAY MATCH NA PROMO
             const price = selectedPromo.price;
             
             if (price !== "" && price !== null && price !== undefined) {
-                // FIXED PRICE: I-fill ang amount at i-lock
+                // LOCK: Kapag may fixed price
                 amountInput.value = price;
                 amountInput.readOnly = true; 
-                amountInput.style.backgroundColor = "#e9ecef"; // Kulay gray para mukhang locked
+                amountInput.style.backgroundColor = "#e9ecef"; 
             } else {
-                // REGULAR LOAD (Blank Price): Default 50 pero editable
+                // UNLOCK: Para sa Regular Load na walang price sa data
                 amountInput.value = "50";
                 amountInput.readOnly = false;
                 amountInput.style.backgroundColor = "#ffffff";
             }
         } else {
-            // KUNG HINDI PA MATCH (nagta-type pa lang ang customer)
-            // Hayaan silang mag-type muna, huwag i-lock ang amount agad
+            // UNLOCK: Kung nagta-type pa lang ang customer
             amountInput.readOnly = false;
             amountInput.style.backgroundColor = "#ffffff";
         }
     }
 
-    // 3. Tawagin ang calculation para sa breakdown at fee
-    calculateFee();
+    // Importante: I-trigger ang breakdown computation
+    if (typeof calculateFee === "function") {
+        calculateFee();
+    }
 }
     
 // Siguraduhin na ang Network dropdown ay tatawagin ang function na ito
