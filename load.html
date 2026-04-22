@@ -955,8 +955,11 @@ function filterPromos() {
 function updatePromoList() {
     const network = document.getElementById('loadNetwork').value;
     const promoSelect = document.getElementById('loadType');
-    const amountInput = document.getElementById('amount');
+    const searchInput = document.getElementById('promoSearch'); // Kunin ang search box
     
+    // LINISIN ANG SEARCH BOX TUWING NAGPAPALIT NG NETWORK
+    if (searchInput) searchInput.value = ""; 
+
     // Linisin ang dropdown
     promoSelect.innerHTML = '<option value="">-- Choose Promo --</option>';
     
@@ -965,7 +968,7 @@ function updatePromoList() {
             let option = document.createElement('option');
             option.value = promo.name;
             option.text = promo.name;
-            option.dataset.price = promo.price; // Itago ang presyo dito
+            option.dataset.price = promo.price;
             promoSelect.appendChild(option);
         });
     } else {
