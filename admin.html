@@ -293,14 +293,19 @@
 
       allData = res.data;
 
-       if (res.kioskStatus) {
-  // Kung ang kioskStatus ay object (may maintenance fields), 
-  // kunin lang natin ang main status para sa Hub Status UI.
-  let mainStatus = (typeof res.kioskStatus === 'object') ? res.kioskStatus.main : res.kioskStatus;
-  
-  window.currentKioskStatus = res.kioskStatus; 
-  updateStatusUI(mainStatus);
-}
+       if (res.result === "success") {
+      allData = res.data;
+
+      if (res.kioskStatus) {
+        // I-save ang buong object para sa maintenance modal
+        window.currentKioskStatus = res.kioskStatus; 
+        
+        // Kunin ang main status (OPEN/CLOSED)
+        let mainStatus = (typeof res.kioskStatus === 'object') ? res.kioskStatus.main : res.kioskStatus;
+        
+        // ITO ANG MAG-FIX: Tatawagin ang UI update sa bawat refresh (10s)
+        updateStatusUI(mainStatus); 
+      }
       
       // --- LOGIC PARA SA NOTIFICATION ---
       // Bilangin ang transactions na HINDI pa completed
@@ -669,19 +674,29 @@ function updateStatusUI(status) {
     const btnOpen = document.getElementById('btn-open');
     const btnClose = document.getElementById('btn-close');
 
-    // Siguraduhing String at Uppercase para laging match
+    // Siguraduhing String at Uppercase para laging match sa data ng Sheets
     const current = String(status).toUpperCase();
 
     if (current === "OPEN") {
+        // Highlight OPEN
         btnOpen.style.opacity = "1";
-        btnOpen.style.border = "2px solid white";
+        btnOpen.style.border = "2px solid #ffc267"; // Gold border para sa active
+        btnOpen.style.boxShadow = "0 0 10px #4CAF50";
+        
+        // Dim CLOSE
         btnClose.style.opacity = "0.3";
         btnClose.style.border = "none";
+        btnClose.style.boxShadow = "none";
     } else if (current === "CLOSED" || current === "CLOSE") {
+        // Highlight CLOSE
         btnClose.style.opacity = "1";
-        btnClose.style.border = "2px solid white";
+        btnClose.style.border = "2px solid #ffc267";
+        btnClose.style.boxShadow = "0 0 10px #f44336";
+        
+        // Dim OPEN
         btnOpen.style.opacity = "0.3";
         btnOpen.style.border = "none";
+        btnOpen.style.boxShadow = "none";
     }
 }
 
