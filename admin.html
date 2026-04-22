@@ -681,7 +681,12 @@ function updateStatusUI(status) {
 // maintenance buttons
 function openMaintenanceModal() {
     document.getElementById('maintenance-modal').style.display = 'block';
-    // Opsyonal: I-refresh ang UI base sa current data kung available na sa allData/kioskStatus
+    
+    // Gamitin natin ang current status na naka-save sa global variable mo (allData o res)
+    // Pero pinakamaganda, i-pass natin ang kioskStatus object dito.
+    if (window.currentKioskStatus) {
+        updateMaintenanceUI(window.currentKioskStatus);
+    }
 }
 
 function closeMaintenanceModal() {
@@ -689,34 +694,67 @@ function closeMaintenanceModal() {
 }
 
 async function updateServiceStatus(cell, newStatus) {
-    // Kinukuha natin ang button element para sa visual feedback
-    const btnId = `m-${cell.toLowerCase()}-${newStatus.toLowerCase()}`;
-    const targetBtn = document.getElementById(btnId);
-    const originalText = targetBtn.innerText;
+    const btnOpen = document.getElementById(`m-${cell.toLowerCase()}-open`);
+    const btnClose = document.getElementById(`m-${cell.toLowerCase()}-close`);
     
-    targetBtn.innerText = "WAIT...";
+    const targetBtn = newStatus === 'OPEN' ? btnOpen : btnClose;
+    const originalText = targetBtn.innerText;
+    targetBtn.innerText = "...";
     
     try {
         const response = await fetch(SCRIPT_URL, {
             method: "POST",
             body: JSON.stringify({ 
-                action: "updateSpecificStatus", // Bagong action sa Apps Script
-                user: u, 
-                pass: p, 
-                targetCell: cell, // Halimbawa: "B2"
+                action: "updateSpecificStatus", 
+                user: u, pass: p, 
+                targetCell: cell, 
                 status: newStatus 
             })
         });
 
         const res = await response.json();
         if (res.result === "success") {
-            alert(cell + " is now " + newStatus);
-            // Dito pwede mong dagdagan ng logic para baguhin ang kulay ng buttons
+            // I-update ang global variable para synced pa rin
+            const keyMap = { 'B2':'cashIn', 'C2':'cashOut', 'D2':'aneco', 'E2':'load' };
+            if (window.currentKioskStatus) window.currentKioskStatus[keyMap[cell]] = newStatus;
+            
+            // I-refresh ang kulay ng buttons sa modal
+            updateMaintenanceUI(window.currentKioskStatus);
         }
     } catch (e) {
-        alert("Failed to update " + cell);
+        alert("Failed!");
     } finally {
         targetBtn.innerText = originalText;
+    }
+}
+  
+function updateMaintenanceUI(statusObj) {
+    // Listahan ng cells at ang katumbas na status key mula sa Apps Script
+    const mapping = {
+        'B2': statusObj.cashIn,
+        'C2': statusObj.cashOut,
+        'D2': statusObj.aneco,
+        'E2': statusObj.load
+    };
+
+    for (const cell in mapping) {
+        const currentStatus = mapping[cell]; // "OPEN" or "CLOSED"
+        const btnOpen = document.getElementById(`m-${cell.toLowerCase()}-open`);
+        const btnClose = document.getElementById(`m-${cell.toLowerCase()}-close`);
+
+        if (btnOpen && btnClose) {
+            if (currentStatus === "OPEN") {
+                btnOpen.style.opacity = "1";
+                btnOpen.style.border = "2px solid white";
+                btnClose.style.opacity = "0.3";
+                btnClose.style.border = "none";
+            } else {
+                btnClose.style.opacity = "1";
+                btnClose.style.border = "2px solid white";
+                btnOpen.style.opacity = "0.3";
+                btnOpen.style.border = "none";
+            }
+        }
     }
 }
 </script>
