@@ -294,9 +294,13 @@
       allData = res.data;
 
        if (res.kioskStatus) {
-        window.currentKioskStatus = res.kioskStatus;
-        updateStatusUI(res.kioskStatus);
-      }
+  // Kung ang kioskStatus ay object (may maintenance fields), 
+  // kunin lang natin ang main status para sa Hub Status UI.
+  let mainStatus = (typeof res.kioskStatus === 'object') ? res.kioskStatus.main : res.kioskStatus;
+  
+  window.currentKioskStatus = res.kioskStatus; 
+  updateStatusUI(mainStatus);
+}
       
       // --- LOGIC PARA SA NOTIFICATION ---
       // Bilangin ang transactions na HINDI pa completed
