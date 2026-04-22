@@ -132,15 +132,6 @@
   50% { opacity: 0.5; }
   100% { opacity: 1; }
 }
-
-#status-controls button {
-    transition: all 0.3s ease;
-    outline: none;
-}
-
-#status-controls button:active {
-    transform: scale(0.95);
-}
   </style>
 </head>
 <body>
@@ -302,17 +293,9 @@
 
       allData = res.data;
 
-      // Hanapin ang part na ito sa loadData() at palitan:
-      if (res.kioskStatus) {
-        // I-save ang buong object sa window variable para ma-access ng ibang functions
-        window.currentKioskStatus = res.kioskStatus; 
-        
-        // Gamitin ang mainStatus para sa Hub Status buttons (Open/Close)
-        updateStatusUI(res.kioskStatus.mainStatus || res.kioskStatus);
-        
-        if (res.specificStatus) {
-            updateMaintenanceUI(res.specificStatus);
-        }
+       if (res.kioskStatus) {
+        window.currentKioskStatus = res.kioskStatus;
+        updateStatusUI(res.kioskStatus);
       }
       
       // --- LOGIC PARA SA NOTIFICATION ---
@@ -682,43 +665,18 @@ function updateStatusUI(status) {
     const btnOpen = document.getElementById('btn-open');
     const btnClose = document.getElementById('btn-close');
 
-    // Kunin ang string value (halimbawa: "OPEN")
-    let currentStatus = (typeof status === 'object') ? status.mainStatus : status;
-    
-    // Siguraduhin na uppercase para walang error sa comparison
-    if (currentStatus) {
-        currentStatus = currentStatus.toUpperCase();
-    }
-
-    console.log("Current Hub Status:", currentStatus); // Para sa debugging
-
-    if (currentStatus === "OPEN") {
-        // Highlight OPEN
+    if (status === "OPEN") {
         btnOpen.style.opacity = "1";
-        btnOpen.style.background = "#4CAF50";
         btnOpen.style.border = "2px solid white";
-        btnOpen.style.boxShadow = "0 0 10px #4CAF50";
-
-        // Dim CLOSE
         btnClose.style.opacity = "0.3";
-        btnClose.style.background = "#f44336";
         btnClose.style.border = "none";
-        btnClose.style.boxShadow = "none";
-    } else if (currentStatus === "CLOSED" || currentStatus === "CLOSE") {
-        // Highlight CLOSE
+    } else {
         btnClose.style.opacity = "1";
-        btnClose.style.background = "#f44336";
         btnClose.style.border = "2px solid white";
-        btnClose.style.boxShadow = "0 0 10px #f44336";
-
-        // Dim OPEN
         btnOpen.style.opacity = "0.3";
-        btnOpen.style.background = "#4CAF50";
         btnOpen.style.border = "none";
-        btnOpen.style.boxShadow = "none";
     }
 }
-
 
 // maintenance buttons
 function openMaintenanceModal() {
