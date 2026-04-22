@@ -181,14 +181,13 @@
     </div>
 
     <div class="field-group">
-    <label>Search & Select Promo</label>
-    <input type="text" id="promoSearch" oninput="updatePromoList()" 
-           placeholder="🔍 Type to search (ex: Go50)..." 
-           style="width: 100%; padding: 10px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 5px;">
-
-    <select id="loadType" onchange="updateAmountFromPromo(); saveInput('loadType');">
-        <option value="">-- Select Network First --</option>
-    </select>
+    <label>Select Promo / Load Type</label>
+    <input list="promoList" id="loadType" oninput="updateAmountFromPromo(); saveInput('loadType');" 
+           placeholder="Click or type to search promo..." 
+           style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;">
+    
+    <datalist id="promoList">
+        </datalist>
 </div>
            
     <div class="field-group">
@@ -908,8 +907,7 @@ const promoData = {
         { name: "Regular Load 100", price: 100 },
         { name: "Go50 (5GB for 3 Days)", price: 50 },
         { name: "Go90 (8GB for 7 Days)", price: 90 },
-        { name: "GoEXTRA90 (8GB + Unli Allnet)", price: 90 },
-        { name: "TM EasySurf 50", price: 50 }
+        { name: "GoEXTRA90 (8GB + Unli Allnet)", price: 90 }
     ],
     "Smart / TNT": [
         { name: "Regular Load", price: "" },
@@ -929,73 +927,52 @@ const promoData = {
     ]
 };
 
-function filterPromos() {
-    const input = document.getElementById('promoSearch');
-    const filter = input.value.toLowerCase();
-    const select = document.getElementById('loadType');
-    const options = select.options;
-
-    // Simulan sa index 1 para hindi ma-hide yung "Choose Promo" label
-    for (let i = 1; i < options.length; i++) {
-        const txtValue = options[i].text.toLowerCase();
-        
-        if (txtValue.includes(filter)) {
-            options[i].style.display = ""; // Ipakita
-        } else {
-            options[i].style.display = "none"; // Itago
-        }
-    }
-}
-
 // Function para mag-update ang Dropdown ng Promo base sa Network
 function updatePromoList() {
     const network = document.getElementById('loadNetwork').value;
-    const promoSelect = document.getElementById('loadType');
-    const searchInput = document.getElementById('promoSearch');
-    const filter = searchInput.value.toLowerCase(); // Kunin ang search term
+    const promoList = document.getElementById('promoList'); // Ang datalist
+    const promoInput = document.getElementById('loadType'); // Ang input box
 
-    // 1. Linisin ang dropdown
-    promoSelect.innerHTML = '<option value="">-- Choose Promo --</option>';
-    
+    // Linisin ang listahan at ang input box tuwing nagpapalit ng network
+    promoList.innerHTML = '';
+    promoInput.value = ''; 
+
     if (promoData[network]) {
-        // 2. I-filter ang promoData[network] base sa tina-type
-        const filteredPromos = promoData[network].filter(promo => 
-            promo.name.toLowerCase().includes(filter)
-        );
-
-        // 3. I-loop ang filtered results
-        if (filteredPromos.length > 0) {
-            filteredPromos.forEach(promo => {
-                let option = document.createElement('option');
-                option.value = promo.name;
-                option.text = promo.name;
-                option.dataset.price = promo.price;
-                promoSelect.appendChild(option);
-            });
-        } else {
-            // Kung walang nahanap sa search
-            promoSelect.innerHTML = '<option value="">❌ No promo found</option>';
-        }
-    } else {
-        promoSelect.innerHTML = '<option value="">-- Select Network First --</option>';
+        promoData[network].forEach(promo => {
+            let option = document.createElement('option');
+            // Sa datalist, ang 'value' ang hinahanap at pinipili
+            option.value = promo.name; 
+            // Pwede nating i-store ang price sa dataset (pero limited ito sa datalist)
+            option.setAttribute('data-price', promo.price);
+            promoList.appendChild(option);
+        });
     }
 }
 
 // Function para kusa nang mapuno ang Amount box
 function updateAmountFromPromo() {
-    const promoSelect = document.getElementById('loadType');
-    const selectedOption = promoSelect.options[promoSelect.selectedIndex];
-    const price = selectedOption.dataset.price;
+    const network = document.getElementById('loadNetwork').value;
+    const promoInput = document.getElementById('loadType');
     const amountInput = document.getElementById('amount');
+    
+    const selectedPromoName = promoInput.value;
 
-    if (price && price !== "") {
-        amountInput.value = price;
-        amountInput.readOnly = true; // Hindi na pwedeng baguhin ng customer ang presyo
-    } else {
-        amountInput.value = "";
-        amountInput.readOnly = false; // Pwedeng mag-type kung "Regular Load"
+    // Hanapin ang promo object sa promoData para makuha ang price
+    const selectedPromo = promoData[network]?.find(p => p.name === selectedPromoName);
+
+    if (selectedPromo) {
+        const price = selectedPromo.price;
+        
+        if (price && price !== "") {
+            amountInput.value = price;
+            amountInput.readOnly = true; // Lock kung may fixed price
+        } else {
+            // Kung "Regular Load" o walang price, default 50 pero pwedeng palitan
+            amountInput.value = "50";
+            amountInput.readOnly = false;
+        }
     }
-    calculateFee(); // I-recompute ang breakdown
+    calculateFee();
 }
 
 // Siguraduhin na ang Network dropdown ay tatawagin ang function na ito
