@@ -474,6 +474,27 @@
     text-transform: uppercase;
     letter-spacing: 1px;
 }
+/* Badge para sa individual maintenance */
+.maintenance-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #d32f2f;
+    color: white;
+    font-size: 8px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 5;
+}
+
+/* Effect para sa item na naka-maintenance */
+.menu-item.maintenance {
+    opacity: 0.6;
+    border: 1px dashed #d32f2f;
+}
     </style>
 </head>
 <body>
@@ -525,7 +546,7 @@
     </div>
             
         <div class="menu-grid">
-    <a href="g.html" class="menu-item active-link hub-closed" id="link-gcash" ... >
+    <a href="g.html" class="menu-item active-link hub-closed" id="link-gcash">
         <img src="logo/g.png" alt="GCash" style="height: 25px; width: auto; margin-bottom: 8px; object-fit: contain;">
         <span class="service-name" style="color: var(--premium-green); font-weight: 900;">GCASH</span>
         
@@ -542,7 +563,7 @@
         <span class="status-tag">COMING SOON</span>
     </div>
 
-    <a href="anecopay.html" class="menu-item active-link hub-closed" id="link-aneco" ... >
+    <a href="anecopay.html" class="menu-item active-link hub-closed" id="link-aneco">
         <img src="logo/aneco.png" alt="ANECO" style="height: 25px; width: auto; margin-bottom: 8px; object-fit: contain;">
         <span class="service-name" style="color: var(--premium-green); font-weight: 900;">ANECO</span>
         
@@ -721,8 +742,13 @@
    // --- HUB STATUS LOGIC (THE PERMANENT FIX) ---
 async function checkHubStatus() {
     const msg = document.getElementById('closed-msg');
-    const gridLoader = document.getElementById('grid-loader'); // Bagong loader ID
+    const gridLoader = document.getElementById('grid-loader');
     const menuItems = document.querySelectorAll('.menu-item:not(.coming-soon)');
+
+    // Kunin ang mga individual buttons gamit ang IDs na nilagay natin
+    const linkGcash = document.getElementById('link-gcash');
+    const linkAneco = document.getElementById('link-aneco');
+    const linkEload = document.getElementById('link-eload');
 
     try {
         const response = await fetch(`${SCRIPT_URL}?action=getTransactions&t=${Date.now()}`);
@@ -731,33 +757,56 @@ async function checkHubStatus() {
         const isClosed = (res.kioskStatus === "CLOSED");
 
         if (isClosed) {
+            // --- LOGIC 1: BUONG HUB AY SARADO ---
             msg.style.display = 'block';
             menuItems.forEach(item => {
                 item.classList.add('hub-closed');
                 item.onclick = function(e) { e.preventDefault(); return false; };
             });
         } else {
+            // --- LOGIC 2: BUKAS ANG HUB, PERO I-CHECK ANG SERVICES ---
             msg.style.display = 'none';
             menuItems.forEach(item => {
                 item.classList.remove('hub-closed');
                 item.onclick = null;
             });
+
+            // Helper function para hindi paulit-ulit ang code
+            const applyMaintenance = (element, status) => {
+                if (!element) return;
+                // Alisin ang lumang badge kung meron man
+                const existingBadge = element.querySelector('.maintenance-badge');
+                if (existingBadge) existingBadge.remove();
+
+                if (status === "CLOSED") {
+                    element.classList.add('hub-closed'); // Gamitin ang existing style mo
+                    element.innerHTML += `<span class="maintenance-badge">Maintenance</span>`;
+                } else {
+                    element.classList.remove('hub-closed');
+                }
+            };
+
+            // I-apply sa bawat serbisyo base sa data mula sa Apps Script
+            // Para sa GCash: Maintenance lang kung parehong sarado ang Cash-in at Cash-out
+            const gcashStatus = (res.cashInStatus === "CLOSED" && res.cashOutStatus === "CLOSED") ? "CLOSED" : "OPEN";
+            applyMaintenance(linkGcash, gcashStatus);
+            
+            // Para sa Aneco at E-load
+            applyMaintenance(linkAneco, res.anecoStatus);
+            applyMaintenance(linkEload, res.loadStatus);
         }
     } catch (e) {
         msg.style.display = 'block';
         msg.innerHTML = "⚠️ Connection Error. Checking...";
         menuItems.forEach(item => item.classList.add('hub-closed'));
     } finally {
-        // Alisin ang loader sa grid area lang
         if (gridLoader) {
             gridLoader.style.opacity = '0';
-            setTimeout(() => { 
-                gridLoader.style.display = 'none'; 
-            }, 300);
+            setTimeout(() => { gridLoader.style.display = 'none'; }, 300);
         }
     }
 }
-
+       
 // Dagdag na layer: I-check ang status bago lumipat ng page
 document.querySelectorAll('.active-link').forEach(link => {
     link.addEventListener('click', function(e) {
