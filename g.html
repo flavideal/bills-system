@@ -1311,7 +1311,7 @@ function saveInput(id) {
 // I-expose sa window para kahit nasa loob ng ibang function, mababasa pa rin
 window.saveInput = saveInput;
 
-// bago para sa maintenance at close
+// bago para sa maintenance at close (kung gagawa ka sa maya/palawan palitan lang ang text name at nito at magdagdag sa appscript)
 async function checkMaintenanceStatus() {
     try {
         const response = await fetch(`${WEB_APP_URL}?action=getTransactions`);
@@ -1337,7 +1337,7 @@ if (result.kioskStatus === "CLOSED") {
 const btnIn = document.getElementById('btnIn');
 const btnOut = document.getElementById('btnOut');
 
-// Check kung parehong sarado ang Cash In at Cash Out
+// Check kung parehong sarado ang Cash In at Cash Out (palitan ang kung ano sa appscript (result.ito>cashInStatus === "CLOSED" && result.>cashOutStatus === "CLOSED") {)
 if (result.cashInStatus === "CLOSED" && result.cashOutStatus === "CLOSED") {
     btnIn.style.display = "none";
     btnOut.style.display = "none";
