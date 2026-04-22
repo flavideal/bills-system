@@ -181,17 +181,16 @@
     </div>
 
     <div class="field-group">
-    <label>Select Promo / Load Type</label>
-
-    <input type="text" id="promoSearch" onkeyup="filterPromos()" 
-           placeholder="🔍 Mag-type para mag-filter (ex: Go50)..." 
+    <label>Search & Select Promo</label>
+    <input type="text" id="promoSearch" oninput="updatePromoList()" 
+           placeholder="🔍 Type to search (ex: Go50)..." 
            style="width: 100%; padding: 10px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 5px;">
 
     <select id="loadType" onchange="updateAmountFromPromo(); saveInput('loadType');">
         <option value="">-- Select Network First --</option>
     </select>
 </div>
-
+           
     <div class="field-group">
         <label>Amount (Presyo ng Load)</label>
         <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
@@ -952,22 +951,31 @@ function filterPromos() {
 function updatePromoList() {
     const network = document.getElementById('loadNetwork').value;
     const promoSelect = document.getElementById('loadType');
-    const searchInput = document.getElementById('promoSearch'); // Kunin ang search box
-    
-    // LINISIN ANG SEARCH BOX TUWING NAGPAPALIT NG NETWORK
-    if (searchInput) searchInput.value = ""; 
+    const searchInput = document.getElementById('promoSearch');
+    const filter = searchInput.value.toLowerCase(); // Kunin ang search term
 
-    // Linisin ang dropdown
+    // 1. Linisin ang dropdown
     promoSelect.innerHTML = '<option value="">-- Choose Promo --</option>';
     
     if (promoData[network]) {
-        promoData[network].forEach(promo => {
-            let option = document.createElement('option');
-            option.value = promo.name;
-            option.text = promo.name;
-            option.dataset.price = promo.price;
-            promoSelect.appendChild(option);
-        });
+        // 2. I-filter ang promoData[network] base sa tina-type
+        const filteredPromos = promoData[network].filter(promo => 
+            promo.name.toLowerCase().includes(filter)
+        );
+
+        // 3. I-loop ang filtered results
+        if (filteredPromos.length > 0) {
+            filteredPromos.forEach(promo => {
+                let option = document.createElement('option');
+                option.value = promo.name;
+                option.text = promo.name;
+                option.dataset.price = promo.price;
+                promoSelect.appendChild(option);
+            });
+        } else {
+            // Kung walang nahanap sa search
+            promoSelect.innerHTML = '<option value="">❌ No promo found</option>';
+        }
     } else {
         promoSelect.innerHTML = '<option value="">-- Select Network First --</option>';
     }
