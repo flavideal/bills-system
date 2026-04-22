@@ -1314,37 +1314,72 @@ window.saveInput = saveInput;
 // bago para sa maintenance at close
 async function checkMaintenanceStatus() {
     try {
-        // Gagamit tayo ng getTransactions action para makuha ang status object
         const response = await fetch(`${WEB_APP_URL}?action=getTransactions`);
         const result = await response.json();
 
-        // 1. General Kiosk Maintenance
+        // 1. GENERAL KIOSK MAINTENANCE (Hub is Closed)
         if (result.kioskStatus === "CLOSED") {
-            document.body.innerHTML = "<div style='text-align:center; padding:50px;'><h1>PASENSYA NA</h1><p>Kasalukuyang naka-maintenance ang buong Kiosk. Balik na lang po mamaya.</p></div>";
+            document.body.innerHTML = `
+                <div style="text-align:center; padding:50px; font-family:Arial, sans-serif; color:#333;">
+                    <div style="font-size:60px;">🏠</div>
+                    <h1 style="color:#d32f2f;">OUR HUB IS CLOSED</h1>
+                    <p style="font-size:18px;">Please check back later or visit us during opening hours.</p>
+                    <div style="margin-top:20px; color:#666;">Salamat sa pag-unawa.</div>
+                </div>`;
             return;
         }
 
         const btnIn = document.getElementById('btnIn');
         const btnOut = document.getElementById('btnOut');
 
-        // 2. Cash In Maintenance
-        if (result.cashInStatus === "CLOSED") {
-            btnIn.style.opacity = "0.4";
-            btnIn.style.pointerEvents = "none";
-            btnIn.innerHTML = "CASH IN (CLOSED)";
-            if (currentMode === 'Cash In') setMode('Cash Out'); // Force shift to other mode
+        // Check kung parehong sarado ang Cash In at Cash Out
+        if (result.cashInStatus === "CLOSED" && result.cashOutStatus === "CLOSED") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "none";
+            const formContainer = document.getElementById('stepForm');
+            if(formContainer) {
+                formContainer.innerHTML = `
+                    <div style="background:#fff3f3; padding:20px; border-radius:12px; border:1px solid #ffcdd2; text-align:center;">
+                        <b style="color:#c62828;">SORRY, ALL SERVICES ARE CURRENTLY UNAVAILABLE</b><br>
+                        <p style="font-size:13px; color:#555; margin-top:10px;">
+                            We are temporarily unable to process Cash In and Cash Out transactions.<br>
+                            Please try again later. Thank you!
+                        </p>
+                    </div>`;
+            }
+            return;
         }
 
-        // 3. Cash Out Maintenance
+        // 2. CASH IN MAINTENANCE
+        if (result.cashInStatus === "CLOSED") {
+            btnIn.style.opacity = "0.5";
+            btnIn.style.filter = "grayscale(1)"; // Magmumulang disable talaga
+            btnIn.style.pointerEvents = "none";
+            btnIn.innerHTML = "CASH IN (NOT AVAILABLE)";
+            
+            // Magpakita ng maliit na warning sa ilalim ng mode buttons kung ito ang naka-select
+            if (currentMode === 'Cash In') {
+                alert("NOTICE: Our Cash In is not available right now. Sorry for the inconvenience. You may try our other services. Thank you!");
+                setMode('Cash Out'); // Auto switch para hindi ma-stuck ang customer
+            }
+        }
+
+        // 3. CASH OUT MAINTENANCE
         if (result.cashOutStatus === "CLOSED") {
-            btnOut.style.opacity = "0.4";
+            btnOut.style.opacity = "0.5";
+            btnOut.style.filter = "grayscale(1)";
             btnOut.style.pointerEvents = "none";
-            btnOut.innerHTML = "CASH OUT (CLOSED)";
-            if (currentMode === 'Cash Out') setMode('Cash In'); // Force shift to other mode
+            btnOut.innerHTML = "CASH OUT (NOT AVAILABLE)";
+            
+            if (currentMode === 'Cash Out') {
+                alert("NOTICE: Our Cash Out is not available right now. Sorry for the inconvenience. You may try our other services. Thank you!");
+                setMode('Cash In'); // Auto switch
+            }
         }
 
     } catch (e) {
         console.error("Maintenance check failed:", e);
+        // Hayaan lang tumuloy para hindi mag-crash ang kiosk kung offline ang status check
     }
 }
 
