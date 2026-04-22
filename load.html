@@ -397,15 +397,20 @@ async function checkMyStatus() {
             statusBox.className = "status-badge status-waiting";
             statusBox.innerText = "⏳ NASA QUEUE KA NA";
             
-            instruction.style.color = "#1565c0"; // Blue para sa "Processing/Info"
+            instruction.style.color = "#1565c0"; 
             instruction.innerHTML = `
                 <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 5px solid #2196f3; text-align: left;">
-                    <b style="font-size: 1.1em; color: #0d47a1;">Sinisuri na ang iyong Transaction...</b><br><br>
-                    Paki-antay lang po at <b>huwag muna i-exit</b> ang page na ito.<br>
-                    Lalabas dito sa screen ang notification kapag tinatawag ka na para magbayad sa counter.
+                    <b style="font-size: 1.1em; color: #0d47a1;">Nakatanggap na ang aming System!</b><br><br>
+                    Ang iyong request para sa <b>E-Load</b> ay kasalukuyang nakapila. 
+                    Paki-antay lang po na tawagin ang iyong number (<b>${myQueueNumber}</b>) para sa pagbabayad.<br><br>
+                    
+                    <span style="font-size: 0.9em; color: #555;">
+                        Status: <b>Waiting for Cashier</b><br>
+                        Service: <b>E-Load Top-up</b>
+                    </span>
                 </div>
-                <div style="margin-top: 10px; font-size: 0.85em; color: #666;">
-                    <i>Tip: Maaari mong i-screenshot ang iyong Queue Number habang nag-aantay.</i>
+                <div style="margin-top: 12px; padding: 10px; background: #fffbe6; border-radius: 6px; border: 1px solid #ffe58f; font-size: 0.85em; color: #856404;">
+                    💡 <b>Tip:</b> Ihanda na ang iyong saktong bayad o card para sa mas mabilis na transaction pagtawag sa iyo.
                 </div>
             `;
             instruction.style.display = "block";
@@ -421,13 +426,15 @@ async function checkMyStatus() {
             instruction.style.color = "#1b431c";
             instruction.innerHTML = `
                 <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 5px solid #ff9800; text-align: left;">
-                    <b style="font-size: 1.2em; color: #e65100;">STEP 1: MAGBAYAD SA COUNTER</b><br>
-                    Ipakita ang iyong Queue Number at i-abot ang bayad sa cashier.<br><br>
+                    <b style="font-size: 1.2em; color: #e65100;">STEP 1: MAGBAYAD SA CASHIER</b><br>
+                    Ipakita ang iyong Queue Number (<b>${myQueueNumber}</b>) at i-abot ang bayad para sa iyong Load.<br><br>
                     
-                    <b style="font-size: 1.2em; color: #2e7d32;">STEP 2: HUWAG MUNA UMALIS</b><br>
-                    Pagkatapos magbayad, <b>paki-antay na lumabas dito</b> ang iyong Digital Receipt. 
-                    <span style="color: #d32f2f;">⚠️ Huwag i-close o i-exit ang page na ito.</span><br><br>
-        
+                    <b style="font-size: 1.2em; color: #2e7d32;">STEP 2: PROSESO NG E-LOAD</b><br>
+                    Pagkabayad mo, i-pro-process na ng aming staff ang iyong load. <b>Huwag muna i-close ang page na ito</b> dahil dito lalabas ang iyong Digital Receipt/Proof of Transaction.<br><br>
+
+                    <div style="background: #fff; padding: 8px; border-radius: 5px; border: 1px solid #ddd; font-size: 0.9em;">
+                        <span style="color: #d32f2f;">⚠️ Paalala: Siguraduhing tama ang Mobile Number na ibinigay para maiwasan ang problema sa load.</span>
+                    </div>
                 </div>
             `;
             instruction.style.display = "block";
@@ -455,22 +462,26 @@ else if (result.status === "COMPLETED") {
     }
 
     // Kunin ang mga values para sa Slip (E-LOAD Specific)
-    const phoneNo = document.getElementById('custPhone').value;
-    const network = document.getElementById('loadNetwork').value;
-    const promo = document.getElementById('loadType').value;
+   const phoneNo = result.gcashNo || "N/A";
+   const network = result.provider || "N/A";
+   const promo = result.gcashName || "N/A";
+
+    // Halimbawa ng pag-linis ng data para sa resibo:
+const cleanNetwork = (result.provider || "").replace("E-LOAD | Network: ", "");
+const cleanPromo = (result.gcashName || "").replace("LOAD TYPE: ", "");
     
     // I-render ang details sa adminNote
     const adminNote = document.getElementById('adminNote');
     if (adminNote) {
         adminNote.innerHTML = `
-            <div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; text-align: center;">
-                <strong style="color: #1b4332; font-size: 16px;">LOAD TRANSACTION COMPLETE</strong><br>
-                <span style="font-size: 13px; color: #333;">Network: <b>${network}</b></span><br>
-                <span style="font-size: 13px; color: #333;">Number: <b>${phoneNo}</b></span><br>
-                <span style="font-size: 13px; color: #333;">Promo: <b>${promo}</b></span>
-            </div>
+    <div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; text-align: center;">
+        <strong style="color: #1b4332; font-size: 16px;">LOAD TRANSACTION COMPLETE</strong><br>
+        <span style="font-size: 13px; color: #333;">Network: <b>${cleanNetwork}</b></span><br>
+        <span style="font-size: 13px; color: #333;">Number: <b>${result.gcashNo}</b></span><br>
+        <span style="font-size: 13px; color: #333;">Promo: <b>${cleanPromo}</b></span>
+    </div>
             <div style="margin-top: 5px; text-align: center;">
-                <span style="font-size: 11px; color: #666;">Flavi Deal - Butuan Hub</span>
+                <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
             </div>
         `;
     }
