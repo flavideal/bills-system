@@ -143,6 +143,13 @@
     border: none !important;
     box-shadow: none !important;
 }
+
+/* Ilagay ito sa loob ng <style> sa maintenance-modal para mas malinaw ang selection */
+.m-toggle button { 
+    transition: all 0.3s ease; 
+    font-weight: bold;
+    border-radius: 5px;
+}
   </style>
 </head>
 <body>
@@ -308,34 +315,33 @@
 
     const res = await response.json();
 
-    // IMPORTANT: I-save muna ang data sa allData variable
     if (res.data) {
       allData = res.data; 
     }
 
-    // UPDATE HUB STATUS UI
+    // FIX: I-save ang buong kioskStatus object para sa Maintenance Modal
     if (res.kioskStatus) {
-    let mainStatus = (typeof res.kioskStatus === 'object') ? res.kioskStatus.main : res.kioskStatus;
-    localStorage.setItem('hub_status', mainStatus); // UPDATE CACHE
-    updateStatusUI(mainStatus); 
-}
+        window.currentKioskStatus = res.kioskStatus; // Eto ang kailangan ng Maintenance UI
+        
+        let mainStatus = (typeof res.kioskStatus === 'object') ? res.kioskStatus.main : res.kioskStatus;
+        localStorage.setItem('hub_status', mainStatus); 
+        updateStatusUI(mainStatus); 
+        
+        // FIX: I-update ang Maintenance UI kung sakaling nakabukas ang modal
+        if (document.getElementById('maintenance-modal').style.display === 'block') {
+            updateMaintenanceUI(res.kioskStatus);
+        }
+    }
       
-    // NOTIFICATION LOGIC
     const currentActiveCount = allData.filter(row => (row[16] || "NEW").toUpperCase() !== "COMPLETED").length;
-
     if (!isFirstLoad && currentActiveCount > lastCount) {
       triggerAlert();
     }
-
     lastCount = currentActiveCount;
     isFirstLoad = false;
-      
-    // Refresh the table
     filterData(); 
 
-  } catch (e) { 
-    console.error("Load Data Error:", e); 
-  }
+  } catch (e) { console.error("Load Data Error:", e); }
 }
   
   // --- NEW: Function para sa Tunog at Banner ---
@@ -756,7 +762,8 @@ async function updateServiceStatus(cell, newStatus) {
 }
   
 function updateMaintenanceUI(statusObj) {
-    // Listahan ng cells at ang katumbas na status key mula sa Apps Script
+    if (!statusObj) return;
+
     const mapping = {
         'B2': statusObj.cashIn,
         'C2': statusObj.cashOut,
@@ -765,21 +772,27 @@ function updateMaintenanceUI(statusObj) {
     };
 
     for (const cell in mapping) {
-        const currentStatus = mapping[cell]; // "OPEN" or "CLOSED"
+        const currentStatus = String(mapping[cell] || "").trim().toUpperCase();
         const btnOpen = document.getElementById(`m-${cell.toLowerCase()}-open`);
         const btnClose = document.getElementById(`m-${cell.toLowerCase()}-close`);
 
         if (btnOpen && btnClose) {
             if (currentStatus === "OPEN") {
                 btnOpen.style.opacity = "1";
-                btnOpen.style.border = "2px solid white";
+                btnOpen.style.border = "2px solid #ffc267"; // Gold border para litaw
+                btnOpen.style.boxShadow = "0 0 10px rgba(255, 194, 103, 0.4)";
+                
                 btnClose.style.opacity = "0.3";
                 btnClose.style.border = "none";
+                btnClose.style.boxShadow = "none";
             } else {
                 btnClose.style.opacity = "1";
-                btnClose.style.border = "2px solid white";
+                btnClose.style.border = "2px solid #ffc267";
+                btnClose.style.boxShadow = "0 0 10px rgba(255, 194, 103, 0.4)";
+                
                 btnOpen.style.opacity = "0.3";
                 btnOpen.style.border = "none";
+                btnOpen.style.boxShadow = "none";
             }
         }
     }
