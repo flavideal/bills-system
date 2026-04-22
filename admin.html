@@ -159,6 +159,8 @@
     <button id="btn-close" onclick="setHubStatus('CLOSED')" style="background: #f44336; font-size: 10px; padding: 8px;">CLOSE</button>
   </div>
 </div>
+<button onclick="openMaintenanceModal()" style="background: #333; color: var(--gold); border: 1px solid var(--gold); font-size: 11px; padding: 10px;">⚙️ SERVICE MAINTENANCE SETTINGS</button>
+</div>
 
     <div class="stats-container">
       <div class="stat-card"><small>Total Fees (Today)</small><div id="stat-fees">₱0</div></div>
@@ -189,6 +191,58 @@
     </div>
     <div id="modal-body"></div>
     <div id="modal-footer" class="modal-actions"></div>
+  </div>
+</div>
+
+<div id="maintenance-modal" style="display: none; position: fixed; z-index: 101; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); overflow-y: auto;">
+  <div class="modal-content" style="max-width: 400px; margin: 15% auto;">
+    <div class="modal-header">
+      <span>MAINTENANCE CONTROL</span>
+      <span onclick="closeMaintenanceModal()" style="cursor:pointer; color:red;">[CLOSE]</span>
+    </div>
+    <div id="maintenance-body">
+      <style>
+        .m-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #333; }
+        .m-label { font-size: 13px; font-weight: bold; }
+        .m-toggle { display: flex; gap: 5px; }
+        .m-toggle button { width: 60px; padding: 8px; font-size: 10px; border: none; cursor: pointer; }
+        .m-on { background: #4CAF50; color: white; }
+        .m-off { background: #f44336; color: white; }
+        .inactive { opacity: 0.3; }
+      </style>
+      
+      <div class="m-row">
+        <div class="m-label">GCash Cash-In (B2)</div>
+        <div class="m-toggle">
+          <button id="m-b2-open" onclick="updateServiceStatus('B2', 'OPEN')">OPEN</button>
+          <button id="m-b2-close" onclick="updateServiceStatus('B2', 'CLOSED')">CLOSE</button>
+        </div>
+      </div>
+
+      <div class="m-row">
+        <div class="m-label">GCash Cash-Out (C2)</div>
+        <div class="m-toggle">
+          <button id="m-c2-open" onclick="updateServiceStatus('C2', 'OPEN')">OPEN</button>
+          <button id="m-c2-close" onclick="updateServiceStatus('C2', 'CLOSED')">CLOSE</button>
+        </div>
+      </div>
+
+      <div class="m-row">
+        <div class="m-label">Aneco Bills (D2)</div>
+        <div class="m-toggle">
+          <button id="m-d2-open" onclick="updateServiceStatus('D2', 'OPEN')">OPEN</button>
+          <button id="m-d2-close" onclick="updateServiceStatus('D2', 'CLOSED')">CLOSE</button>
+        </div>
+      </div>
+
+      <div class="m-row" style="border-bottom: none;">
+        <div class="m-label">E-Load Service (E2)</div>
+        <div class="m-toggle">
+          <button id="m-e2-open" onclick="updateServiceStatus('E2', 'OPEN')">OPEN</button>
+          <button id="m-e2-close" onclick="updateServiceStatus('E2', 'CLOSED')">CLOSE</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -619,6 +673,49 @@ function updateStatusUI(status) {
         btnClose.style.border = "2px solid white";
         btnOpen.style.opacity = "0.3";
         btnOpen.style.border = "none";
+    }
+}
+
+
+// maintenance buttons
+function openMaintenanceModal() {
+    document.getElementById('maintenance-modal').style.display = 'block';
+    // Opsyonal: I-refresh ang UI base sa current data kung available na sa allData/kioskStatus
+}
+
+function closeMaintenanceModal() {
+    document.getElementById('maintenance-modal').style.display = 'none';
+}
+
+async function updateServiceStatus(cell, newStatus) {
+    // Kinukuha natin ang button element para sa visual feedback
+    const btnId = `m-${cell.toLowerCase()}-${newStatus.toLowerCase()}`;
+    const targetBtn = document.getElementById(btnId);
+    const originalText = targetBtn.innerText;
+    
+    targetBtn.innerText = "WAIT...";
+    
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ 
+                action: "updateSpecificStatus", // Bagong action sa Apps Script
+                user: u, 
+                pass: p, 
+                targetCell: cell, // Halimbawa: "B2"
+                status: newStatus 
+            })
+        });
+
+        const res = await response.json();
+        if (res.result === "success") {
+            alert(cell + " is now " + newStatus);
+            // Dito pwede mong dagdagan ng logic para baguhin ang kulay ng buttons
+        }
+    } catch (e) {
+        alert("Failed to update " + cell);
+    } finally {
+        targetBtn.innerText = originalText;
     }
 }
 </script>
