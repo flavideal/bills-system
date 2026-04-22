@@ -173,11 +173,10 @@
         <label>Select Network</label>
         <select id="loadNetwork" onchange="saveInput('loadNetwork'); calculateFee();" style="font-weight: bold;">
             <option value="">-- Choose Network --</option>
-            <option value="Globe / TM">Globe / TM</option>
+            <option value="Globe">Globe / TM</option>
             <option value="Smart / TNT">Smart / TNT</option>
             <option value="DITO">DITO</option>
             <option value="GOMO">GOMO</option>
-            <option value="Cignal / Satellite">Cignal / Satellite</option>
         </select>
     </div>
 
@@ -892,8 +891,10 @@ function adminForceReset() {
 
 // Listahan ng mga Promos at Presyo
 const promoData = {
-    "Globe / TM": [
-        { name: "Regular Load", price: "" },
+    "Globe": [
+        { name: "Regular Load", price: 10 },
+        { name: "Regular Load", price: 15 },
+        { name: "Regular Load", price: 100 },
         { name: "Go50 (5GB for 3 Days)", price: 50 },
         { name: "Go90 (8GB for 7 Days)", price: 90 },
         { name: "GoEXTRA90 (8GB + Unli Allnet)", price: 90 },
