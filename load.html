@@ -182,7 +182,15 @@
 
     <div class="field-group">
     <label>Select Promo / Load Type</label>
-    <select id="loadType" onchange="updateAmountFromPromo(); saveInput('loadType');">
+    
+    <div style="position: relative; margin-bottom: 8px;">
+        <input type="text" id="promoSearch" onkeyup="filterPromos()" 
+               placeholder="🔍 Hanapin ang promo (ex: Go50, Unli...)" 
+               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+    </div>
+
+    <select id="loadType" onchange="updateAmountFromPromo(); saveInput('loadType');" 
+            style="width: 100%; padding: 12px; border-radius: 8px;">
         <option value="">-- Select Network First --</option>
     </select>
 </div>
@@ -924,6 +932,24 @@ const promoData = {
         { name: "Unli Data (30 Days)", price: 599 }
     ]
 };
+
+function filterPromos() {
+    const input = document.getElementById('promoSearch');
+    const filter = input.value.toLowerCase();
+    const select = document.getElementById('loadType');
+    const options = select.options;
+
+    // Simulan sa index 1 para hindi ma-hide yung "Choose Promo" label
+    for (let i = 1; i < options.length; i++) {
+        const txtValue = options[i].text.toLowerCase();
+        
+        if (txtValue.includes(filter)) {
+            options[i].style.display = ""; // Ipakita
+        } else {
+            options[i].style.display = "none"; // Itago
+        }
+    }
+}
 
 // Function para mag-update ang Dropdown ng Promo base sa Network
 function updatePromoList() {
