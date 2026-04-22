@@ -457,24 +457,29 @@ async function checkMyStatus() {
         const completedArea = document.getElementById('completedDetails');
 
         // --- STATUS: NEW (Waiting) ---
-       if (result.status === "NEW") {
+      if (result.status === "NEW") {
             statusBox.style.display = "block";
             statusBox.className = "status-badge status-waiting";
             statusBox.innerText = "⏳ NASA QUEUE KA NA";
             
-            instruction.style.color = "#1565c0"; // Blue para sa "Processing/Info"
+            instruction.style.color = "#1565c0"; 
             instruction.innerHTML = `
                 <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 5px solid #2196f3; text-align: left;">
                     <b style="font-size: 1.1em; color: #0d47a1;">Sinisuri na ang iyong Transaction...</b><br><br>
-                    Paki-antay lang po at <b>huwag muna i-exit</b> ang page na ito.<br>
-                    Lalabas dito sa screen ang notification kapag tinatawag ka na para magbayad sa counter.
+                    
+                    Paki-antay lang po at <b>huwag muna i-exit</b> ang page na ito. Lalabas dito sa screen ang notification kapag:<br><br>
+                    
+                    <b>• KUNG CASH-IN:</b> Handa na ang counter para tanggapin ang iyong <b>bayad</b>.<br>
+                    <b>• KUNG CASH-OUT:</b> Handa na ang counter at ang iyong <b>pera (cash)</b> na kukunin.<br><br>
+                    
+                    <i>Paalala: Hintayin na mag-iba ang status sa "PUMUNTA NA SA COUNTER" bago lumapit sa cashier.</i>
                 </div>
                 <div style="margin-top: 10px; font-size: 0.85em; color: #666;">
                     <i>Tip: Maaari mong i-screenshot ang iyong Queue Number habang nag-aantay.</i>
                 </div>
             `;
             instruction.style.display = "block";
-            completedArea.style.display = "none"; // Tago ang button
+            completedArea.style.display = "none";
         }
         
         // --- STATUS: CALLING (In Counter) ---
