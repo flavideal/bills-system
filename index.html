@@ -483,10 +483,9 @@
     color: white;
     font-size: 8px;
     font-weight: bold;
-    padding: 3px 8px;
-    border-radius: 5px;
+    padding: 2px 6px;
+    border-radius: 4px;
     text-transform: uppercase;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     z-index: 5;
 }
 
@@ -494,6 +493,17 @@
 .menu-item.maintenance {
     opacity: 0.6;
     border: 1px dashed #d32f2f;
+}
+
+.unavailable-text {
+    font-size: 9px;
+    color: #d32f2f;
+    font-weight: bold;
+    margin-top: 10px;
+    text-transform: uppercase;
+    background: #ffebee;
+    padding: 2px 8px;
+    border-radius: 10px;
 }
     </style>
 </head>
@@ -773,18 +783,31 @@ async function checkHubStatus() {
 
             // Helper function para hindi paulit-ulit ang code
             const applyMaintenance = (element, status) => {
-                if (!element) return;
-                // Alisin ang lumang badge kung meron man
-                const existingBadge = element.querySelector('.maintenance-badge');
-                if (existingBadge) existingBadge.remove();
+    if (!element) return;
 
-                if (status === "CLOSED") {
-                    element.classList.add('hub-closed'); // Gamitin ang existing style mo
-                    element.innerHTML += `<span class="maintenance-badge">Maintenance</span>`;
-                } else {
-                    element.classList.remove('hub-closed');
-                }
-            };
+    // 1. Linisin ang mga dating indicators para hindi mag-duplicate
+    const existingBadge = element.querySelector('.maintenance-badge');
+    const existingText = element.querySelector('.unavailable-text');
+    if (existingBadge) existingBadge.remove();
+    if (existingText) existingText.remove();
+
+    if (status === "CLOSED") {
+        // 2. I-apply ang "Locked" state
+        element.classList.add('hub-closed'); 
+        
+        // 3. Idagdag ang Badge sa taas
+        element.insertAdjacentHTML('beforeend', `<span class="maintenance-badge">OFFLINE</span>`);
+        
+        // 4. Idagdag ang Text sa pinakababa
+        element.insertAdjacentHTML('beforeend', `<div class="unavailable-text">Temporary Unavailable</div>`);
+        
+        element.style.pointerEvents = "none"; // Siguradong hindi maki-click
+    } else {
+        // 5. I-balik sa normal kapag OPEN na
+        element.classList.remove('hub-closed');
+        element.style.pointerEvents = "auto";
+    }
+};
 
             // I-apply sa bawat serbisyo base sa data mula sa Apps Script
             // Para sa GCash: Maintenance lang kung parehong sarado ang Cash-in at Cash-out
