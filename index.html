@@ -873,7 +873,7 @@ async function loadPublicReviews() {
         
         // I-check kung may 'data' property at hindi empty
         if (result && result.data && result.data.length > 0) {
-            allReviews = result.data.filter(r => (r.comment || r.message) && (r.comment || r.message).length > 2);
+            allReviews = result.data.filter(r => r.customerName || r.name || r.rating);
             
             if (allReviews.length > 0) {
                 const slider = document.getElementById('reviewSlider');
@@ -910,6 +910,9 @@ function displayNextReview() {
         `;
     }
 
+    // Kung walang message, lalabas ay "No comment provided." o pwede mong i-blanko
+const displayMessage = (rev.message || rev.comment || "Great service!").trim();
+
     container.innerHTML = `
         <div class="rev-name">${maskedName} <span style="font-weight:normal; color:#aaa;">(${maskedQueue})</span></div>
         
@@ -922,7 +925,7 @@ function displayNextReview() {
         </div>
 
         <div class="rev-stars">${stars}</div>
-        <div class="rev-text">"${rev.message || rev.comment}"</div>
+        <div class="rev-text">"${displayMessage}"</div>
         
         ${adminReplyHTML}
     `;
