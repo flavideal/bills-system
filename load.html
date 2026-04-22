@@ -427,10 +427,7 @@ async function checkMyStatus() {
                     <b style="font-size: 1.2em; color: #2e7d32;">STEP 2: HUWAG MUNA UMALIS</b><br>
                     Pagkatapos magbayad, <b>paki-antay na lumabas dito</b> ang iyong Digital Receipt. 
                     <span style="color: #d32f2f;">⚠️ Huwag i-close o i-exit ang page na ito.</span><br><br>
-                    
-                    <small style="display: block; border-top: 1px solid #ccc; pt: 10px; margin-top: 10px;">
-                        📢 Makakatanggap din kayo ng SMS mula sa <b>MAYA CENTER</b> kapag tapos na ang transaction.
-                    </small>
+        
                 </div>
             `;
             instruction.style.display = "block";
@@ -438,70 +435,72 @@ async function checkMyStatus() {
         }
         
 // --- STATUS: COMPLETED (Tapos na) ---
-        else if (result.status === "COMPLETED") {
-            statusBox.style.display = "block";
-            statusBox.className = "status-badge status-completed";
-            statusBox.innerText = "✅ TRANSACTION FINISHED";
+else if (result.status === "COMPLETED") {
+    statusBox.style.display = "block";
+    statusBox.className = "status-badge status-completed";
+    statusBox.innerText = "✅ E-LOAD SUCCESSFUL"; // Binago ang text
 
-            instruction.style.display = "none"; 
-            completedArea.style.display = "block"; 
+    instruction.style.display = "none"; 
+    completedArea.style.display = "block"; 
 
-            // Siguraduhing makikita ang main area ng receipt
-            const verifyArea = document.getElementById('cashInVerify');
-            if (verifyArea) verifyArea.style.display = "block";
+    // Ipakita ang main area kung nasaan ang resibo
+    const verifyArea = document.getElementById('cashInVerify');
+    if (verifyArea) verifyArea.style.display = "block";
 
-            const finishBtn = document.getElementById('finishBtn');
-            if (finishBtn) {
-                finishBtn.disabled = false;
-                finishBtn.style.opacity = "1";
-                finishBtn.onclick = finishTransaction;
+    const finishBtn = document.getElementById('finishBtn');
+    if (finishBtn) {
+        finishBtn.disabled = false;
+        finishBtn.style.opacity = "1";
+        finishBtn.onclick = finishTransaction;
+    }
+
+    // Kunin ang mga values para sa Slip (E-LOAD Specific)
+    const phoneNo = document.getElementById('custPhone').value;
+    const network = document.getElementById('loadNetwork').value;
+    const promo = document.getElementById('loadType').value;
+    
+    // I-render ang details sa adminNote
+    const adminNote = document.getElementById('adminNote');
+    if (adminNote) {
+        adminNote.innerHTML = `
+            <div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; text-align: center;">
+                <strong style="color: #1b4332; font-size: 16px;">LOAD TRANSACTION COMPLETE</strong><br>
+                <span style="font-size: 13px; color: #333;">Network: <b>${network}</b></span><br>
+                <span style="font-size: 13px; color: #333;">Number: <b>${phoneNo}</b></span><br>
+                <span style="font-size: 13px; color: #333;">Promo: <b>${promo}</b></span>
+            </div>
+            <div style="margin-top: 5px; text-align: center;">
+                <span style="font-size: 11px; color: #666;">Flavi Deal - Butuan Hub</span>
+            </div>
+        `;
+    }
+
+    // --- RECEIPT IMAGE LOGIC ---
+    const receiptImg = document.getElementById('adminReceipt');
+    // Siguraduhin na result.receipt ang tawag sa App Script column mo
+    if (receiptImg && result.receipt) {
+        let finalLink = result.receipt.toString().trim();
+        
+        // Convert Google Drive link to direct image link
+        if (finalLink.includes("drive.google.com")) {
+            let fileId = "";
+            if (finalLink.includes("/file/d/")) {
+                fileId = finalLink.split("/file/d/")[1].split("/")[0];
+            } else if (finalLink.includes("id=")) {
+                fileId = finalLink.split("id=")[1].split("&")[0];
             }
-
-            // Kunin ang mga values para sa Slip
-            const accNoValue = document.getElementById('accNo').value;
-            const accNameValue = document.getElementById('accName').value;
-            const noteTitle = (accNoValue.length > 10) ? "ANECO / Bills Payment Successful" : "Transaction Successful";
-            
-            // I-render ang details sa adminNote
-            const adminNote = document.getElementById('adminNote');
-            if (adminNote) {
-                adminNote.innerHTML = `
-                    <div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; text-align: left;">
-                        <strong style="color: #1b4332; font-size: 16px;">${noteTitle}</strong><br>
-                        <span style="font-size: 13px; color: #333;">Biller Account Name: <b>${accNameValue}</b></span><br>
-                        <span style="font-size: 13px; color: #333;">Biller Account No: <b>${accNoValue}</b></span>
-                    </div>
-                    <div style="margin-top: 5px; text-align: center;">
-                        <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
-                    </div>
-                `;
-            }
-
-            // --- ADMIN RECEIPT IMAGE LOGIC ---
-            const receiptImg = document.getElementById('adminReceipt');
-            if (receiptImg && result.receipt) {
-                let finalLink = result.receipt.toString().trim();
-                
-                // Check kung valid link ba talaga
-                if (finalLink.toLowerCase().includes("http")) {
-                    if (finalLink.includes("drive.google.com")) {
-                        let fileId = "";
-                        if (finalLink.includes("/file/d/")) {
-                            fileId = finalLink.split("/file/d/")[1].split("/")[0];
-                        } else if (finalLink.includes("id=")) {
-                            fileId = finalLink.split("id=")[1].split("&")[0];
-                        }
-                        if(fileId) finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1200";
-                    }
-                    
-                    // Lagyan ng timestamp para hindi ma-cache (anti-stale image)
-                    receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
-                    receiptImg.style.display = "block";
-                }
-            }
-
-            clearInterval(statusInterval);
+            if(fileId) finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
         }
+        
+        // I-set ang source at ipakita
+        receiptImg.src = finalLink;
+        receiptImg.style.display = "block";
+        receiptImg.style.width = "100%"; // Para sakto sa screen
+        receiptImg.style.borderRadius = "8px";
+    }
+
+    clearInterval(statusInterval);
+}
     } catch (e) {
         console.error("Error checking status:", e);
     }
