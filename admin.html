@@ -669,12 +669,15 @@ function updateStatusUI(status) {
     const btnOpen = document.getElementById('btn-open');
     const btnClose = document.getElementById('btn-close');
 
-    if (status === "OPEN") {
+    // Siguraduhing String at Uppercase para laging match
+    const current = String(status).toUpperCase();
+
+    if (current === "OPEN") {
         btnOpen.style.opacity = "1";
         btnOpen.style.border = "2px solid white";
         btnClose.style.opacity = "0.3";
         btnClose.style.border = "none";
-    } else {
+    } else if (current === "CLOSED" || current === "CLOSE") {
         btnClose.style.opacity = "1";
         btnClose.style.border = "2px solid white";
         btnOpen.style.opacity = "0.3";
