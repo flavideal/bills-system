@@ -132,6 +132,15 @@
   50% { opacity: 0.5; }
   100% { opacity: 1; }
 }
+
+#status-controls button {
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+#status-controls button:active {
+    transform: scale(0.95);
+}
   </style>
 </head>
 <body>
@@ -295,8 +304,15 @@
 
       if (res.kioskStatus) {
         window.currentKioskStatus = res.kioskStatus;
+        // Kung ang kioskStatus mo ay mismong "OPEN" or "CLOSED" string:
         updateStatusUI(res.kioskStatus);
+        
+        // Kung may specific status para sa services (B2, C2, etc.)
+        if (res.specificStatus) {
+            updateMaintenanceUI(res.specificStatus);
+        }
       }
+      
       // --- LOGIC PARA SA NOTIFICATION ---
       // Bilangin ang transactions na HINDI pa completed
       const currentActiveCount = allData.filter(row => (row[16] || "NEW").toUpperCase() !== "COMPLETED").length;
@@ -660,19 +676,26 @@ async function setHubStatus(newStatus) {
     }
 }
 
-// Para maging "Active" ang kulay ng button depende sa current status
 function updateStatusUI(status) {
     const btnOpen = document.getElementById('btn-open');
     const btnClose = document.getElementById('btn-close');
 
-    if (status === "OPEN") {
+    // Siguraduhin na string ang chine-check (halimbawa status.main o status)
+    // Depende sa Apps Script mo, kung ang res.kioskStatus ay mismong string na "OPEN":
+    const currentStatus = (typeof status === 'object') ? status.mainStatus : status;
+
+    if (currentStatus === "OPEN") {
         btnOpen.style.opacity = "1";
+        btnOpen.style.background = "#4CAF50"; // Gawing solid ang kulay
         btnOpen.style.border = "2px solid white";
+        
         btnClose.style.opacity = "0.3";
         btnClose.style.border = "none";
     } else {
         btnClose.style.opacity = "1";
+        btnClose.style.background = "#f44336"; // Gawing solid ang kulay
         btnClose.style.border = "2px solid white";
+        
         btnOpen.style.opacity = "0.3";
         btnOpen.style.border = "none";
     }
