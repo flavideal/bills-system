@@ -294,7 +294,8 @@
       allData = res.data;
 
       if (res.kioskStatus) {
-          updateStatusUI(res.kioskStatus);
+        window.currentKioskStatus = res.kioskStatus;
+        updateStatusUI(res.kioskStatus);
       }
       // --- LOGIC PARA SA NOTIFICATION ---
       // Bilangin ang transactions na HINDI pa completed
