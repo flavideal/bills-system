@@ -1061,6 +1061,56 @@ function saveInput(id) {
 }
 // I-expose sa window para kahit nasa loob ng ibang function, mababasa pa rin
 window.saveInput = saveInput;
+
+// bago logic para sa close /open/ maintenance
+async function checkAnecoMaintenance() {
+    try {
+        const response = await fetch(`${WEB_APP_URL}?action=getTransactions`);
+        const result = await response.json();
+
+        // 1. Check muna kung ang BUONG KIOSK ay sarado (Cell A2)
+        if (result.kioskStatus === "CLOSED") {
+            document.body.innerHTML = `
+                <div style="text-align:center; padding:50px; font-family:Arial, sans-serif;">
+                    <div style="font-size:60px;">🏠</div>
+                    <h1 style="color:#d32f2f;">OUR HUB IS CLOSED</h1>
+                    <p>Please check back later or visit us during opening hours.</p>
+                    <button onclick="window.location.href='index.html'" style="margin-top:20px; padding:10px 20px; background:#1565c0; color:white; border:none; border-radius:5px; cursor:pointer;">BACK TO HOME</button>
+                </div>`;
+            return;
+        }
+
+        // 2. Check kung ANECO SERVICE lang ang sarado (Cell D2)
+        if (result.anecoStatus === "CLOSED") {
+            const formContainer = document.getElementById('stepForm');
+            if (formContainer) {
+                formContainer.innerHTML = `
+                    <div style="background:#fff3f3; padding:30px; border-radius:12px; border:1px solid #ffcdd2; text-align:center; margin: 20px;">
+                        <div style="font-size:40px; margin-bottom:10px;">⚡</div>
+                        <b style="color:#c62828; font-size:18px;">ANECO SERVICE IS NOT AVAILABLE</b><br>
+                        <p style="font-size:14px; color:#555; margin-top:15px; line-height:1.5;">
+                            Our ANECO Bills Payment is currently down for maintenance.<br>
+                            Please go back to our kiosk and try other services.<br>
+                            Thank you for understanding!
+                        </p>
+                        <button onclick="window.location.href='index.html'" 
+                            style="margin-top:20px; padding:12px 25px; background-color:#1565c0; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+                            BACK TO KIOSK
+                        </button>
+                    </div>`;
+            }
+        }
+    } catch (e) {
+        console.error("Maintenance check failed:", e);
+    }
+}
+
+// I-update ang window.onload para tawagin ang function
+const originalOnload = window.onload;
+window.onload = function() {
+    if (originalOnload) originalOnload();
+    checkAnecoMaintenance(); // Tawagin ang maintenance check
+};
     
 </script>
 
