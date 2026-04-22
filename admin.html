@@ -132,6 +132,17 @@
   50% { opacity: 0.5; }
   100% { opacity: 1; }
 }
+
+.status-active {
+    opacity: 1 !important;
+    border: 2px solid var(--gold) !important;
+    box-shadow: 0 0 10px rgba(255, 194, 103, 0.5);
+}
+.status-dim {
+    opacity: 0.3 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
   </style>
 </head>
 <body>
@@ -257,7 +268,14 @@
 
   window.onload = function() { 
     if (u && p) { 
-      showDashboard(); 
+      showDashboard();
+
+      // INSTANT HIGHLIGHT mula sa memorya
+        const savedStatus = localStorage.getItem('hub_status');
+        if (savedStatus) {
+            updateStatusUI(savedStatus);
+        }
+      
       loadData(); 
       requestNotifPermission(); // Hingin ang permission sa start
     } 
@@ -297,14 +315,10 @@
 
     // UPDATE HUB STATUS UI
     if (res.kioskStatus) {
-        window.currentKioskStatus = res.kioskStatus; 
-        
-        // I-check kung object (multi-service) o string (main status)
-        let mainStatus = (typeof res.kioskStatus === 'object') ? res.kioskStatus.main : res.kioskStatus;
-        
-        console.log("Hub Status fetched:", mainStatus);
-        updateStatusUI(mainStatus); 
-    }
+    let mainStatus = (typeof res.kioskStatus === 'object') ? res.kioskStatus.main : res.kioskStatus;
+    localStorage.setItem('hub_status', mainStatus); // UPDATE CACHE
+    updateStatusUI(mainStatus); 
+}
       
     // NOTIFICATION LOGIC
     const currentActiveCount = allData.filter(row => (row[16] || "NEW").toUpperCase() !== "COMPLETED").length;
@@ -636,6 +650,7 @@ document.getElementById('mod-queue').innerHTML = `QUE#: ${row[1]} <br> <small st
   function closeModal() { document.getElementById('details-modal').style.display = 'none'; }
    setInterval(() => { if(u) loadData(); }, 10000);
 
+  
   // --- FUNCTION PARA MAG-SET NG STATUS (OPEN/CLOSED) ---
 async function setHubStatus(newStatus) {
     const btnOpen = document.getElementById('btn-open');
@@ -659,6 +674,7 @@ async function setHubStatus(newStatus) {
         const res = await response.json();
         if (res.result === "success") {
             alert("Hub is now " + newStatus);
+            localStorage.setItem('hub_status', newStatus); // SAVE DITO
             updateStatusUI(newStatus);
         }
     } catch (e) {
@@ -677,26 +693,15 @@ function updateStatusUI(status) {
     const current = String(status || "").trim().toUpperCase();
 
     if (current === "OPEN") {
-        // Highlight OPEN
-        btnOpen.style.opacity = "1";
-        btnOpen.style.border = "2px solid #ffc267"; 
-        btnOpen.style.boxShadow = "0 0 10px #4CAF50";
-        
-        // Dim CLOSE
-        btnClose.style.opacity = "0.3";
-        btnClose.style.border = "none";
-        btnClose.style.boxShadow = "none";
-    } 
-    else if (current.includes("CLOSE")) { // Para pasok ang "CLOSE" o "CLOSED"
-        // Highlight CLOSE
-        btnClose.style.opacity = "1";
-        btnClose.style.border = "2px solid #ffc267";
-        btnClose.style.boxShadow = "0 0 10px #f44336";
-        
-        // Dim OPEN
-        btnOpen.style.opacity = "0.3";
-        btnOpen.style.border = "none";
-        btnOpen.style.boxShadow = "none";
+        btnOpen.classList.add('status-active');
+        btnOpen.classList.remove('status-dim');
+        btnClose.classList.add('status-dim');
+        btnClose.classList.remove('status-active');
+    } else {
+        btnClose.classList.add('status-active');
+        btnClose.classList.remove('status-dim');
+        btnOpen.classList.add('status-dim');
+        btnOpen.classList.remove('status-active');
     }
 }
 
