@@ -181,13 +181,16 @@
 </div>
 
     <div class="field-group">
-    <label>Select Promo / Load Type</label>
-    <input list="promoList" id="loadType" oninput="updateAmountFromPromo(); saveInput('loadType');" 
-           placeholder="Click or type to search promo..." 
-           style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;">
-    
-    <datalist id="promoList">
-        </datalist>
+    <label>Search Promo</label>
+    <input type="text" id="promoSearch" oninput="updatePromoList()" 
+           placeholder="🔍 Type here to search (ex: Go50)..." 
+           style="width: 100%; padding: 12px; margin-bottom: 5px; border-radius: 8px; border: 1px solid #ccc;">
+
+    <label>Select Result</label>
+    <select id="loadType" onchange="updateAmountFromPromo(); saveInput('loadType');" 
+            style="width: 100%; padding: 12px; border-radius: 8px;">
+        <option value="">-- Choose Promo --</option>
+    </select>
 </div>
            
     <div class="field-group">
@@ -930,62 +933,57 @@ const promoData = {
 // Function para mag-update ang Dropdown ng Promo base sa Network
 function updatePromoList() {
     const network = document.getElementById('loadNetwork').value;
-    const promoList = document.getElementById('promoList'); // Ang datalist
-    const promoInput = document.getElementById('loadType'); // Ang input box
+    const promoSelect = document.getElementById('loadType');
+    const searchInput = document.getElementById('promoSearch');
+    const filter = searchInput.value.toLowerCase().trim();
 
-    // Linisin ang listahan at ang input box tuwing nagpapalit ng network
-    promoList.innerHTML = '';
-    promoInput.value = ''; 
-
+    // 1. Linisin ang dropdown
+    promoSelect.innerHTML = '<option value="">-- Choose Promo --</option>';
+    
     if (promoData[network]) {
-        promoData[network].forEach(promo => {
+        // 2. I-filter ang listahan base sa search
+        const matches = promoData[network].filter(p => 
+            p.name.toLowerCase().includes(filter)
+        );
+
+        // 3. I-render ang mga match lang
+        matches.forEach(promo => {
             let option = document.createElement('option');
-            // Sa datalist, ang 'value' ang hinahanap at pinipili
-            option.value = promo.name; 
-            // Pwede nating i-store ang price sa dataset (pero limited ito sa datalist)
-            option.setAttribute('data-price', promo.price);
-            promoList.appendChild(option);
+            option.value = promo.name;
+            option.text = promo.name;
+            option.dataset.price = promo.price; // Itago ang price sa dataset
+            promoSelect.appendChild(option);
         });
+
+        // 4. Kung isa lang ang match, i-select na agad (optional but helpful)
+        if (matches.length === 1 && filter !== "") {
+            promoSelect.selectedIndex = 1;
+            updateAmountFromPromo();
+        }
     }
 }
 
 // Function para kusa nang mapuno ang Amount box
 function updateAmountFromPromo() {
-    const network = document.getElementById('loadNetwork').value;
-    const promoInput = document.getElementById('loadType');
+    const promoSelect = document.getElementById('loadType');
     const amountInput = document.getElementById('amount');
+    const selectedOption = promoSelect.options[promoSelect.selectedIndex];
     
-    const selectedPromoName = promoInput.value.trim();
+    if (!selectedOption || selectedOption.value === "") return;
 
-    // Hanapin ang match sa promoData
-    if (network && promoData[network]) {
-        const selectedPromo = promoData[network].find(p => p.name.trim() === selectedPromoName);
+    const price = selectedOption.dataset.price;
 
-        if (selectedPromo) {
-            const price = selectedPromo.price;
-            
-            if (price !== "" && price !== null && price !== undefined) {
-                // LOCK: Kapag may fixed price
-                amountInput.value = price;
-                amountInput.readOnly = true; 
-                amountInput.style.backgroundColor = "#e9ecef"; 
-            } else {
-                // UNLOCK: Para sa Regular Load na walang price sa data
-                amountInput.value = "50";
-                amountInput.readOnly = false;
-                amountInput.style.backgroundColor = "#ffffff";
-            }
-        } else {
-            // UNLOCK: Kung nagta-type pa lang ang customer
-            amountInput.readOnly = false;
-            amountInput.style.backgroundColor = "#ffffff";
-        }
+    if (price && price !== "" && price !== "undefined") {
+        amountInput.value = price;
+        amountInput.readOnly = true;
+        amountInput.style.backgroundColor = "#e9ecef"; // Gray out
+    } else {
+        amountInput.value = "50"; // Default for Regular
+        amountInput.readOnly = false;
+        amountInput.style.backgroundColor = "#ffffff";
     }
-
-    // Importante: I-trigger ang breakdown computation
-    if (typeof calculateFee === "function") {
-        calculateFee();
-    }
+    
+    calculateFee();
 }
     
 // Siguraduhin na ang Network dropdown ay tatawagin ang function na ito
