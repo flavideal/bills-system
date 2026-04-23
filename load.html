@@ -174,7 +174,7 @@
     <select id="loadNetwork" onchange="updatePromoList(); saveInput('loadNetwork'); calculateFee();" style="font-weight: bold;">
         <option value="">-- Choose Network --</option>
         <option value="Globe">Globe</option>
-        <option value="Smart / TNT">Smart / TNT</option>
+        <option value="Smart">Smart</option>
         <option value="DITO">DITO</option>
         <option value="GOMO">GOMO</option>
     </select>
@@ -946,8 +946,18 @@ const promoData = {
         { name: "GoPLUS250 (15GB for all sites + 15GB of 5G data + 15GB for choice of apps + choice of discount voucher. Valid for 15 days.)", price: 250 },
         { name: "GoPLUS400 (25GB for all sites + 15GB of 5G data + 15GB for choice of apps + choice of discount voucher. Valid for 15 days.)", price: 400 }
     ],
-    "Smart / TNT": [
-        { name: "Regular Load", price: "" },
+    "Smart": [
+        { name: "Regular Load 15 ", price: 15 },
+        { name: "Regular Load 20", price: 20 },
+        { name: "Regular Load 30", price: 30 },
+        { name: "Regular Load 50", price: 50 },
+        { name: "Regular Load 75", price: 75 },
+        { name: "Regular Load 100", price: 100 },
+        { name: "Regular Load 150", price: 150 },
+        { name: "Regular Load 200", price: 200 },
+        { name: "Regular Load 300", price: 300 },
+        { name: "Regular Load 500", price: 500 },
+        { name: "Regular Load 1000", price: 1000 },
         { name: "PowerAll 99 (8GB + Unli TikTok)", price: 99 },
         { name: "PowerAll 149 (12GB + Unli TikTok)", price: 149 },
         { name: "GigaVideo 99", price: 99 },
