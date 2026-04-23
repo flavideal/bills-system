@@ -471,24 +471,24 @@ else if (result.status === "COMPLETED") {
     instruction.style.display = "none"; 
     completedArea.style.display = "block"; 
 
-   const phoneNo = result.gcashNo || "N/A";
-   const network = result.provider || "N/A";
-   const promo = result.gcashName || "N/A";
+   const rawNetwork = result.provider || "N/A";
+    const rawPromo = result.gcashName || "N/A";
+    const phoneNo = result.gcashNo || "N/A";
 
-    // Halimbawa ng pag-linis ng data para sa resibo:
-const cleanNetwork = (result.provider || "").replace("E-LOAD | Network: ", "");
-const cleanPromo = (result.gcashName || "").replace("LOAD TYPE: ", "");
+    // Linisin ang data (Safe handling)
+    const cleanNetwork = rawNetwork.replace("E-LOAD | Network: ", "");
+    const cleanPromo = rawPromo.replace("LOAD TYPE: ", "");
     
     // I-render ang details sa adminNote
-    const adminNote = document.getElementById('adminNote');
+   const adminNote = document.getElementById('adminNote');
     if (adminNote) {
         adminNote.innerHTML = `
-    <div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; text-align: center;">
-        <strong style="color: #1b4332; font-size: 16px;">LOAD TRANSACTION COMPLETE</strong><br>
-        <span style="font-size: 13px; color: #333;">Network: <b>${cleanNetwork}</b></span><br>
-        <span style="font-size: 13px; color: #333;">Number: <b>${result.gcashNo}</b></span><br>
-        <span style="font-size: 13px; color: #333;">Promo: <b>${cleanPromo}</b></span>
-    </div>
+            <div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; text-align: center;">
+                <strong style="color: #1b4332; font-size: 16px;">LOAD TRANSACTION COMPLETE</strong><br>
+                <span style="font-size: 13px; color: #333;">Network: <b>${cleanNetwork}</b></span><br>
+                <span style="font-size: 13px; color: #333;">Number: <b>${phoneNo}</b></span><br>
+                <span style="font-size: 13px; color: #333;">Promo: <b>${cleanPromo}</b></span>
+            </div>
             <div style="margin-top: 5px; text-align: center;">
                 <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
             </div>
