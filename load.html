@@ -630,7 +630,10 @@ function showStep(stepId) {
 
    function showReview() {
     const name = document.getElementById('custName').value.trim();
-    const phone = document.getElementById('custPhone').value.trim(); // Eto yung mobile no.
+    // SIGURADUHIN na 'custPhone' ang ID sa HTML mo
+    const phoneElement = document.getElementById('custPhone'); 
+    const phone = phoneElement ? phoneElement.value.trim() : "N/A";
+    
     const network = document.getElementById('loadNetwork').value;
     const promo = document.getElementById('loadType').value;
     const amt = parseFloat(document.getElementById('amount').value) || 0;
@@ -649,12 +652,12 @@ function showStep(stepId) {
 
     // I-render ang Review Screen
     let reviewHTML = `
-        <div class="review-item"><span>Customer Name:</span><strong>${name}</strong></div>
-        <div class="review-item"><span>Mobile Number:</span><strong>${phone}</strong></div>
+        <div class="review-item"><span>Name:</span><strong>${name}</strong></div>
+        <div class="review-item"><span>Number:</span><strong>${phone}</strong></div>
         <div class="review-item"><span>Network:</span><strong>${network}</strong></div>
-        <div class="review-item"><span>Load Type:</span><strong>${promo}</strong></div>
+        <div class="review-item"><span>Promo:</span><strong>${promo}</strong></div>
         <div class="review-item"><span>Amount:</span><strong>${formatPHP(amt)}</strong></div>
-
+        
         <div style="margin-top:15px; background:#f9f9f9; padding:10px; border:1px solid #ddd; border-radius:5px;">
             <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:5px;">PARAAN NG PAGBAYAD:</label>
             <select id="paymentMethod" onchange="updateReviewTotal()" style="width:100%; padding:8px; font-weight:bold; border-radius:5px;">
