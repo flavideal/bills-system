@@ -143,6 +143,7 @@
             result.data.forEach(rev => {
     const maskedName = maskString(rev.customerName, "name");
     const maskedQueue = maskString(rev.queueNo, "queue");
+    const readableDate = formatDateTime(rev.timestamp);
     const starCount = parseInt(rev.rating) || 5; 
     const starIcons = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
     const serviceUsed = rev.serviceType || "General Service";
@@ -177,7 +178,8 @@
             
             <div class="comment">"${rev.message || "No comment provided."}"</div>
             
-            ${replyHTML} <div class="date">Transaction Date: ${rev.timestamp}</div>
+           ${replyHTML} 
+            <div class="date">Transaction Date: ${readableDate}</div>
         </div>
     `;
     listDiv.innerHTML += card;
@@ -189,6 +191,22 @@
     }
 
     loadReviews();
+
+    // HELPER FUNCTION PARA SA DATE
+function formatDateTime(isoString) {
+    if (!isoString || isoString === "N/A") return isoString;
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return isoString;
+
+    return date.toLocaleString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+}
 </script>
 
 </body>
