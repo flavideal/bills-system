@@ -976,10 +976,12 @@ function showStep(stepId) {
     // C. PATAYIN ANG POP-UP (Ito ang solusyon sa "Are you sure" error)
     localStorage.setItem('isWaiting', 'false');
 
+    const dynamicService = (currentMode === "Cash In") ? "GCash Cash In Service" : "GCash Cash Out Service";
+
     // D. I-SET ANG DATA PARA SA REVIEW PAGE
     localStorage.setItem('reviewerName', finalName);
     localStorage.setItem('reviewerQueue', finalQueue);
-    localStorage.setItem('reviewerService', 'GCASH CASH IN/OUT'); 
+    localStorage.setItem('reviewerService', dynamicService); // Dito na papasok yung dynamic text 
 
     // E. STOP INTERVALS
     if(statusInterval) clearInterval(statusInterval);
