@@ -1145,7 +1145,7 @@ async function processFinalDone() {
     const btn = document.getElementById('finishBtn');
 
     if (currentMode === "Cash Out") {
-        btn.innerText = "GENERATING VOUCHER...";
+        btn.innerText = "PLEASE WAIT...";
         btn.disabled = true;
 
         // --- HIGH DPI SETTINGS (Para malinaw at hindi blur) ---
@@ -1288,7 +1288,7 @@ async function processFinalDone() {
                 headers: { "Content-Type": "text/plain;charset=utf-8" }
             });
 
-            btn.innerText = "DONE - CLOSE SYSTEM";
+            btn.innerText = "DONE";
             btn.style.background = "#2e7d32";
             btn.disabled = false;
             btn.onclick = finishTransaction; 
