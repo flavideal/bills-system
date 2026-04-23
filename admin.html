@@ -806,21 +806,40 @@ function updateMaintenanceUI(statusObj) {
 }
 
 function formatDateTime(isoString) {
-  if (!isoString || isoString === "N/A") return isoString;
-  
-  const date = new Date(isoString);
-  
-  // Check kung valid ang date
-  if (isNaN(date.getTime())) return isoString;
+    if (!isoString || isoString === "N/A") return isoString;
 
-  return date.toLocaleString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
+    let date;
+    
+    // 1. CLEANING: Kung ang format ay DD/MM/YYYY (gaya ng 24/04/2026)
+    // Pinapalitan natin ang '/' ng '-' at tinitingnan kung ang unang part ay Day
+    if (typeof isoString === 'string' && isoString.includes('/')) {
+        const parts = isoString.split(/[\s,]+/); // Hiwalayin ang Date sa Time
+        const dateParts = parts[0].split('/');
+        
+        // Kung ang unang number ay mas malaki sa 12, sigurado tayong Day ito (DD/MM/YYYY)
+        if (parseInt(dateParts[0]) > 12) {
+            // I-rearrange sa YYYY-MM-DD para siguradong mabasa ng browser
+            isoString = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]} ${parts[1] || ''}`;
+        }
+    }
+
+    date = new Date(isoString);
+
+    // 2. FALLBACK: Kung invalid pa rin, subukan nating i-parse nang manual
+    if (isNaN(date.getTime())) return isoString;
+
+    // 3. FORMATTING: Para makuha ang "APRIL 24, 2026 06:30:01 AM"
+    const options = {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit', // Idinagdag para sa 06:30:01
+        hour12: true
+    };
+
+    return date.toLocaleString('en-US', options).toUpperCase();
 }
 </script>
 </body>
