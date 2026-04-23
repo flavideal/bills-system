@@ -1224,9 +1224,9 @@ async function processFinalDone() {
         vCtx.font = "italic 10px Arial";
         
         const lines = [
-            "By signing below, I acknowledge receipt of the", // Hati sa gitna
-            "exact amount stated above. I agree to the fees", // Hati uli
-            "and terms. This transaction is final and complete."
+            "By signing below, I acknowledge receipt of the exact amount stated above.", // Hati sa gitna
+            "I agree to the Fees, Terms and Conditions, and Privacy Policy.", // Hati uli
+            "This transaction is final and complete."
         ];
         
         let yPos = 285; // Itinaas ng konti para magkasya ang 3 lines
@@ -1255,7 +1255,7 @@ async function processFinalDone() {
         
         vCtx.font = "10px Arial";
         vCtx.fillStyle = "#666";
-        vCtx.fillText("CUSTOMER SIGNATURE", 200, 495);
+        vCtx.fillText("Customer Signature over printed name", 200, 495);
 
         // Footer
         vCtx.font = "9px Arial";
