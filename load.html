@@ -471,11 +471,11 @@ else if (result.status === "COMPLETED") {
     instruction.style.display = "none"; 
     completedArea.style.display = "block"; 
 
-   const rawNetwork = result.provider || "N/A";
-    const rawPromo = result.gcashName || "N/A";
-    const phoneNo = result.gcashNo || "N/A";
+   // FALLBACK LOGIC: Kung result.provider ay null/empty, kunin sa localStorage
+    const rawNetwork = result.provider || localStorage.getItem('input_loadNetwork') || "N/A";
+    const rawPromo = result.gcashName || localStorage.getItem('input_loadType') || "N/A";
+    const phoneNo = result.gcashNo || localStorage.getItem('input_custPhone') || "N/A";
 
-    // Linisin ang data (Safe handling)
     const cleanNetwork = rawNetwork.replace("E-LOAD | Network: ", "");
     const cleanPromo = rawPromo.replace("LOAD TYPE: ", "");
     
@@ -629,11 +629,9 @@ function showStep(stepId) {
 }
 
    function showReview() {
-    const name = document.getElementById('custName').value.trim();
-    // SIGURADUHIN na 'custPhone' ang ID sa HTML mo
+   const name = document.getElementById('custName').value.trim();
     const phoneElement = document.getElementById('custPhone'); 
     const phone = phoneElement ? phoneElement.value.trim() : "N/A";
-    
     const network = document.getElementById('loadNetwork').value;
     const promo = document.getElementById('loadType').value;
     const amt = parseFloat(document.getElementById('amount').value) || 0;
@@ -643,6 +641,12 @@ function showStep(stepId) {
         alert("⚠️ Pakikumpleto ang lahat ng detalye."); 
         return; 
     }
+
+    localStorage.setItem('input_custName', name);
+    localStorage.setItem('input_custPhone', phone);
+    localStorage.setItem('input_loadNetwork', network);
+    localStorage.setItem('input_loadType', promo);
+    localStorage.setItem('input_amount', amt);
 
     // 2. Mobile Validation
     if (phone.length !== 11 || !phone.startsWith("09")) {
