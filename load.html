@@ -372,7 +372,7 @@ window.onload = function() {
     setMode(currentMode); 
 
     // ETO YUNG MAGBABALIK NG DATA SA MGA INPUT BOXES
-    const inputsToRestore = ['custName', 'accNo', 'accName', 'amount'];
+    const inputsToRestore = ['custName', 'custPhone', 'loadNetwork', 'loadType', 'amount'];
     inputsToRestore.forEach(id => {
         const savedValue = localStorage.getItem('input_' + id);
         const inputElement = document.getElementById(id);
