@@ -425,7 +425,7 @@
 
   document.getElementById('table-body').innerHTML = activeHtml || "<tr><td>No active queue</td></tr>";
   document.getElementById('completed-body').innerHTML = completedHtml || "<tr><td>No completed yet</td></tr>";
-  document.getElementById('stat-fees').innerText = "₱" + totalFees.toLocaleString();
+  document.getElementById('stat-fees').innerText = "₱" + totalFees.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
   document.getElementById('stat-count').innerText = transCount;
 }
 
@@ -474,7 +474,13 @@
     const viewU = row[20] || ""; // Signature/Voucher
     
     // row[1] is Queue, row[0] is Customer Name (o kung ano man ang index 0 mo)
-document.getElementById('mod-queue').innerHTML = `QUE#: ${row[1]} <br> <small style="color:white; font-size: 14px; font-weight: normal;">${row[0]}</small>`;
+    document.getElementById('mod-queue').innerHTML = `QUE#: ${row[1]} <br> <small style="color:white; font-size: 14px; font-weight: normal;">${row[0]}</small>`;
+
+    // Helper function para sa malinis na display ng pera
+    const formatMoney = (val) => {
+    let n = parseFloat(val) || 0;
+    return n.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    };
     
     let body = `
       <div class="detail-item"><span>Timestamp</span><b>${timeStampC}</b></div>
@@ -495,17 +501,17 @@ document.getElementById('mod-queue').innerHTML = `QUE#: ${row[1]} <br> <small st
 
       <div class="detail-item">
         <span>Amount</span>
-        <div class="detail-value"><b>₱${amountH}</b><button class="copy-btn" onclick="copyToClipboard('${amountH}')">COPY</button></div>
+        <div class="detail-value"><b>₱${formatMoney(amountH)}</b><button class="copy-btn" onclick="copyToClipboard('${amountH}')">COPY</button></div>
       </div>
 
-      <div class="detail-item"><span>Fee</span><b>₱${feeI}</b></div>
+      <div class="detail-item"><span>Fee</span><b>₱$${formatMoney(feeI)}</b></div>
       <div class="detail-item"><span>Fee Option</span><b>${feeOptionJ}</b></div>
 
-      <div class="detail-item"><span>Cash In (E-SEND NA AMOUNT)</span><div class="detail-value"><b>₱${cashInK}</b><button class="copy-btn" onclick="copyToClipboard('${cashInK}')">COPY</button></div></div>
-      <div class="detail-item"><span>Cash Out (AMOUNT NA MATANGGAP SA GCASH/MAYA)</span><b>₱${cashOutAddL}</b></div>
-      <div class="detail-item"><span>Cash Out (CASH NA IBIBIGAY)</span><b>₱${cashOutDedM}</b></div>
-      <div class="detail-item"><span>Cash Received/Pay</span><b>₱${cashReceivedN}</b></div>
-      <div class="detail-item" style="border-bottom: 2px solid var(--gold);"><span>Sukli / Net</span><b>₱${sukliNetO}</b></div>
+      <div class="detail-item"><span>Cash In (E-SEND NA AMOUNT)</span><div class="detail-value"><b>₱${formatMoney(cashInK)}</b><button class="copy-btn" onclick="copyToClipboard('${cashInK}')">COPY</button></div></div>
+      <div class="detail-item"><span>Cash Out (AMOUNT NA MATANGGAP SA GCASH/MAYA)</span><b>₱${formatMoney(cashOutAddL)}</b></div>
+      <div class="detail-item"><span>Cash Out (CASH NA IBIBIGAY)</span><b>₱$${formatMoney(cashOutDedM)}</b></div>
+      <div class="detail-item"><span>Cash Received/Pay</span><b>₱${formatMoney(cashReceivedN)}</b></div>
+      <div class="detail-item" style="border-bottom: 2px solid var(--gold);"><span>Sukli / Net</span><b>₱${formatMoney(sukliNetO)}</b></div>
     `;
 
     // --- PROOFS SECTION (CASH IN: S at T LANG) ---
