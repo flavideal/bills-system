@@ -837,6 +837,8 @@ async function checkHubStatus() {
             // Para sa Aneco at E-load
             applyMaintenance(linkAneco, res.anecoStatus);
             applyMaintenance(linkEload, res.loadStatus);
+            applyMaintenance(linkEload, res.bcwdStatus);
+            
         }
     } catch (e) {
         msg.style.display = 'block';
