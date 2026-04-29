@@ -855,7 +855,19 @@ function showStep(stepId) {
 
         const serviceFee = Math.ceil(baseAmount * 0.01); 
         const fixedBillerFee = 10;
-        const paymentGatewayFee = baseAmount * payFeeRate; 
+        const paymentGatewayFee = baseAmount * payFeeRate;
+
+        // DITO NATIN I-FORMAT ANG LABEL PARA SA SHEET
+if (method === "Card") {
+    methodLabel = "Card+3.2% (+" + paymentGatewayFee.toFixed(2) + ")";
+} else if (method === "Spaylater") {
+    methodLabel = "Spaylater+1% (+" + paymentGatewayFee.toFixed(2) + ")";
+} else if (method === "Billease") {
+    methodLabel = "Billease+1% (+" + paymentGatewayFee.toFixed(2) + ")";
+} else {
+    methodLabel = "Cash";
+}
+        
         const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
         const totalWithFee = baseAmount + totalFee;
 
@@ -1098,9 +1110,10 @@ function saveInput(id) {
 }
 // I-expose sa window para kahit nasa loob ng ibang function, mababasa pa rin
 window.saveInput = saveInput;
+    
 
 // bago logic para sa close /open/ maintenance
-async function checkAnecoMaintenance() {
+async function checkbcwdMaintenance() {
     try {
         const response = await fetch(`${WEB_APP_URL}?action=getTransactions`);
         const result = await response.json();
