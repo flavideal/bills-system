@@ -195,7 +195,7 @@
     <label>Bill Due Date</label>
     <input type="date" id="dueDate" oninput="saveInput('dueDate')" style="border: 2px solid var(--dark-green);">
     <p style="font-size: 10px; color: #d32f2f; margin-top: 5px; font-weight: bold;">
-       *Paalala: Tumatanggap lamang kami 3 days bago ang Due Date. Bawal ang may "Arrears" o "Past Due".
+       *Paalala: Tumatanggap lamang kami 4 days bago ang Due Date. Bawal ang may "Arrears" o "Past Due".
     </p>
 </div>
             
@@ -717,9 +717,9 @@ function showStep(stepId) {
         return;
     }
 
-    // VALIDATION 2: Ang 3-Day Rule
-    if (diffDays < 3) {
-        alert("⚠️ PAALALA: Masyado nang malapit ang Due Date.\n\nTumatanggap lamang kami ng payments 3 DAYS BAGO ang due date upang maiwasan ang penalty o disconnection. Mangyaring sa BCWD Head Office na lamang magbayad.");
+    // VALIDATION 2: Ang 4-Day Rule
+    if (diffDays < 4) {
+        alert("⚠️ PAALALA: Masyado nang malapit ang Due Date.\n\nTumatanggap lamang kami ng payments 4 DAYS BAGO ang due date upang maiwasan ang penalty o disconnection. Mangyaring sa BCWD Head Office na lamang magbayad.");
         return;
     }
 
