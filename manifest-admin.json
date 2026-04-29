@@ -11,13 +11,13 @@
   "theme_color": "#4a0000",
   "icons": [
     {
-      "src": "https://jerrickiosk.flavideal.com/logo/admin.png?v=2",
+      "src": "https://jerrickiosk.flavideal.com/logo/admin.png?v=3",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://jerrickiosk.flavideal.com/logo/admin.png?v=2",
+      "src": "https://jerrickiosk.flavideal.com/logo/admin.png?v=3",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
