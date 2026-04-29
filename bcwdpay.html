@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JERRIC Personal Assistance Service</title>
+
+    <link rel="icon" type="image/png" href="https://jerrickiosk.flavideal.com/logo/jpsk..png?v=2">
+
+<link rel="apple-touch-icon" href="https://jerrickiosk.flavideal.com/logo/main.png?v=2">
+<link rel="manifest" href="manifest.json?v=2">
+
+
+    <style>
+        :root { --dark-green: #1b431c; --orange-yellow: #ffc267; --bg: #f0f2f5; }
+        body { 
+        font-family: 'Segoe UI', sans-serif; 
+        background: var(--bg); 
+        padding: 15px; 
+        display: flex; 
+        justify-content: center; 
+        min-height: 100vh;
+        overflow-x: hidden; 
+    }
+        .kiosk-container { width: 100%; max-width: 500px; }
+        .card { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 20px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+    border-top: 8px solid var(--dark-green); 
+    position: relative;
+    /* Siguraduhin na WALANG overflow: hidden dito */
+}
+        .field-group { margin-bottom: 15px; }
+        label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .mode-btn.active { background: var(--dark-green); color: white; border-color: var(--dark-green); }
+        .back-btn { background: none; border: none; color: var(--dark-green); font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        /* Siguradong clickable ang mga checkbox na nililikha ng Script */
+.cash-logic-box input[type="checkbox"] {
+    width: 25px;
+    height: 25px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+        .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 10px; font-weight: bold; color: var(--dark-green); }
+        .sukli-display { font-size: 18px; font-weight: 900; color: #d32f2f; margin-top: 5px; }
+        
+        /* Review & Success Screens */
+      .overlay-screen {  
+    display: none;  
+    position: fixed; 
+    top: 0;  
+    left: 0;  
+    width: 100%;  
+    height: 100%; 
+    background: white;  
+    padding: 20px;  
+    box-sizing: border-box;  
+    z-index: 2000; /* Taasan natin para laging nasa ibabaw */
+    overflow-y: auto;
+}
+        #stepSuccess {
+    padding-bottom: 40px;
+    z-index: 1100 !important; /* Dapat mas mataas ito sa Review Screen (999) */
+    background: white;
+}
+            
+        .review-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .review-item strong { color: var(--dark-green); }
+        .que-number { font-size: 48px; font-weight: 900; color: var(--dark-green); margin: 20px 0; }
+        .btn-main { width: 100%; padding: 18px; background: var(--dark-green); color: var(--orange-yellow); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+    .status-badge {
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-weight: bold;
+    display: none;
+}
+.status-waiting { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.status-calling { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; animation: blink 1s infinite; }
+.status-completed { background: #cce5ff; color: #004085; border: 1px solid #b8daff; }
+
+@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+#adminReceipt {
+    width: 100%;
+    height: auto;
+    display: none;
+    margin: 15px 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    border: 2px solid #eee;
+    object-fit: contain; /* Para mapanatili ang aspect ratio */
+}
+
+/* Idagdag sa loob ng <style> tag mo */
+.force-reset-trigger {
+    position: absolute;
+    top: 5px;
+    right: 15px;
+    font-size: 10px;
+    color: #f0f0f0; /* Mas invisible sa puting background */
+    cursor: pointer;
+    z-index: 100;
+    padding: 10px;
+    user-select: none;
+}
+.force-reset-trigger:hover {
+    color: #ccc; /* Lilitaw lang ng bahagya pag tinapatan mo */
+}
+    #stepReview {
+    z-index: 999;
+}
+/* FIX PARA SA CHECKBOX SA REVIEW SCREEN */
+#reviewIsExact, 
+.checkbox-row input[type="checkbox"] {
+    position: relative;
+    z-index: 1010 !important; /* Siguradong nasa ibabaw */
+    cursor: pointer;
+    width: 20px !important;  /* Lakihan konti para madaling tamaan */
+    height: 20px !important;
+    pointer-events: auto !important; /* Siguradong tumatanggap ng click */
+}
+
+/* Para maging clickable din yung mismong label text */
+.checkbox-row label {
+    cursor: pointer;
+    user-select: none;
+    padding: 5px;
+}
+#reviewIsExact {
+    width: 25px !important;
+    height: 25px !important;
+    accent-color: var(--dark-green);
+    cursor: pointer;
+}
+
+    </style>
+</head>
+<body>
+    
+<div class="kiosk-container">
+    <button class="back-btn" onclick="window.location.href='index.html'">← BACK TO MENU</button>
+    
+    <div class="card" id="formCard">
+        <div class="force-reset-trigger" onclick="adminForceReset()">RESET</div>
+        
+        <div id="stepForm">
+    <div style="background: var(--dark-green); padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center;">
+        <img src="logo/aneco.png" alt="ANECO Logo" style="height: 50px; width: auto; margin-bottom: 5px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));">
+        <p style="color: rgba(255,255,255,0.7); font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">You are paying for:</p>
+        <p style="color: #ffffff; margin: 2px 0; font-size: 10px; font-weight: normal; opacity: 0.9;">Agusan del Norte Electric Cooperative, Inc.</p>
+        <h2 style="color: #ffc267; margin: 5px 0 0 0; font-size: 24px; text-transform: uppercase; font-weight: 800; line-height: 1;">ANECO</h2>
+        <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 11px; font-weight: bold; letter-spacing: 1px;">ELECTRIC BILL PAYMENT</p>
+        <div style="height: 1px; background: rgba(255,194,103,0.3); width: 60%; margin: 12px auto;"></div>
+        <p style="color: #ffffff; font-size: 12px; margin: 0; font-style: italic; opacity: 0.8;">Jerric Personal Assistance Service</p>
+    </div>
+
+            <div class="field-group">
+                <label id="nameLabel">Name ng Nag-transact</label>
+                <input type="text" id="custName" placeholder="Buong Pangalan" oninput="saveInput('custName')">
+            </div>
+            <div class="field-group">
+                <label>ANECO Account Name</label>
+                <input type="text" id="accName" placeholder="Pangalan sa Bill" oninput="saveInput('accName')">
+            </div>
+            <div class="field-group">
+                <label>ANECO Account Number</label>
+                <input type="text" id="accNo" placeholder="Ex: B000011100020" 
+       style="text-transform: uppercase;"
+       oninput="this.value = this.value.toUpperCase(); saveInput('accNo')">
+            </div>
+            <div class="field-group">
+    <label>Cellphone Number</label>
+    <input type="tel" id="custPhone" 
+           placeholder="09123456789" 
+           oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11); saveInput('custPhone')"
+           onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+</div>
+            <div class="field-group">
+    <label>Upload Aneco Bill (Optional)</label>
+    <p style="font-size: 11px; color: #666; margin-top: -5px; margin-bottom: 5px;">
+        I-upload ang bill kung hindi sigurado sa detalye para kami na ang mag-verify.
+    </p>
+    <input type="file" id="proofUpload" accept="image/*">
+</div>
+            <div class="field-group">
+    <label>Bill Due Date</label>
+    <input type="date" id="dueDate" oninput="saveInput('dueDate')" style="border: 2px solid var(--dark-green);">
+    <p style="font-size: 10px; color: #d32f2f; margin-top: 5px; font-weight: bold;">
+        *Paalala: Bawal ang "With Arrears" o "Past Due" na bill.
+    </p>
+</div>
+            
+            <div class="field-group">
+    <label>Bill Amount (Exact amount sa bill)</label>
+    <input type="number" id="amount" placeholder="0.00" oninput="calculateFee(); saveInput('amount');">
+    <div id="liveBreakdown" style="font-size: 12px; margin-top: 5px; color: var(--dark-green);"></div>
+    <div id="sukliDisplay" class="sukli-display"></div>
+</div>
+
+<div style="margin: 20px 0; padding: 15px; background: #ffffff; border-radius: 12px; text-align: center; border: 1.5px solid #eef0f2; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+    <p style="font-size: 10px; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">
+        Payment Channels
+    </p>
+    
+    <div style="display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
+        <span style="font-size: 10px; font-weight: bold; color: #1b4332; background: #d8f3dc; padding: 5px 12px; border-radius: 6px; border: 1px solid #b7e4c7; display: flex; align-items: center; gap: 4px;">
+            💵 CASH
+        </span>
+        
+        <img src="https://errihoportal.flavideal.com/images/sp.png" alt="SPayLater" style="height: 18px; object-fit: contain;">
+        
+        <img src="https://errihoportal.flavideal.com/images/be.png" alt="BillEase" style="height: 16px; object-fit: contain;">
+    </div>
+
+    <div style="display: flex; justify-content: center; align-items: center; gap: 15px; border-top: 1px solid #f0f0f0; padding-top: 12px;">
+        <img src="https://errihoportal.flavideal.com/images/visa.png" alt="Visa" style="height: 20px; object-fit: contain;">
+        <img src="https://errihoportal.flavideal.com/images/mc.png" alt="Mastercard" style="height: 25px; object-fit: contain;">
+    </div>
+    
+    <p style="font-size: 9px; color: #d32f2f; margin-top: 12px; font-style: italic; font-weight: 600;">
+        *Card & Installment fees apply
+    </p>
+</div>
+
+ <p style="font-size: 11px; color: #777; text-align: center; margin: 15px 0; line-height: 1.4;">
+    By clicking "Review Details", you agree that this is a <b>Jerric Personal Assistance Service</b> processed via personal account. 
+    <a href="index.html#faq-section" style="color: var(--dark-green); text-decoration: underline;">Learn more in the Information Hub</a>
+</p>
+            
+<button onclick="showReview()" class="btn-main">REVIEW DETAILS</button>
+</div>
+
+        <div id="stepReview" class="overlay-screen">
+            <h3 style="color: var(--dark-green); text-align: center;">REVIEW YOUR DETAILS</h3>
+            <div id="reviewContent"></div>
+            <div id="finalBreakdown" style="margin-top: 15px;"></div>
+
+    <div id="termsContainer" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
+    
+    <div style="text-align: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ccc;">
+        <p style="font-size: 12px; font-weight: 800; color: var(--dark-green); margin: 0; text-transform: uppercase;">
+            ⚠️ Personal Assistance Service Disclosure
+        </p>
+        <p style="font-size: 10px; color: #666; margin: 5px 0 0 0; line-height: 1.2;">
+            By using this kiosk, you acknowledge that Jerric acts as your personal assistant for this transaction.
+        </p>
+    </div>
+        
+    <h4 style="margin-top: 0; color: var(--dark-green); font-size: 14px;">TERMS & PRIVACY POLICY (ANECO BILLS)</h4>
+    <ul style="font-size: 11px; color: #555; padding-left: 18px; line-height: 1.4;">
+        <li><b>Personal Service:</b> Ito ay isang personal assistance service. Ang inyong bayad ay ipapasa ni Jerric sa ANECO via <b>Maya Business/Center</b>.</li>
+        <li><b>Accuracy:</b> Pakisuri nang mabuti ang Account Number at Name. Hindi liable si Jerric sa anumang pagkakamali sa input ng customer.</li>
+        
+        <li style="color: #000; background: #fffde7; padding: 5px; border-radius: 5px;">
+    <b>Fees & Charges:</b> 
+    May fixed <b>Biller Fee na ₱10.00</b> at <b>Service Fee na 1%</b>. 
+    <div style="margin-top: 5px; padding-left: 10px; border-left: 2px solid #d32f2f;">
+        <span style="color: #d32f2f; font-weight: bold;">Additional Payment Gateway Fees:</span><br>
+        • <b>+3.20%</b> para sa Credit/Debit Cards (Visa/MC).<br>
+        • <b>+1%</b> para sa SPayLater at BillEase.
+        <i style="font-size: 10px; color: #555; display: block; margin-top: 5px;">
+            <i style="font-size: 10px; color: #555; display: block; margin-top: 5px;">
+    <b>NOTE:</b> Ang <b>Payment Gateway Fees</b> (Card/Installment) at ang <b>1% Personal Service Fee</b> ay awtomatikong idinaragdag sa inyong total na babayaran ngunit <b>hindi kasama sa Digital Receipt</b>. Ang makikita lamang sa resibo ay ang <b>Bill Amount</b> at <b>Biller Convenience Fee</b> (₱10.00).
+        </i>
+    </div>
+</li>
+        <li><b>No Arrears & Past Due:</b> Tumatanggap lamang kami ng <b>Current Bill (No Arrears)</b>. Kung ang inyong bill ay "Past Due" na o may balanse mula sa nakaraang buwan, mangyaring sa ANECO Head Office na magbayad upang maiwasan ang disconnection.</li>
+        <li><b>Processing & Confirmation:</b> Ang pag-reflect ng payment ay depende sa billing cycle ng ANECO. Makakatanggap kayo ng SMS confirmation mula sa Maya Center kapag successfully processed na ang transaction.</li>
+        <li><b>No Refund & Finality:</b> Ang completed transactions ay final at non-refundable. Hindi liable si Jerric sa anumang penalty kung nag-proceed ang customer sa pagbabayad sa kiosk kahit may arrears ang account.</li>
+        <li><b>Privacy & Receipts:</b> Ang inyong data ay gagamitin lamang para sa transaction logs at pag-generate ng <b>Digital Receipt</b> bilang inyong opisyal na proof sa aming system.</li>
+    </ul>
+    
+    <div class="checkbox-row" style="display: flex; align-items: flex-start; gap: 10px; margin-top: 15px;">
+    <input type="checkbox" id="termsAgree" style="width: 22px; height: 22px; cursor: pointer;">
+    <label for="termsAgree" style="text-transform: none; font-size: 13px; cursor: pointer; font-weight: bold; line-height: 1.4;">
+        I have read and agree to the 
+        <a href="index.html#faq-section" target="_blank" style="color: var(--premium-green); text-decoration: underline;">Terms & Privacy Policy</a> 
+        above and the full agreement in the Information Hub.
+    </label>
+</div>
+</div>
+
+            <button onclick="generateNumber()" class="btn-main">GET A NUMBER</button>
+            <button onclick="hideReview()" style="background: none; border: none; color: #888; width: 100%; margin-top: 10px; cursor: pointer;">Edit Details</button>
+        </div>
+
+<div id="stepSuccess" class="overlay-screen" style="text-align: center;">
+    <div style="font-size: 50px;">✅</div>
+    <h2 style="color: var(--dark-green);">SUCCESS!</h2>
+    <p>YOUR QUEUE NUMBER:</p>
+    <div id="numberDisplay" class="que-number">G-000</div>
+    <div id="liveStatusBox" class="status-badge status-waiting">STATUS: WAITING...</div>
+    <p id="instructionText">Checking status...</p>
+
+    <div id="completedDetails" style="display:none;">
+    <div id="cashInVerify">
+        <p style="font-size: 13px; color: #555;">Please see your transaction slip below.</p>
+        
+        <div id="adminNote" style="border-top: 1px dashed #ccc; padding-top: 10px; background: #fff; padding: 10px;"></div>
+        
+        <img id="adminReceipt" src="" alt="Admin Receipt">
+
+        <div style="margin-top: 15px; padding: 10px; border: 1px solid #eee; border-radius: 10px; background: #fafafa;">
+                <p style="font-size: 12px; color: #444; margin-bottom: 0px;">
+                    📸 <b>You can screenshot the receipt for your copy.</b>
+                </p>
+            </div>
+
+        <div style="margin: 20px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <strong style="color: var(--dark-green); font-size: 15px;">
+                Thank you for using Jerric Personal Assistance Service Kiosk!
+            </strong><br>
+            <span style="font-size: 13px; color: #666;">Salamat sa tiwala at pag-gamit ng aming serbisyo!</span>
+        </div>
+    </div>
+
+    <p style="color: red; font-weight: bold; font-size: 12px; margin-top: 20px;">
+        ⚠️ Paalala: Huwag kalimutang i-click ang DONE button bago umalis.
+    </p>
+
+    <button id="finishBtn" onclick="finishTransaction()" class="btn-main">DONE / NEW TRANSACTION</button>
+</div>
+</div>
+    </div>
+</div>
+
+<script>
+
+// ==========================================
+// MAINTENANCE SETTINGS (Edit mo dito)
+// ==========================================
+const isMaintenance = false; // Under Maintenance: true / Normal Operation: false
+// ==========================================
+
+(function() {
+    const isWaiting = localStorage.getItem('isWaiting');
+
+    // Titignan kung Maintenance at kung WALANG active transaction
+    if (isMaintenance && isWaiting !== 'true') {
+        // Papalitan ang itsura ng buong page
+        document.documentElement.innerHTML = `
+            <body style="margin:0; padding:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center;">
+                <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 400px; width: 90%;">
+                    <div style="font-size: 60px; margin-bottom: 20px;">⚠️</div>
+                    <h1 style="color: #d32f2f; margin-bottom: 10px; font-size: 24px;">UNDER MAINTENANCE</h1>
+                    <p style="color: #555; line-height: 1.6; margin-bottom: 5px;">
+                        Kasalukuyang ina-update ang aming system para sa <b>ANECO Bills Payment</b> upang mabigyan kayo ng mas magandang serbisyo.
+                    </p>
+                    <p style="color: #1b4332; font-weight: bold; margin-bottom: 25px;">
+                        Salamat sa inyong pag-unawa!
+                    </p>
+                    
+                    <button onclick="window.location.replace('index.html')" 
+                        style="width: 100%; padding: 15px; background: #1b4332; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                        BUMALIK SA MAIN MENU
+                    </button>
+                    
+                    <div style="margin-top: 20px; font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px;">
+                        JERRIC Personal Assistance Service
+                    </div>
+                </div>
+            </body>
+        `;
+        // Ititigil ang lahat ng iba pang scripts sa page
+        throw new Error("Maintenance Mode Active"); 
+    }
+})();
+// ==========================================
+    
+window.addEventListener('beforeunload', function (e) {
+    const isWaiting = localStorage.getItem('isWaiting');
+    // Kung isWaiting ay true, lalabas ang "Confirm Navigation" pop-up
+    if (isWaiting === 'true') {
+        e.preventDefault();
+        e.returnValue = ''; // Standard ito para lumabas ang warning sa browser
+    }
+}); 
+ 
+let myQueueNumber = "";
+let statusInterval;
+let currentMode = "Cash In"; // Siguraduhing nasa taas ito ng script
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+
+window.onload = function() {
+    // I-restore ang Mode (Cash In/Cash Out)
+    currentMode = localStorage.getItem('savedMode') || 'Cash In';
+    setMode(currentMode); 
+
+    // ETO YUNG MAGBABALIK NG DATA SA MGA INPUT BOXES
+    const inputsToRestore = ['custName', 'accNo', 'accName', 'amount'];
+    inputsToRestore.forEach(id => {
+        const savedValue = localStorage.getItem('input_' + id);
+        const inputElement = document.getElementById(id);
+        if (savedValue !== null && inputElement) {
+            inputElement.value = savedValue;
+        }
+    });
+
+    // --- DAGDAG DITO: Lock the calendar to Today (PH Time) onwards ---
+    const dateInput = document.getElementById('dueDate');
+    if (dateInput) {
+        // Imbes na ISOString, gagamit tayo ng Locale Date para sa PH Timezone
+        const phTime = new Date().toLocaleDateString('en-CA', { // en-CA format is YYYY-MM-DD
+            timeZone: 'Asia/Manila'
+        });
+        dateInput.setAttribute('min', phTime); 
+    }
+    // -----------------------------------------------------
+
+    // Ituloy ang dating logic (Routing)
+    const savedNumber = localStorage.getItem('savedQueueNumber');
+    const isWaiting = localStorage.getItem('isWaiting');
+    if (savedNumber && isWaiting === 'true') {
+        myQueueNumber = savedNumber;
+        document.getElementById('numberDisplay').innerText = myQueueNumber;
+        showStep('stepSuccess');
+        statusInterval = setInterval(checkMyStatus, 5000);
+        checkMyStatus(); 
+    } else {
+        showStep('stepForm');
+    }
+    
+    // I-recompute ang fee kung may laman na ang amount
+    if (document.getElementById('amount').value > 0) {
+        calculateFee();
+    }
+};
+    
+
+async function checkMyStatus() {
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec";
+    
+    try {
+        const response = await fetch(`${WEB_APP_URL}?checkStatus=${myQueueNumber}`);
+        const result = await response.json();
+        
+        const statusBox = document.getElementById('liveStatusBox');
+        const instruction = document.getElementById('instructionText');
+        const completedArea = document.getElementById('completedDetails');
+
+        // --- STATUS: NEW (Waiting) ---
+        if (result.status === "NEW") {
+            statusBox.style.display = "block";
+            statusBox.className = "status-badge status-waiting";
+            statusBox.innerText = "⏳ NASA QUEUE KA NA";
+            
+            instruction.style.color = "#1565c0"; // Blue para sa "Processing/Info"
+            instruction.innerHTML = `
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 5px solid #2196f3; text-align: left;">
+                    <b style="font-size: 1.1em; color: #0d47a1;">Sinisuri na ang iyong Transaction...</b><br><br>
+                    Paki-antay lang po at <b>huwag muna i-exit</b> ang page na ito.<br>
+                    Lalabas dito sa screen ang notification kapag tinatawag ka na para magbayad sa counter.
+                </div>
+                <div style="margin-top: 10px; font-size: 0.85em; color: #666;">
+                    <i>Tip: Maaari mong i-screenshot ang iyong Queue Number habang nag-aantay.</i>
+                </div>
+            `;
+            instruction.style.display = "block";
+            completedArea.style.display = "none";
+        }
+        
+        // --- STATUS: CALLING (In Counter) ---
+        else if (result.status === "CALLING") {
+            statusBox.style.display = "block";
+            statusBox.className = "status-badge status-calling";
+            statusBox.innerText = "📣 PUMUNTA NA SA COUNTER";
+            
+            instruction.style.color = "#1b431c";
+            instruction.innerHTML = `
+                <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 5px solid #ff9800; text-align: left;">
+                    <b style="font-size: 1.2em; color: #e65100;">STEP 1: MAGBAYAD SA COUNTER</b><br>
+                    Ipakita ang iyong Queue Number at i-abot ang bayad sa cashier.<br><br>
+                    
+                    <b style="font-size: 1.2em; color: #2e7d32;">STEP 2: HUWAG MUNA UMALIS</b><br>
+                    Pagkatapos magbayad, <b>paki-antay na lumabas dito</b> ang iyong Digital Receipt. 
+                    <span style="color: #d32f2f;">⚠️ Huwag i-close o i-exit ang page na ito.</span><br><br>
+                    
+                    <small style="display: block; border-top: 1px solid #ccc; pt: 10px; margin-top: 10px;">
+                        📢 Makakatanggap din kayo ng SMS mula sa <b>MAYA CENTER</b> kapag tapos na ang transaction.
+                    </small>
+                </div>
+            `;
+            instruction.style.display = "block";
+            completedArea.style.display = "none"; 
+        }
+        
+// --- STATUS: COMPLETED (Tapos na) ---
+        else if (result.status === "COMPLETED") {
+            statusBox.style.display = "block";
+            statusBox.className = "status-badge status-completed";
+            statusBox.innerText = "✅ TRANSACTION FINISHED";
+
+            instruction.style.display = "none"; 
+            completedArea.style.display = "block"; 
+
+            // Siguraduhing makikita ang main area ng receipt
+            const verifyArea = document.getElementById('cashInVerify');
+            if (verifyArea) verifyArea.style.display = "block";
+
+            const finishBtn = document.getElementById('finishBtn');
+            if (finishBtn) {
+                finishBtn.disabled = false;
+                finishBtn.style.opacity = "1";
+                finishBtn.onclick = finishTransaction;
+            }
+
+            // Kunin ang mga values para sa Slip
+            const accNoValue = document.getElementById('accNo').value;
+            const accNameValue = document.getElementById('accName').value;
+            const noteTitle = (accNoValue.length > 10) ? "ANECO / Bills Payment Successful" : "Transaction Successful";
+            
+            // I-render ang details sa adminNote
+            const adminNote = document.getElementById('adminNote');
+            if (adminNote) {
+                adminNote.innerHTML = `
+                    <div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; text-align: left;">
+                        <strong style="color: #1b4332; font-size: 16px;">${noteTitle}</strong><br>
+                        <span style="font-size: 13px; color: #333;">Biller Account Name: <b>${accNameValue}</b></span><br>
+                        <span style="font-size: 13px; color: #333;">Biller Account No: <b>${accNoValue}</b></span>
+                    </div>
+                    <div style="margin-top: 5px; text-align: center;">
+                        <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
+                    </div>
+                `;
+            }
+
+            // --- ADMIN RECEIPT IMAGE LOGIC ---
+            const receiptImg = document.getElementById('adminReceipt');
+            if (receiptImg && result.receipt) {
+                let finalLink = result.receipt.toString().trim();
+                
+                // Check kung valid link ba talaga
+                if (finalLink.toLowerCase().includes("http")) {
+                    if (finalLink.includes("drive.google.com")) {
+                        let fileId = "";
+                        if (finalLink.includes("/file/d/")) {
+                            fileId = finalLink.split("/file/d/")[1].split("/")[0];
+                        } else if (finalLink.includes("id=")) {
+                            fileId = finalLink.split("id=")[1].split("&")[0];
+                        }
+                        if(fileId) finalLink = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1200";
+                    }
+                    
+                    // Lagyan ng timestamp para hindi ma-cache (anti-stale image)
+                    receiptImg.src = finalLink + (finalLink.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+                    receiptImg.style.display = "block";
+                }
+            }
+
+            clearInterval(statusInterval);
+        }
+    } catch (e) {
+        console.error("Error checking status:", e);
+    }
+}
+
+
+function setMode(mode) {
+    currentMode = mode;
+    localStorage.setItem('savedMode', mode);
+
+    const nameLabel = document.getElementById('nameLabel');
+    const custInput = document.getElementById('custName');
+
+    if (nameLabel && custInput) {
+        // Gawin nating generic na "Customer Name" dahil bills payment na ito
+        nameLabel.innerText = "Customer Name (Nag-transact)";
+        custInput.placeholder = "Pangalan ng nag-bayad";
+    }
+    
+    // Pwede mo nang burahin ang logic para sa btnIn/btnOut classes kung tinanggal mo na yung buttons sa HTML
+    const btnIn = document.getElementById('btnIn');
+    if(btnIn) btnIn.classList.add('active');
+
+    if(document.getElementById('stepForm').style.display !== 'none') {
+        calculateFee();
+    }
+}
+    
+
+function formatPHP(number) {
+return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 2
+    }).format(number);
+}
+
+    function toggleExact() {
+        const isExact = document.getElementById('isExact').checked;
+        document.getElementById('cashInputGroup').style.display = isExact ? 'none' : 'block';
+        calculateFee();
+    }
+
+    function calculateFee() {
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    
+    // 1. Fixed Biller Fee (Maya/ANECO fee)
+    const fixedBillerFee = 10;
+    
+    // 2. Service Fee: 1% of bill, then Math.ceil para walang centavos
+    let rawPercentFee = amt * 0.01;
+    let serviceFee = Math.ceil(rawPercentFee); 
+    
+    const totalFee = serviceFee + fixedBillerFee;
+    const totalToPay = amt + totalFee; 
+    
+    const liveBreakdown = document.getElementById('liveBreakdown');
+
+    if (amt > 0) {
+        liveBreakdown.style.display = 'block';
+        liveBreakdown.innerHTML = `
+            <div style="border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Bill Amount:</span> <b>${formatPHP(amt)}</b>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>Biller Convenience Fee:</span> <b>${formatPHP(fixedBillerFee)}</b>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>Service Fee (1%):</span> <b>${formatPHP(serviceFee)}</b>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px; color: #1b4332; font-weight: bold;">
+                    <span>TOTAL TO PAY:</span> <span>${formatPHP(totalToPay)}</span>
+                </div>
+                <p style="color:#d90429; font-size:10px; margin-top: 5px; font-style: italic;">
+                    *Service fee is rounded up to the nearest peso for faster change (sukli).
+                </p>
+            </div>
+        `;
+    } else {
+        liveBreakdown.style.display = 'none';
+    }
+
+    // --- Sukli Logic ---
+    const cashInInput = document.getElementById('cashReceived');
+    const cashIn = cashInInput ? parseFloat(cashInInput.value) || 0 : 0;
+    const sukliDiv = document.getElementById('sukliDisplay');
+    const isExact = document.getElementById('isExact');
+    
+    if (sukliDiv) {
+        if (isExact && !isExact.checked && cashIn > 0) {
+            if (cashIn < totalToPay) {
+                sukliDiv.style.color = "#d32f2f";
+                sukliDiv.innerHTML = "❌ KULANG NG: " + formatPHP(totalToPay - cashIn);
+            } else {
+                sukliDiv.style.color = "#1b431c";
+                sukliDiv.innerHTML = "✅ SUKLI: " + formatPHP(cashIn - totalToPay);
+            }
+        } else { 
+            sukliDiv.innerHTML = ""; 
+        }
+    }
+}
+
+function showStep(stepId) {
+    // Itago lahat
+    document.getElementById('stepForm').style.display = 'none';
+    document.getElementById('stepReview').style.display = 'none';
+    document.getElementById('stepSuccess').style.display = 'none';
+
+    // Ipakita ang target
+    const target = document.getElementById(stepId);
+    if (target) {
+        target.style.display = 'block';
+        
+        // ETO ANG PINAKA-IMPORTANTENG LINYA:
+        localStorage.setItem('currentStep', stepId); 
+    }
+}
+
+   function showReview() {
+    const name = document.getElementById('custName').value.trim();
+    const accName = document.getElementById('accName').value.trim();
+    const accNo = document.getElementById('accNo').value.trim().toUpperCase(); // Naka-auto Caps na para sa "B"
+    const phone = document.getElementById('custPhone').value.trim();
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    
+    // Kunin ang raw value ng date para sa validation
+    const dueDateInput = document.getElementById('dueDate').value;
+    const rawDate = new Date(dueDateInput);
+    const formattedDate = rawDate.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+    
+    // Kunin ang date ngayong araw (Butuan Time)
+    const today = new Date().toISOString().split('T')[0];
+
+    // 1. Basic Validation (Inayos ang dueDate check)
+    if(!name || !accName || !accNo || !phone || amt <= 0 || !dueDateInput) { 
+        alert("⚠️ Pakikumpleto ang lahat ng detalye, kasama ang Due Date."); 
+        return; 
+    }
+
+    // 2. Due Date Check (Bawal Overdue)
+    const localToday = new Date();
+    localToday.setHours(0, 0, 0, 0); // April 22, 2026 00:00:00
+
+    // Kuhanin ang input date mula sa form
+    const inputDueDate = new Date(dueDateInput);
+    inputDueDate.setHours(0, 0, 0, 0);
+       
+    // VALIDATION: I-allow kung ang input date ay >= kahapon
+   if (inputDueDate < localToday) {
+        alert("❌ PAALALA: Ang bill mo ay PAST DUE na.\n\nHindi na ito tinatanggap sa aming Kiosk. Mangyaring pumunta sa ANECO Head Office para mag-settle.");
+        return;
+    }
+
+    // 3. Mobile Validation
+    if (phone.length !== 11 || !phone.startsWith("09")) {
+        alert("⚠️ Ang Mobile Number ay dapat 11 digits at nagsisimula sa 09.");
+        return;
+    }
+
+    // 4. ANECO Account Number Validation (Allow letters like 'B')
+    // Regex: Tatanggap ng letters at numbers, bawal space o special characters
+    const alphanumericRegex = /^[A-Z0-9]+$/;
+    if (!alphanumericRegex.test(accNo)) {
+        alert("⚠️ Ang Account Number ay dapat letters at numbers lamang. Huwag lagyan ng space o symbols.");
+        return;
+    }
+    
+    if (accNo.length < 10) {
+        alert("⚠️ Siguraduhing tama ang Account Number. Karaniwan itong 10 characters o higit pa.");
+        return;
+    }
+
+    // I-render ang Review Screen
+    let reviewHTML = `
+        <div class="review-item"><span>Customer Name:</span><strong>${name}</strong></div>
+        <div class="review-item">
+            <span>Cellphone No:</span>
+            <div style="text-align: right;">
+                <strong>${phone}</strong><br>
+                <small style="font-size: 9px; color: #666; display: block;">*Dito isesend ng <b>Maya Center</b> ang official SMS receipt.</small>
+            </div>
+        </div>
+        <div style="height: 10px;"></div> <div class="review-item"><span>ANECO Bill Name:</span><strong>${accName}</strong></div>
+        <div class="review-item"><span>ANECO Bill Account No:</span><strong>${accNo}</strong></div>
+        <div class="review-item"><span>Due Date:</span><strong style="color:red;">${formattedDate}</strong></div>
+        <div class="review-item"><span>Bill Amount:</span><strong>${formatPHP(amt)}</strong></div>
+
+        <div style="margin-top:15px; background:#f9f9f9; padding:10px; border:1px solid #ddd; border-radius:5px;">
+        <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:5px;">PILIIN ANG PARAAN NG PAGBAYAD:</label>
+        <select id="paymentMethod" onchange="updateReviewTotal()" style="width:100%; padding:8px; font-weight:bold; border-radius:5px;">
+            <option value="Cash">CASH (Pay sa Counter)</option>
+            <option value="Card">CREDIT/DEBIT CARD (Tap to Pay + 3.2%)</option>
+            <option value="Spaylater">SPAYLATER (Scan to Pay + 1%)</option>
+            <option value="Billease">BILLEASE (Scan to Pay + 1%)</option>
+        </select>
+    </div>
+    `;
+
+    document.getElementById('reviewContent').innerHTML = reviewHTML;
+    showStep('stepReview');
+    updateReviewTotal();
+}
+    
+    function hideReview() {
+    showStep('stepForm');
+}
+    
+  async function generateNumber() {
+    const btn = event.target; 
+    const originalText = "GET QUEUE NUMBER";
+
+    // 1. VALIDATION: Check muna kung naka-check ang Terms & Conditions
+    const termsCheck = document.getElementById('termsAgree');
+    if (!termsCheck || !termsCheck.checked) { 
+        alert("⚠️ ACTION REQUIRED\n\nTo proceed, please check the box to agree with our Terms and Conditions and Privacy Policy.");
+        if(termsCheck) termsCheck.focus();
+        return; 
+    }
+
+    // 2. VALIDATION: Cash Payment Logic
+    const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
+    
+    if (method === "Cash") {
+        const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+        const cashInput = document.getElementById('reviewCashReceived');
+        const cashInputVal = cashInput ? parseFloat(cashInput.value) : 0;
+
+        // Kung HINDI naka-check ang "Sakto ang ibabayad" (ibig sabihin may sukli dapat)
+        if (!isExactVal) {
+            // A. Check kung walang laman o zero ang nilagay na cash
+            if (!cashInputVal || cashInputVal <= 0) {
+                alert("⚠️ INPUT REQUIRED:\n\nPinili mo na hindi sakto ang iyong bayad. Pakilagay sa box kung magkano ang cash na iaabot mo para ma-compute ang iyong sukli.");
+                if(cashInput) cashInput.focus();
+                return;
+            }
+
+            // B. Check kung mas mababa ang cash kaysa sa Total Bill
+            const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+            const serviceFee = Math.ceil(baseAmount * 0.01); 
+            const fixedBillerFee = 10;
+            const totalToPay = baseAmount + serviceFee + fixedBillerFee;
+
+            if (cashInputVal < totalToPay) {
+                alert("⚠️ KULANG ANG BAYAD:\n\nAng iyong total bill ay " + formatPHP(totalToPay) + ".\nAng nilagay mong cash (" + formatPHP(cashInputVal) + ") ay kulang. Pakitama ang amount.");
+                if(cashInput) cashInput.focus();
+                return;
+            }
+        }
+    }
+    // ------------------------------------
+
+    btn.innerText = "Processing...";
+    btn.disabled = true;
+
+    try {
+        const fileInput = document.getElementById('proofUpload');
+        let base64File = "";
+        let fileName = "";
+        let fileType = "";
+
+        if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            fileName = file.name;
+            fileType = file.type;
+            base64File = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        const baseAmount = parseFloat(document.getElementById('amount').value) || 0;
+        const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
+
+        let payFeeRate = 0;
+        let methodLabel = "Cash";
+        if (method === "Card") { payFeeRate = 0.032; methodLabel = "Card+3.2%"; }
+        else if (method === "Spaylater") { payFeeRate = 0.01; methodLabel = "Spaylater+1%"; }
+        else if (method === "Billease") { payFeeRate = 0.01; methodLabel = "Billease+1%"; }
+
+        const serviceFee = Math.ceil(baseAmount * 0.01); 
+        const fixedBillerFee = 10;
+        const paymentGatewayFee = baseAmount * payFeeRate; 
+        const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
+        const totalWithFee = baseAmount + totalFee;
+
+        const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+        const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
+        const generatedNum = "A-" + (Math.floor(Math.random() * 900) + 100);
+
+        const formData = {
+            customerName: document.getElementById('custName').value,
+            queueNo: generatedNum,
+            timestamp: new Date().toLocaleString(),
+            provider: "ANECO | Due Date: " + document.getElementById('dueDate').value,
+            transType: "Bill Payment | " + methodLabel, 
+            gcashName: document.getElementById('accName').value,
+            gcashNo: document.getElementById('accNo').value,
+            
+            // IBALIK NATIN ITO: Huwag gawing 0 para hindi mawala ang display sa screen!
+            amount: baseAmount, 
+            feeAmount: totalFee,
+            
+            feeOption: "add", 
+
+            // LOGIC PARA SA N AT O (Monitoring)
+            totalAmount: (method !== "Cash" || isExactVal) ? totalWithFee : cashInputVal, 
+            cashAmount: (method !== "Cash" || isExactVal) ? 0 : (cashInputVal - totalWithFee), 
+            
+            consent: "YES",
+            receiptFile: base64File,
+            receiptFileName: fileName,
+            receiptFileType: fileType
+        };
+        
+        const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify(formData),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+
+        const result = await response.json();
+
+        if (result.result === "success") {
+            myQueueNumber = generatedNum; 
+            localStorage.setItem('savedQueueNumber', myQueueNumber);
+            localStorage.setItem('isWaiting', 'true');
+            document.getElementById('numberDisplay').innerText = myQueueNumber;
+            showStep('stepSuccess');
+            statusInterval = setInterval(checkMyStatus, 5000);
+        } else {
+            throw new Error(result.error || "Submission failed");
+        }
+
+    } catch (err) {
+        console.error("Critical Error:", err);
+        alert("System Error: " + err.message);
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+    
+     function finishTransaction() {
+    // A. KUNIN ANG DATA BAGO BURAHIN (Para sa Review Page)
+    const nameFromScreen = document.getElementById('custName').value;
+    const qNumFromScreen = document.getElementById('numberDisplay').innerText;
+    
+    // B. PATAYIN ANG "EXIT GUARD" (Ito ang pinaka-importante!)
+    // Ginagawa nating 'false' para hindi lumabas ang "Are you sure" popup
+    localStorage.setItem('isWaiting', 'false');
+
+    // C. I-SET ANG DATA PARA SA REVIEW PAGE (Reviewer Data)
+    // Ginagamit natin ang nameFromScreen para sigurado tayong full name ang makuha
+    localStorage.setItem('reviewerName', nameFromScreen || localStorage.getItem('input_custName') || "Customer");
+    localStorage.setItem('reviewerQueue', qNumFromScreen || localStorage.getItem('savedQueueNumber') || "N/A");
+    localStorage.setItem('reviewerService', 'Bills Payment Service (ANECO)'); 
+
+    // D. LINISIN ANG MGA INPUTS (Except the ones we just set for review)
+    const itemsToRemove = ['custName', 'accNo', 'accName', 'amount', 'savedQueueNumber', 'currentStep', 'feeOption', 'sessionStartTime', 'savedMode'];
+    itemsToRemove.forEach(id => {
+        localStorage.removeItem(id);
+        localStorage.removeItem('input_' + id); 
+    });
+
+    // E. ITIGIL ANG STATUS CHECKING
+    if(statusInterval) clearInterval(statusInterval);
+
+    // F. LIPAT SA REVIEW PAGE
+    // Siguraduhing may review.html ka para sa ANECO feedback
+    window.location.href = 'review.html'; 
+}
+
+    
+    function updateReviewTotal() {
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
+    
+    // --- COMPUTATION NG FEES ---
+    let extraFeePercent = 0;
+    if (method === "Card") extraFeePercent = 0.032; // 3.20%
+    else if (method === "Spaylater" || method === "Billease") extraFeePercent = 0.01; // 1%
+    
+    const serviceFee = Math.ceil(amt * 0.01); // 1% na default service fee mo
+    const paymentGatewayFee = amt * extraFeePercent; // Ang dagdag na fee base sa payment method
+    const fixedFee = 10; // Biller Fee
+    
+    const totalWithFee = amt + serviceFee + fixedFee + paymentGatewayFee;
+
+    // --- HTML RENDER ---
+    let breakdownHTML = `
+        <div class="review-item"><span>Biller Fee:</span><strong>${formatPHP(fixedFee)}</strong></div>
+        <div class="review-item"><span>Service Fee (1%):</span><strong>${formatPHP(serviceFee)}</strong></div>
+        ${extraFeePercent > 0 ? `<div class="review-item"><span>Payment Fee (${(extraFeePercent*100).toFixed(1)}%):</span><strong>${formatPHP(paymentGatewayFee)}</strong></div>` : ''}
+        <div class="review-item" style="border:none; font-size:18px; margin-top:5px; color: #1b4332;">
+            <span>Total to Pay:</span><strong>${formatPHP(totalWithFee)}</strong>
+        </div>
+    `;
+
+    // --- SAKTO/CASH LOGIC (Lalabas lang kung Cash ang pinili) ---
+    if (method === "Cash") {
+        const isExact = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
+        breakdownHTML += `
+            <div class="cash-logic-box">
+                <label class="checkbox-row">
+                    <input type="checkbox" id="reviewIsExact" onchange="updateReviewTotal()" ${isExact ? 'checked' : ''}> 
+                    Sakto ang ibabayad ko (Exact Cash)
+                </label>
+                <div id="reviewCashInputGroup" style="display: ${isExact ? 'none' : 'block'}">
+                    <label>Magkano ang cash na iaabot?</label>
+                    <input type="number" id="reviewCashReceived" oninput="updateReviewSukli()" placeholder="0.00">
+                    <div id="reviewSukliDisplay" class="sukli-display"></div>
+                </div>
+            </div>`;
+   } else {
+    // Note para sa Card, Spaylater, at Billease
+    let feeNote = "";
+if (method === "Card") {
+    feeNote = "Ang 3.2% additional payment fee ay bank processing fee (Gateway Fee). Ito ay automatic na kaltas ng provider para sa pag-gamit ng Credit/Debit card.";
+} else {
+    // Mas generic na "Digital Payment Fee" para cover ang Spaylater/Billease/GCash
+    feeNote = "Ang 1% additional payment fee ay digital processing fee. Ito ay chinacharge ng payment provider para sa Scan to Pay/Installment transactions.";
+}
+
+    breakdownHTML += `
+        <div style="text-align:center; padding:10px; background: #fffbe6; border: 1px dashed #ffe58f; border-radius: 5px; margin-top: 10px;">
+            <p style="font-size: 10px; color: #856404; margin-bottom: 5px; line-height: 1.2;">
+                <b>NOTE:</b> ${feeNote}
+            </p>
+            <span style="color:#666; font-style:italic; font-size: 11px;">
+                I-ready ang gagamitin na App o Card sa counter para sa payment.
+            </span>
+        </div>`;
+}
+
+        // --- ETO YUNG DINAGDAG NA DISCLAIMER SA PINAKA-BABA ---
+   breakdownHTML += `
+        <div style="margin-top: 20px; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
+            <p style="font-size: 10px; color: #666; margin-bottom: 8px; font-weight: bold; letter-spacing: 0.5px;">
+                AVAILABLE VIA TAP / SCAN TO PAY:
+            </p>
+            <div style="margin-bottom: 12px; display: flex; justify-content: center; gap: 4px; flex-wrap: wrap;">
+                <span style="font-size: 9px; background: #fff; padding: 3px 8px; border-radius: 12px; border: 1px solid #007bff; color: #007bff; font-weight: bold;">💳 CARDS</span>
+                <span style="font-size: 9px; background: #fff; padding: 3px 8px; border-radius: 12px; border: 1px solid #ff5722; color: #ff5722; font-weight: bold;">🧡 SPAYLATER</span>
+                <span style="font-size: 9px; background: #fff; padding: 3px 8px; border-radius: 12px; border: 1px solid #0056b3; color: #0056b3; font-weight: bold;">🔵 BILLEASE</span>
+            </div>
+
+            <p style="font-size: 9px; color: #999; margin: 0; line-height: 1.4;">
+                Powered by <b>GCash for Business</b><br>
+                <i style="font-size: 8px;">Standard payment fees apply for non-cash payments.</i>
+            </p>
+        </div>
+    `;
+        
+
+    document.getElementById('finalBreakdown').innerHTML = breakdownHTML;
+    updateReviewSukli();
+}
+
+
+function updateReviewSukli() {
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const method = document.getElementById('paymentMethod') ? document.getElementById('paymentMethod').value : "Cash";
+
+    // Kunin ang extra fee rate para parehas sila ng generateNumber
+    let extraRate = 0;
+    if (method === "Card") extraRate = 0.032;
+    else if (method === "Spaylater" || method === "Billease") extraRate = 0.01;
+
+    const serviceFee = Math.ceil(amt * 0.01);
+    const fixedFee = 10;
+    const paymentGatewayFee = amt * extraRate;
+    
+    // Eto ang tamang total na dapat bayaran ng customer
+    const totalWithFee = amt + serviceFee + fixedFee + paymentGatewayFee;
+    
+    const cashInput = document.getElementById('reviewCashReceived');
+    const sukliDiv = document.getElementById('reviewSukliDisplay');
+    const isExact = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : false;
+
+    if (!sukliDiv || isExact) {
+        if(sukliDiv) sukliDiv.innerHTML = "";
+        return;
+    }
+
+    const cashHanded = parseFloat(cashInput.value) || 0;
+    const computeSukli = cashHanded - totalWithFee;
+
+    if (cashHanded > 0) {
+        if (computeSukli < 0) {
+            sukliDiv.style.color = "red";
+            sukliDiv.innerHTML = "❌ KULANG NG: " + formatPHP(Math.abs(computeSukli));
+        } else {
+            sukliDiv.style.color = "green";
+            sukliDiv.innerHTML = "✅ SUKLI: " + formatPHP(computeSukli);
+        }
+    } else {
+        sukliDiv.innerHTML = "";
+    }
+}
+    
+function adminForceReset() {
+    const ADMIN_PIN = "430456"; 
+    const enteredPin = prompt("ADMIN ONLY: Enter 6-digit PIN to reset kiosk:");
+    
+    if (enteredPin === ADMIN_PIN) {
+        localStorage.clear(); // Burahin ang lahat
+        if(statusInterval) clearInterval(statusInterval);
+        
+        alert("System Reset! Redirecting to Home...");
+        // Ginagamit ang replace para burahin ang history entry
+        window.location.replace('index.html'); 
+    } else if (enteredPin !== null) {
+        alert("Maling PIN!");
+    }
+}
+
+function saveInput(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        // Sine-save nito ang value sa browser memory (localStorage)
+        localStorage.setItem('input_' + id, el.value);
+    }
+}
+// I-expose sa window para kahit nasa loob ng ibang function, mababasa pa rin
+window.saveInput = saveInput;
+
+// bago logic para sa close /open/ maintenance
+async function checkAnecoMaintenance() {
+    try {
+        const response = await fetch(`${WEB_APP_URL}?action=getTransactions`);
+        const result = await response.json();
+
+        // 1. Check muna kung ang BUONG KIOSK ay sarado (Cell A2)
+        if (result.kioskStatus === "CLOSED") {
+            document.body.innerHTML = `
+                <div style="text-align:center; padding:50px; font-family:Arial, sans-serif;">
+                    <div style="font-size:60px;">🏠</div>
+                    <h1 style="color:#d32f2f;">OUR HUB IS CLOSED</h1>
+                    <p>Please check back later or visit us during opening hours.</p>
+                    <p>Thank you.</p>
+                    <button onclick="window.location.href='index.html'" style="margin-top:20px; padding:10px 20px; background:#1565c0; color:white; border:none; border-radius:5px; cursor:pointer;">BACK TO HOME</button>
+                </div>`;
+            return;
+        }
+
+        // 2. Check kung ANECO SERVICE lang ang sarado (Cell D2)
+        if (result.anecoStatus === "CLOSED") {
+            const formContainer = document.getElementById('stepForm');
+            if (formContainer) {
+                formContainer.innerHTML = `
+                    <div style="background:#fff3f3; padding:30px; border-radius:12px; border:1px solid #ffcdd2; text-align:center; margin: 20px;">
+                        <div style="font-size:40px; margin-bottom:10px;">⚡</div>
+                        <b style="color:#c62828; font-size:18px;">ANECO SERVICE IS NOT AVAILABLE</b><br>
+                        <p style="font-size:14px; color:#555; margin-top:15px; line-height:1.5;">
+                            Our ANECO Bills Payment is currently down for maintenance.<br>
+                            Please go back to our kiosk and try other services.<br>
+                            Thank you for understanding!
+                        </p>
+                        <button onclick="window.location.href='index.html'" 
+                            style="margin-top:20px; padding:12px 25px; background-color:#1565c0; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+                            BACK TO KIOSK
+                        </button>
+                    </div>`;
+            }
+        }
+    } catch (e) {
+        console.error("Maintenance check failed:", e);
+    }
+}
+
+// I-update ang window.onload para tawagin ang function
+const originalOnload = window.onload;
+window.onload = function() {
+    if (originalOnload) originalOnload();
+    checkAnecoMaintenance(); // Tawagin ang maintenance check
+};
+    
+</script>
+
+</body>
+</html>
