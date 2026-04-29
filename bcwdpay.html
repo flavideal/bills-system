@@ -166,12 +166,17 @@
                 <label>BCWD Account Name</label>
                 <input type="text" id="accName" placeholder="Pangalan sa Bill" oninput="saveInput('accName')">
             </div>
+            
             <div class="field-group">
-                <label>BCWD Control Number (including dash)</label>
-                <input type="text" id="accNo" placeholder="13-14 Control Number" 
-       style="text-transform: uppercase;"
-       oninput="this.value = this.value.toUpperCase(); saveInput('accNo')">
-            </div>
+    <label>BCWD Account / Control Number (including dash)</label>
+    <input type="text" id="accNo" placeholder="Ex: 9999-999999-99" 
+           style="text-transform: uppercase;"
+           oninput="this.value = this.value.toUpperCase(); saveInput('accNo')">
+    <p style="font-size: 10px; color: #666; margin-top: 2px;">
+        *Makikita ang 13-14 digit Control Number sa taas ng Account No. sa inyong bill.
+    </p>
+</div>
+            
             <div class="field-group">
     <label>Cellphone Number</label>
     <input type="tel" id="custPhone" 
@@ -724,19 +729,21 @@ function showStep(stepId) {
         return;
     }
 
-    // 4. ANECO Account Number Validation (Allow letters like 'B')
-    // Regex: Tatanggap ng letters at numbers, bawal space o special characters
-    const alphanumericRegex = /^[A-Z0-9]+$/;
-    if (!alphanumericRegex.test(accNo)) {
-        alert("⚠️ Ang Account Number ay dapat letters at numbers lamang. Huwag lagyan ng space o symbols.");
-        return;
-    }
-    
-    if (accNo.length < 10) {
-        alert("⚠️ Siguraduhing tama ang Account Number. Karaniwan itong 10 characters o higit pa.");
+   // 4. BCWD Control Number Validation (Numbers and Dash only, 13-14 chars)
+    // Ang regex na /^[0-9-]+$/ ay tumatanggap lamang ng numero at dash.
+    const bcwdRegex = /^[0-9-]+$/;
+
+    if (!bcwdRegex.test(accNo)) {
+        alert("⚠️ Ang Control Number ay dapat NUMERO at DASH (-) lamang. Bawal ang letters, spaces, o ibang symbols.");
         return;
     }
 
+    // Sinisigurado na ang haba ay 13 hanggang 14 characters (kasama ang dash)
+    if (accNo.length < 13 || accNo.length > 14) {
+        alert("⚠️ Siguraduhing tama ang Control Number. Ito dapat ay 13 hanggang 14 characters ang haba (kasama ang dash).");
+        return;
+    }
+       
     // I-render ang Review Screen
     let reviewHTML = `
         <div class="review-item"><span>Customer Name:</span><strong>${name}</strong></div>
