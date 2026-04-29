@@ -880,12 +880,12 @@ if (method === "Card") {
             queueNo: generatedNum,
             timestamp: new Date().toLocaleString(),
             provider: "BCWD | Due Date: " + document.getElementById('dueDate').value,
-            transType: "Bill Payment | " + methodLabel, 
+            transType: "Bill Payment | Biller Fee: " + fixedBillerFee.toFixed(2) | " + methodLabel + ", 
             gcashName: document.getElementById('accName').value,
             gcashNo: document.getElementById('accNo').value,
             
             // IBALIK NATIN ITO: Huwag gawing 0 para hindi mawala ang display sa screen!
-           amount: `Amount ${baseAmount.toLocaleString()} + Biller Fee ${fixedBillerFee.toFixed(2)}`,
+           amount: baseAmount,
            feeAmount: window.sheetFee,
             
             feeOption: "add", 
