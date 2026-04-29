@@ -353,7 +353,7 @@ const isMaintenance = false; // Under Maintenance: true / Normal Operation: fals
                     <div style="font-size: 60px; margin-bottom: 20px;">⚠️</div>
                     <h1 style="color: #d32f2f; margin-bottom: 10px; font-size: 24px;">UNDER MAINTENANCE</h1>
                     <p style="color: #555; line-height: 1.6; margin-bottom: 5px;">
-                        Kasalukuyang ina-update ang aming system para sa <b>ANECO Bills Payment</b> upang mabigyan kayo ng mas magandang serbisyo.
+                        Kasalukuyang ina-update ang aming system para sa <b>BCWD Bills Payment</b> upang mabigyan kayo ng mas magandang serbisyo.
                     </p>
                     <p style="color: #1b4332; font-weight: bold; margin-bottom: 25px;">
                         Salamat sa inyong pag-unawa!
@@ -754,8 +754,8 @@ function showStep(stepId) {
                 <small style="font-size: 9px; color: #666; display: block;">*Dito isesend ng <b>Maya Center</b> ang official SMS receipt.</small>
             </div>
         </div>
-        <div style="height: 10px;"></div> <div class="review-item"><span>ANECO Bill Name:</span><strong>${accName}</strong></div>
-        <div class="review-item"><span>ANECO Bill Account No:</span><strong>${accNo}</strong></div>
+        <div style="height: 10px;"></div> <div class="review-item"><span>BCWD Bill Name:</span><strong>${accName}</strong></div>
+        <div class="review-item"><span>BCWD Bill Control No:</span><strong>${accNo}</strong></div>
         <div class="review-item"><span>Due Date:</span><strong style="color:red;">${formattedDate}</strong></div>
         <div class="review-item"><span>Bill Amount:</span><strong>${formatPHP(amt)}</strong></div>
 
@@ -860,13 +860,13 @@ function showStep(stepId) {
 
         const isExactVal = document.getElementById('reviewIsExact') ? document.getElementById('reviewIsExact').checked : true;
         const cashInputVal = document.getElementById('reviewCashReceived') ? parseFloat(document.getElementById('reviewCashReceived').value) : 0;
-        const generatedNum = "A-" + (Math.floor(Math.random() * 900) + 100);
+        const generatedNum = "W-" + (Math.floor(Math.random() * 900) + 100);
 
         const formData = {
             customerName: document.getElementById('custName').value,
             queueNo: generatedNum,
             timestamp: new Date().toLocaleString(),
-            provider: "ANECO | Due Date: " + document.getElementById('dueDate').value,
+            provider: "BCWD | Due Date: " + document.getElementById('dueDate').value,
             transType: "Bill Payment | " + methodLabel, 
             gcashName: document.getElementById('accName').value,
             gcashNo: document.getElementById('accNo').value,
