@@ -517,7 +517,7 @@ async function checkMyStatus() {
             // Kunin ang mga values para sa Slip
             const accNoValue = document.getElementById('accNo').value;
             const accNameValue = document.getElementById('accName').value;
-            const noteTitle = (accNoValue.length > 10) ? "ANECO / Bills Payment Successful" : "Transaction Successful";
+            const noteTitle = (accNoValue.length > 10) ? "BCWD / Bills Payment Successful" : "Transaction Successful";
             
             // I-render ang details sa adminNote
             const adminNote = document.getElementById('adminNote');
@@ -526,7 +526,7 @@ async function checkMyStatus() {
                     <div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; text-align: left;">
                         <strong style="color: #1b4332; font-size: 16px;">${noteTitle}</strong><br>
                         <span style="font-size: 13px; color: #333;">Biller Account Name: <b>${accNameValue}</b></span><br>
-                        <span style="font-size: 13px; color: #333;">Biller Account No: <b>${accNoValue}</b></span>
+                        <span style="font-size: 13px; color: #333;">Biller Control No: <b>${accNoValue}</b></span>
                     </div>
                     <div style="margin-top: 5px; text-align: center;">
                         <span style="font-size: 11px; color: #666;">JERRIC Personal Assistance Service</span>
