@@ -273,6 +273,14 @@
   let isFirstLoad = true; // Para hindi tumunog sa unang load
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwOsuWmpHe4b8hwDOj-byvDNzg9gnW2WDgL4J5Tbi-69ghbST5E_bS9Bl6q7CzgktC/exec"; 
 
+  document.addEventListener("visibilitychange", function() {
+      if (document.visibilityState === 'visible' && u) {
+          console.log("Tab focused: Refreshing Butuan Hub data...");
+          loadData(); 
+      }
+  });
+  
+  
   window.onload = function() { 
     if (u && p) { 
       showDashboard();
@@ -308,10 +316,10 @@
 
   async function loadData() {
   try {
-    const response = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "getTransactions", user: u, pass: p })
-    });
+    const response = await fetch(SCRIPT_URL + "?t=" + new Date().getTime(), {
+    method: "POST",
+    body: JSON.stringify({ action: "getTransactions", user: u, pass: p })
+});
 
     const res = await response.json();
 
