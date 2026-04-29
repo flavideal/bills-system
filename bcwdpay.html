@@ -930,7 +930,7 @@ function showStep(stepId) {
     // Ginagamit natin ang nameFromScreen para sigurado tayong full name ang makuha
     localStorage.setItem('reviewerName', nameFromScreen || localStorage.getItem('input_custName') || "Customer");
     localStorage.setItem('reviewerQueue', qNumFromScreen || localStorage.getItem('savedQueueNumber') || "N/A");
-    localStorage.setItem('reviewerService', 'Bills Payment Service (ANECO)'); 
+    localStorage.setItem('reviewerService', 'Bills Payment Service (BCWD)'); 
 
     // D. LINISIN ANG MGA INPUTS (Except the ones we just set for review)
     const itemsToRemove = ['custName', 'accNo', 'accName', 'amount', 'savedQueueNumber', 'currentStep', 'feeOption', 'sessionStartTime', 'savedMode'];
