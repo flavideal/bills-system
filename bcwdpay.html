@@ -167,8 +167,8 @@
                 <input type="text" id="accName" placeholder="Pangalan sa Bill" oninput="saveInput('accName')">
             </div>
             <div class="field-group">
-                <label>BCWD Control Number</label>
-                <input type="text" id="accNo" placeholder="13-14 Control Number (including dash)" 
+                <label>BCWD Control Number (including dash)</label>
+                <input type="text" id="accNo" placeholder="13-14 Control Number" 
        style="text-transform: uppercase;"
        oninput="this.value = this.value.toUpperCase(); saveInput('accNo')">
             </div>
@@ -190,7 +190,7 @@
     <label>Bill Due Date</label>
     <input type="date" id="dueDate" oninput="saveInput('dueDate')" style="border: 2px solid var(--dark-green);">
     <p style="font-size: 10px; color: #d32f2f; margin-top: 5px; font-weight: bold;">
-        *Paalala: Bawal ang "With Arrears" o "Past Due" na bill.
+       *Paalala: Tumatanggap lamang kami 3 days bago ang Due Date. Bawal ang may "Arrears" o "Past Due".
     </p>
 </div>
             
@@ -694,17 +694,27 @@ function showStep(stepId) {
         return; 
     }
 
-    // 2. Due Date Check (Bawal Overdue)
+    /// 2. Due Date Check (3-Day Rule for BCWD)
     const localToday = new Date();
-    localToday.setHours(0, 0, 0, 0); // April 22, 2026 00:00:00
+    localToday.setHours(0, 0, 0, 0); 
 
-    // Kuhanin ang input date mula sa form
     const inputDueDate = new Date(dueDateInput);
     inputDueDate.setHours(0, 0, 0, 0);
-       
-    // VALIDATION: I-allow kung ang input date ay >= kahapon
-   if (inputDueDate < localToday) {
-        alert("❌ PAALALA: Ang bill mo ay PAST DUE na.\n\nHindi na ito tinatanggap sa aming Kiosk. Mangyaring pumunta sa ANECO Head Office para mag-settle.");
+    
+    // Kunin ang diperensya sa pagitan ng ngayon at due date (in milliseconds)
+    const diffTime = inputDueDate - localToday;
+    // I-convert ang milliseconds sa "days"
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // VALIDATION 1: Kung lumipas na ang Due Date (Past Due)
+    if (diffDays < 0) {
+        alert("❌ PAALALA: Ang bill mo ay PAST DUE na.\n\nHindi na ito tinatanggap sa aming Kiosk. Mangyaring pumunta sa BCWD Head Office para mag-settle.");
+        return;
+    }
+
+    // VALIDATION 2: Ang 3-Day Rule
+    if (diffDays < 3) {
+        alert("⚠️ PAALALA: Masyado nang malapit ang Due Date.\n\nTumatanggap lamang kami ng payments 3 DAYS BAGO ang due date upang maiwasan ang penalty o disconnection. Mangyaring sa BCWD Head Office na lamang magbayad.");
         return;
     }
 
