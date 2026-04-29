@@ -779,6 +779,7 @@ async function checkHubStatus() {
     const linkGcash = document.getElementById('link-gcash');
     const linkAneco = document.getElementById('link-aneco');
     const linkEload = document.getElementById('link-eload');
+    const linkBcwd = document.getElementById('link-bcwd');
     
     try {
         const response = await fetch(`${SCRIPT_URL}?action=getTransactions&t=${Date.now()}`);
@@ -837,6 +838,7 @@ async function checkHubStatus() {
             // Para sa Aneco at E-load
             applyMaintenance(linkAneco, res.anecoStatus);
             applyMaintenance(linkEload, res.loadStatus);
+            applyMaintenance(linkBcwd, res.bcwdStatus);
             
         }
     } catch (e) {
