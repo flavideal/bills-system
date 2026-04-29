@@ -1119,15 +1119,15 @@ async function checkAnecoMaintenance() {
         }
 
         // 2. Check kung ANECO SERVICE lang ang sarado (Cell D2)
-        if (result.anecoStatus === "CLOSED") {
+        if (result.bcwdStatus === "CLOSED") {
             const formContainer = document.getElementById('stepForm');
             if (formContainer) {
                 formContainer.innerHTML = `
                     <div style="background:#fff3f3; padding:30px; border-radius:12px; border:1px solid #ffcdd2; text-align:center; margin: 20px;">
                         <div style="font-size:40px; margin-bottom:10px;">⚡</div>
-                        <b style="color:#c62828; font-size:18px;">ANECO SERVICE IS NOT AVAILABLE</b><br>
+                        <b style="color:#c62828; font-size:18px;">BCWD SERVICE IS NOT AVAILABLE</b><br>
                         <p style="font-size:14px; color:#555; margin-top:15px; line-height:1.5;">
-                            Our ANECO Bills Payment is currently down for maintenance.<br>
+                            Our BCWD Bills Payment is currently down for maintenance.<br>
                             Please go back to our kiosk and try other services.<br>
                             Thank you for understanding!
                         </p>
