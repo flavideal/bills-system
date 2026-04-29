@@ -654,6 +654,8 @@ return new Intl.NumberFormat('en-PH', {
             sukliDiv.innerHTML = ""; 
         }
     }
+        window.sheetAmount = amt + fixedBillerFee; // Ito yung Base Amount + 10
+    window.sheetFee = serviceFee;             // Ito yung 1% lang
 }
 
 function showStep(stepId) {
@@ -854,8 +856,8 @@ function showStep(stepId) {
             gcashNo: document.getElementById('accNo').value,
             
             // IBALIK NATIN ITO: Huwag gawing 0 para hindi mawala ang display sa screen!
-            amount: baseAmount, 
-            feeAmount: totalFee,
+            amount: window.sheetAmount,  // Papasok sa Sheet: (Base + 10)
+            feeAmount: window.sheetFee,  // Papasok sa Sheet: (1% lang)
             
             feeOption: "add", 
 
