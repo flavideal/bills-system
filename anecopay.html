@@ -838,7 +838,19 @@ function showStep(stepId) {
 
         const serviceFee = Math.ceil(baseAmount * 0.01); 
         const fixedBillerFee = 10;
-        const paymentGatewayFee = baseAmount * payFeeRate; 
+        const paymentGatewayFee = baseAmount * payFeeRate;
+
+        // DITO NATIN I-FORMAT ANG LABEL PARA SA SHEET
+if (method === "Card") {
+    methodLabel = "Card+3.2% (+" + paymentGatewayFee.toFixed(2) + ")";
+} else if (method === "Spaylater") {
+    methodLabel = "Spaylater+1% (+" + paymentGatewayFee.toFixed(2) + ")";
+} else if (method === "Billease") {
+    methodLabel = "Billease+1% (+" + paymentGatewayFee.toFixed(2) + ")";
+} else {
+    methodLabel = "Cash";
+}
+        
         const totalFee = serviceFee + fixedBillerFee + paymentGatewayFee;
         const totalWithFee = baseAmount + totalFee;
 
