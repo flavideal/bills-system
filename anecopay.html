@@ -868,7 +868,7 @@ if (method === "Card") {
             gcashNo: document.getElementById('accNo').value,
             
             // IBALIK NATIN ITO: Huwag gawing 0 para hindi mawala ang display sa screen!
-            amount: window.sheetAmount,  // Papasok sa Sheet: (Base + 10)
+            amount: "Amount " + baseAmount.toLocaleString() + " + Biller Fee " + fixedBillerFee.toFixed(2),
             feeAmount: window.sheetFee,  // Papasok sa Sheet: (1% lang)
             
             feeOption: "add", 
