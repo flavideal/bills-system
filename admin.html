@@ -254,6 +254,14 @@
         </div>
       </div>
 
+      <div class="m-row">
+  <div class="m-label">BWCD Service (F2)</div>
+  <div class="m-toggle">
+    <button id="m-f2-open" class="m-on" onclick="updateServiceStatus('F2', 'OPEN')">OPEN</button>
+    <button id="m-f2-close" class="m-off" onclick="updateServiceStatus('F2', 'CLOSED')">CLOSE</button>
+  </div>
+</div>
+
       <div class="m-row" style="border-bottom: none;">
         <div class="m-label">E-Load Service (E2)</div>
         <div class="m-toggle">
@@ -767,7 +775,7 @@ async function updateServiceStatus(cell, newStatus) {
         const res = await response.json();
         if (res.result === "success") {
             // I-update ang global variable para synced pa rin
-            const keyMap = { 'B2':'cashIn', 'C2':'cashOut', 'D2':'aneco', 'E2':'load' };
+            const keyMap = { 'B2':'cashIn', 'C2':'cashOut', 'D2':'aneco', 'E2':'load', 'F2':'bwcd' };
             if (window.currentKioskStatus) window.currentKioskStatus[keyMap[cell]] = newStatus;
             
             // I-refresh ang kulay ng buttons sa modal
@@ -790,6 +798,8 @@ function updateMaintenanceUI(statusObj) {
         'C2': statusObj.cashOut,
         'D2': statusObj.aneco,
         'E2': statusObj.load
+        'F2': statusObj.bwcd
+      
     };
 
     for (const cell in mapping) {
