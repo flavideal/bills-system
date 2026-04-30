@@ -45,31 +45,41 @@
             max-width: 600px; 
         }
 
-        /* PREMIUM LOGO STYLE */
-        .header { 
-            text-align: center; 
-            margin-bottom: 20px; /* Binawasan ng konti para sa slider */
-            padding: 20px;
-            background: var(--premium-green);
-            border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(27, 67, 28, 0.2);
-        }
+       /* PREMIUM HEADER STYLE */
+.header { 
+    text-align: center; 
+    margin-bottom: 25px; 
+    padding: 30px 20px; 
+    background: linear-gradient(135deg, #0d2b0e 0%, #1b431c 100%); /* Deep Green */
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 2px solid #ffc267; /* Gold Border */
+}
 
-        .header h1 { 
-            color: var(--gold); 
-            margin: 0; 
-            font-size: 28px; 
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: 800;
-        }
+/* JERRIC TEXT WITH GOLD GRADIENT */
+.header h1 { 
+    font-family: 'Arial Black', Gadget, sans-serif;
+    background: linear-gradient(to bottom, #ffe58f 0%, #ffc267 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0; 
+    font-size: 55px; /* Malaki at Bold */
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 900;
+    line-height: 1.1;
+}
 
-        .header p { 
-            color: white; 
-            margin-top: 5px; 
-            font-size: 14px; 
-            opacity: 0.9;
-        }
+/* SUBTITLE STYLE */
+.header p { 
+    color: #ffffff; 
+    margin-top: 10px; 
+    font-size: 14px; 
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 1; /* Para klaro ang puti */
+}
 
         /* --- BAGONG DAGDAG: PROMO SLIDER STYLE --- */
         .promo-slider {
@@ -510,9 +520,9 @@
 <body>
     <div class="kiosk-container">
         <div class="header">
-            <h1>JERRIC</h1>
-            <p>Personal Service Kiosk</p>
-        </div>
+    <h1>JERRIC</h1>
+    <p>Personal Assistance Service Kiosk</p>
+</div>
 
         <div style="text-align: center;">
         <div class="soft-launch-badge">🚀 Soft Launch Phase</div>
