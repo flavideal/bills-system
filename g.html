@@ -478,52 +478,81 @@ async function checkMyStatus() {
       if (result.status === "NEW") {
             statusBox.style.display = "block";
             statusBox.className = "status-badge status-waiting";
-            statusBox.innerText = "⏳ NASA QUEUE KA NA";
+            statusBox.innerText = "⏳ NASA QUEUE NA KA";
             
-            instruction.style.color = "#1565c0"; 
-            instruction.innerHTML = `
-                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 5px solid #2196f3; text-align: left;">
-                    <b style="font-size: 1.1em; color: #0d47a1;">Sinisuri na ang iyong Transaction...</b><br><br>
-                    
-                    Paki-antay lang po at <b>huwag muna i-exit</b> ang page na ito. Lalabas dito sa screen ang notification kapag:<br><br>
-                    
-                    <b>• KUNG CASH-IN:</b> Handa na ang counter para tanggapin ang iyong <b>bayad</b>.<br>
-                    <b>• KUNG CASH-OUT:</b> Handa na ang counter at ang iyong <b>pera (cash)</b> na kukunin.<br><br>
-                    
-                    <i>Paalala: Hintayin na mag-iba ang status sa "PUMUNTA NA SA COUNTER" bago lumapit sa cashier.</i>
-                </div>
-                <div style="margin-top: 10px; font-size: 0.85em; color: #666;">
-                    <i>Tip: Maaari mong i-screenshot ang iyong Queue Number habang nag-aantay.</i>
-                </div>
-            `;
-            instruction.style.display = "block";
-            completedArea.style.display = "none";
-        }
+           instruction.style.color = "#1565c0"; 
+    instruction.innerHTML = `
+        <div style="background: #e3f2fd; padding: 20px; border-radius: 12px; border-left: 6px solid #2196f3; text-align: left;">
+            <b style="font-size: 1.2em; color: #0d47a1; display: block; margin-bottom: 12px;">📢 IMPORTANTE NGA PAHINUMDOM:</b>
+            
+            <!-- OPTION A: PARA SA MGA NAA NA DIHA SA KIOSK -->
+            <div style="background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #bbdefb;">
+                <b style="color: #1565c0;">📍 KUNG NAA NA KA SA KIOSK/BALAY NI JERRIC:</b><br>
+                Pahulay lang una sa lingkuranan. Ayaw una duol sa counter. Huwata nga mugawas ang <b>"CALLING"</b> sa screen bago muduol.
+            </div>
+
+            <!-- OPTION B: PARA SA MGA NAG-TRANSACT SA ILAHANG BALAY -->
+            <div style="background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #bbdefb;">
+                <b style="color: #1565c0;">🏠 KUNG NAA PA KA SA INYONG BALAY:</b><br>
+                <b>AYAW UNA ADTO</b> sa balay ni Jerric. Huwata nga mag-status ug <b>"CALLING"</b> o <b>"PUMUNTA NA SA COUNTER"</b> diri sa imong screen bago ka mulakaw paingon diri.
+            </div>
+
+            <p style="margin-top: 15px; font-size: 0.95em; color: #333; line-height: 1.4;">
+                <i>Ginahimo ni para dili maghuot ang mga tao sa gawas ug para hayahay ang inyong pag-huwat. Salamat sa pagsabot!</i>
+            </p>
+        </div>
+        
+        <div style="margin-top: 15px; text-align: center;">
+            <span style="background: #fffde7; padding: 5px 15px; border-radius: 15px; border: 1px solid #ffd54f; font-size: 0.85em;">
+                📸 <b>Tip:</b> I-screenshot kini para sa imong record.
+            </span>
+        </div>
+    `;
+    instruction.style.display = "block";
+    completedArea.style.display = "none";
+}
         
         // --- STATUS: CALLING (In Counter) ---
-        else if (result.status === "CALLING") {
-            statusBox.style.display = "block";
-            statusBox.className = "status-badge status-calling";
-            statusBox.innerText = "📣 PUMUNTA NA SA COUNTER";
+       else if (result.status === "CALLING") {
+    statusBox.style.display = "block";
+    statusBox.className = "status-badge status-calling";
+    statusBox.innerText = "📣 PUMUNTA NA SA COUNTER / TAWAG NA KA";
+    
+    instruction.style.color = "#1b431c";
+    instruction.innerHTML = `
+        <div style="background: #fff3e0; padding: 20px; border-radius: 12px; border-left: 6px solid #ff9800; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <b style="font-size: 1.2em; color: #e65100; display: block; margin-bottom: 10px;">🏃 IKAW NA NGA TURN! (CALLING)</b>
             
-            instruction.style.color = "#1b431c";
-            instruction.innerHTML = `
-                <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 5px solid #ff9800; text-align: left;">
-                    <b style="font-size: 1.1em; color: #e65100;">ANG IYONG GAGAWIN:</b><br><br>
-                    
-                    <b>• KUNG CASH-IN:</b> Pumunta sa counter at magbayad sa cashier. Ipakita ang iyong Queue Number.<br><br>
-                    
-                    <b>• KUNG CASH-OUT:</b> Pumunta sa counter para makuha ang iyong pera. 
-                    <span style="color: #d32f2f;"><b>Paalala:</b> Magpakita ng <b>Valid ID</b> para sa verification na ikaw ang may-ari ng pangalang nakalagay sa transaction.</span><br><br>
-                    <span style="color: #d32f2f;">Paki-antay na lumabas dito sa screen ang iyong <b>Digital Voucher</b> dahil kailangan mo itong pirmahan bilang patunay na natanggap mo na ang cash.</span><br><br>
-                    
-                    <b style="font-size: 1.1em; color: #2e7d32;">PAALALA:</b><br>
-                    Huwag muna i-close o i-exit ang page na ito hanggang hindi lumalabas ang iyong transaction record o receipt.
-                </div>
-            `;
-            instruction.style.display = "block";
-            completedArea.style.display = "none"; 
-        }
+            <p style="background: #fff; padding: 10px; border-radius: 8px; border: 1.5px solid #ff9800; font-weight: bold; color: #d84315; text-align: center; margin-bottom: 15px;">
+                PUMUNTA NA SA COUNTER NI JERRIC KARON DAYON.
+            </p>
+
+            <b style="font-size: 1.1em; color: #4e342e;">ANG IYONG GAGAWIN:</b><br><br>
+            
+            <div style="margin-bottom: 15px;">
+                <b>• KUNG CASH-IN:</b> Ipakita ang iyong <b>Queue Number</b> kay jerric at i-handa ang iyong <b>bayad</b>.
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <b>• KUNG CASH-OUT:</b> I-ready ang imong <b>Valid ID</b>. 
+                <span style="color: #d32f2f;">Kinahanglan mag-match ang ID sa ngalan nga nakabutang sa imong transaction record.</span>
+            </div>
+
+            <div style="background: #ffebee; padding: 10px; border-radius: 8px; border: 1px solid #ffcdd2; margin-top: 10px;">
+                <b style="color: #c62828;">⚠️ AYAW I-CLOSE:</b><br>
+                Huwata mugawas diri sa screen ang imong <b>Digital Voucher</b>. Kinahanglan nimo na i-pirma (E-Signature) isip resibo nga nadawat na nimo ang cash.
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #ffcc80; margin: 15px 0;">
+            
+            <p style="font-size: 0.9em; color: #2e7d32; font-weight: bold;">
+                Huwag muna i-exit ang page na ito hanggang hindi lumalabas ang "COMPLETED" at ang iyong resibo.
+            </p>
+        </div>
+    `;
+    instruction.style.display = "block";
+    completedArea.style.display = "none"; 
+}
         
 // --- STATUS: COMPLETED (Tapos na) ---
 else if (result.status === "COMPLETED") {
